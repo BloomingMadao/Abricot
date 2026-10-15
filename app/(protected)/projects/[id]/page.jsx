@@ -45,8 +45,8 @@ const projects = {
 };
 
 export default async function ProjectsDetails({ params }) {
-  const { slug } = await params;
-  const project = projects[slug];
+  const { id} = await params;
+  const project = projects[id];
 
   // Si le projet n'existe pas, afficher un message
   if (!project) {
