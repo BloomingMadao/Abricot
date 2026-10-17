@@ -17,7 +17,7 @@ export default function Connection() {
                 />
                 <h1>Connexion</h1>
                 <AuthForm isLogin />
-                <Link href="#" className="mb-[150px]">Mot de passe oublié ?</Link>
+                <Link href="#" className="mb-[150px] mt-[20px]">Mot de passe oublié ?</Link>
                 <p>Pas encore de compte ? <Link href="/register">Créer un compte</Link></p>
             </div>
     )

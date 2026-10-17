@@ -1,22 +1,25 @@
 import Image from "next/image"
 import Desk from "@/public/image/desk-img.jpg"
 
-
-
-export default function AuthLayout({children}: LayoutProps<'/'>){
-    return(  
-            <section className="flex justify-center justify-items-center items-center min-h-screen">
+export default function AuthLayout({ children }: LayoutProps<'/'>) {
+    return (
+        <section className="flex min-h-screen">
+            {/* Colonne de gauche : le formulaire prend 1/3 de la largeur */}
+            <div className="w-full lg:w-1/3">
                 {children}
-                <Image 
-                    src ={Desk}
-                    alt=''
-                    width={1440}
-                    height={1024}
-                    loading="lazy"
+            </div>
 
-                    className="max-h-screen max-w-md"
+            {/* Colonne de droite : l'image prend les 2/3 restants */}
+            <div className="relative hidden lg:block lg:w-2/3">
+                <Image
+                    src={Desk}
+                    alt=""
+                    fill
+                    sizes="67vw"
+                    loading="eager"
+                    className="object-cover object-[100%_75%]"
                 />
-            </section>
+            </div>
+        </section>
     )
-
 }
