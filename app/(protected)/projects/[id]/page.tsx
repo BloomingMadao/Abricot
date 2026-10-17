@@ -3,8 +3,26 @@
 /**
  * TODO : Voir commment les données sont retournées par l'API
  */
+type TaskStatus = "À faire" | "En cours" | "Terminée";
 
-const projects = {
+interface Task {
+  title: string;
+  description: string;
+  deadline: string;
+  users_assigned: string[];
+  status: TaskStatus;
+}
+
+interface Project {
+  title: string;
+  description: string;
+  tasks: Task[];
+}
+
+// Clé = id du projet
+type Projects = Record<string, Project>;
+
+const projects : Projects  = {
   "projet-1": {
     title: "Nom du projet 1",
     description:
@@ -30,7 +48,7 @@ const projects = {
     
   },
 
-  "projet-2": {
+  "projet-2" : {
     title: "Nom du projet 2",
     description:
       "Développement de la nouvelle version de l'API REST avec authentification JWT",
@@ -41,9 +59,22 @@ const projects = {
           "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur soluta non mollitia doloremque! Praesentium eveniet, laudantium, facere nesciunt culpa exercitationem quasi assumenda optio error adipisci aut odio! Deserunt, quae ipsum?",
         deadline: "13-10-2026",
         users_assigned: ["user1", "user2"],
+        status : "À faire"
+      },
+      {
+        title: "une autre tâche",
+        description:
+          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur soluta non mollitia doloremque! Praesentium eveniet, laudantium, facere nesciunt culpa exercitationem quasi assumenda optio error adipisci aut odio! Deserunt, quae ipsum?",
+        deadline: "13-10-2026",
+        users_assigned: ["user1", "user3"],
+        status : "Terminée"
       },
     ],
+    
   },
+
+
+
 };
 
 type Props = { params: Promise<{ id: string }> };

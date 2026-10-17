@@ -2,9 +2,10 @@ import Form from 'next/form'
 
 export default function AuthForm({ isLogin = false }){
 
-
     return(
-            <Form> 
+            <Form className=' flex flex-col'
+                action="#"
+            > 
                 {isLogin &&
                 <>                
                     <label htmlFor="mail">Email</label>
