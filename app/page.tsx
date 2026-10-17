@@ -1,10 +1,9 @@
 import Image from "next/image";
-import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <h1>Bienvenue sur Abricot</h1>
+    <div className="flex flex-col justify-center items-center min-h-screen">
+      <h1>Abricot</h1>
       <p>Site en cours de construction</p>
     </div>
   );

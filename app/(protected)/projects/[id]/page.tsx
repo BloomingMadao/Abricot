@@ -1,3 +1,5 @@
+
+
 /**
  * TODO : Voir commment les données sont retournées par l'API
  */
@@ -44,7 +46,9 @@ const projects = {
   },
 };
 
-export default async function ProjectsDetails({ params }) {
+type Props = { params: Promise<{ id: string }> };
+
+export default async function ProjectsDetails({ params }: Props) {
   const { id} = await params;
   const project = projects[id];
 
