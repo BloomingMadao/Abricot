@@ -29,7 +29,7 @@ h1{
 }
 
 .button{
-  @apply self-center w-3xs rounded-[10px] text-white text-base font-normal px-[74px] py-[13px] bg-(--neutral-grey-800);
+  @apply self-center w-3xs rounded-[10px] text-white text-base font-normal px-[74px] py-[13px] bg-(--neutral-grey-800) mx-[12px];
 }
 
 .button:hover{

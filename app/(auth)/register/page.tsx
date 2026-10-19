@@ -13,12 +13,12 @@ export default function Register() {
                     width={252.57}
                     height={32.17}
                     loading="lazy"
-                    className="mb-[70px]"
+                    className="mb-[30px] lg:mb-[70px]"
                 />
                 <h1>Inscription</h1>
                 <AuthForm />
-                <Link href="#" className="mb-[10px] mt-[10px]">Mot de passe oublié ?</Link>
-                <p>Déjà inscrit ? <Link href="/connection">Connectez-vous</Link></p>
+                <Link href="#" className="mb-[20px] mt-[10px] text-(--brand-color) underline underline-offset-4 hover:text-black">Mot de passe oublié ?</Link>
+                <p>Déjà inscrit ? <Link href="/connection" className="text-(--brand-color) underline underline-offset-4 hover:text-black">Connectez-vous</Link></p>
             </div>
     )
 }

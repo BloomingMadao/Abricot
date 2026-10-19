@@ -6,6 +6,7 @@ export default function Home() {
     <div className="flex flex-col justify-center items-center min-h-screen">
       <Image
         src={Logo}
+        loading="eager"
         alt=""
       />
       <p>Site en cours de construction</p>

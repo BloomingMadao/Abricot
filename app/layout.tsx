@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Inter,Manrope } from 'next/font/google'
+import Loader from "./components/Loader/Loader";
 import "./globals.css";
 
 const inter = Inter({
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="fr" className={`${inter.variable} ${manrope.variable}`}>
       <body>
           <main>{children}</main>
+          <Loader/>
       </body>
     </html>
   );
