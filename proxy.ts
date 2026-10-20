@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 // Pages accessibles sans être connecté (adapte à tes routes)
-const publicRoutes = ["/connection", "/register", "/"]
+const publicRoutes = ["/connection", "/register"]
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -15,7 +15,7 @@ export function proxy(request: NextRequest) {
 
   // Déjà connecté sur connexion/inscription → accueil
   if (token && isPublic) {
-    return NextResponse.redirect(new URL("/", request.url))
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()

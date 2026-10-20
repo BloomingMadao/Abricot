@@ -41,3 +41,18 @@ export function formatDate(isoDate: string | null): string {
     timeZone: "Europe/Paris",
   });
 }
+
+
+export function getInitials(name: string | null | undefined): string {
+    if (!name) return "";
+    
+    const intials = name
+    .split(" ")
+    .filter((word) => word !== "")
+    .slice(0,2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("")
+
+    return intials
+    
+}

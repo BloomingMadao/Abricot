@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Inter,Manrope } from 'next/font/google'
 import Loader from "./components/Loader/Loader";
 import "./globals.css";
+import Header from "./components/Header/Header";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,7 +25,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="fr" className={`${inter.variable} ${manrope.variable}`}>
       <body>
           <main>{children}</main>
-          <Loader/>
       </body>
     </html>
   );
