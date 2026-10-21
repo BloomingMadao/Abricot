@@ -17,8 +17,8 @@ export default function Connection() {
                 />
                 <h1>Connexion</h1>
                 <AuthForm isLogin />
-                <Link href="#" className="mb-[150px] mt-[20px] text-(--brand-color) underline underline-offset-4 hover:text-black">Mot de passe oublié ?</Link>
-                <p>Pas encore de compte ? <Link href="/register" className="text-(--brand-color) underline underline-offset-4 hover:text-black">Créer un compte</Link></p>
+                <Link href="#" className="mb-[150px] mt-[20px] text-(--brand-color-dark) underline underline-offset-4 hover:text-black">Mot de passe oublié ?</Link>
+                <p>Pas encore de compte ? <Link href="/register" className="text-(--brand-color-dark) underline underline-offset-4 hover:text-black">Créer un compte</Link></p>
             </div>
     )
 }

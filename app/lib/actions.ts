@@ -55,6 +55,8 @@ export async function loginAction(
   const email = String(formData.get("mail") ?? "");
   const password = String(formData.get("password") ?? "");
 
+  
+
   // 2. Appeler l'API (mock ou vrai backend, selon .env.local)
   const response = await login({ email, password });
 
@@ -94,4 +96,10 @@ export async function registerAction(
   // 4. Succès : l'utilisateur est inscrit ET connecté (le backend renvoie un token)
   await saveToken(response.data.token);
   redirect("/dashboard");
+}
+
+
+export async function logout() {
+  (await cookies()).delete("token")
+  redirect("/connection")
 }

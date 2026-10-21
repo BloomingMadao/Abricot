@@ -15,7 +15,7 @@ const initials = getInitials(user.name) || user.email.charAt(0).toUpperCase();
     <Link
       href="/profile"
       aria-label="Mon compte"
-      className="flex items-center justify-center size-[45px] rounded-full bg-(--brand-color) text-white font-semibold"
+      className="flex items-center justify-center size-[65px] rounded-full bg-(--brand-color-light) text-black font-(--font-sans) focus:text-white focus:bg-(--brand-color-dark)"
     >
       {initials}
     </Link>
