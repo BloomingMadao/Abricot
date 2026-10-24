@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 // Pages accessibles sans être connecté (adapte à tes routes)
-const publicRoutes = ["/connection", "/register"]
+const publicRoutes = ["/connection", "/register", "/debug"]
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl

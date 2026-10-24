@@ -8,7 +8,19 @@
   --brand-color-dark: #D3590B;
   --neutral-grey-950:#0F0F0F;
   --neutral-grey-800:#1F1F1F;
+  --neutral-grey-600:#6B7280;
+  --neutral-grey-400:#9CA3AF;
   --neutral-grey-200:#E5E7EB;
+  --system-success-green:#27AE60;
+  --system-success-green-light:#F1FFF7;
+  --system-error:#EF4444;
+  --system-error-light: #FFE0E0;
+  --system-warning:#E08D00;
+  --system-warning-light:#FFF0D7;
+  --system-info:#3B82F6;
+  --system-info-light:#E0ECFF;
+
+
 }
 
 @theme inline{
@@ -16,6 +28,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-heading: var(--font-manrope);
+  --success : var(--system-success-green)
 }
 
 h1,h2,h3,h4,h5{
@@ -26,17 +39,30 @@ h1{
   @apply text-[var(--brand-color-dark)] text-[40px] font-bold font-[700] mb-[20px];
 }
 
-.input{
-  @apply px-[17px] py-[19px] rounded-[4px] border-1 border-solid border-[var(--neutral-grey-200)]  mb-[30px] mt-[10px];
+.input-default{
+  @apply w-[280px] h-[53px] px-[17px] py-[19px] rounded-[4px] border-1 border-solid border-[var(--neutral-grey-200)]  mb-[30px] mt-[10px];
 
 }
 
-.button{
+.button-primary{
   @apply self-center w-3xs rounded-[10px] text-white text-base font-normal px-[74px] py-[13px] bg-(--neutral-grey-800) mx-[12px];
 }
 
-.button:hover{
-  @apply cursor-pointer text-(--brand-color-main);
+.button-primary:hover{
+  @apply cursor-pointer bg-(--neutral-grey-950);
+}
+
+.button-secondary{
+  @apply self-center w-3xs rounded-[10px]  border-1 border-solid text-(--brand-color-dark) text-base font-normal px-[74px] py-[13px] bg-white mx-[12px];
+}
+
+.button-secondary:hover{
+  @apply cursor-pointer bg-gray-300;
+}
+
+
+.button-disabled{
+  @apply self-center w-3xs rounded-[10px]  text-(--neutral-grey-400) text-base font-normal px-[74px] py-[13px] bg-(--neutral-grey-200) mx-[12px];
 }
 
 
