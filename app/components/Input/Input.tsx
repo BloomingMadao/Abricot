@@ -1,37 +1,58 @@
-import Image from "next/image"
-import LogoCalendar from "@/public/image/calendar.svg"
-
 type InputProps = {
   label: string
   id: string
   variant?: "default" | "calendar" | "dropdown"
   type?: string
+  options?: string[]
 }
 
-export default function Input({ label, id, variant = "default", type = "text" }: InputProps) {
+// Date du jour au format AAAA-MM-JJ :
+// c'est le seul format que min et max acceptent sur un <input type="date">
+function getToday() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+export default function Input({
+  label,
+  id,
+  variant = "default",
+  type = "text",
+  options = [],
+}: InputProps) {
   const isCalendar = variant === "calendar"
-  const today = new Date().toLocaleDateString("en-CA")
+  const isDropdown = variant === "dropdown"
 
   return (
     <div className="flex flex-col gap-2">
-    <label htmlFor={id}>{label}</label>
-    <div className="relative">
-        <input
-        id={id}
-        name={id}
-        type={type}
-        className={`input-${variant} w-full h-[52px] rounded-md border border-gray-200 px-4`}
-        min={isCalendar? today:undefined}
-        max={isCalendar ? "2050-12-31" : undefined}
-        />
-        {isCalendar && (
-        <Image
-            src={LogoCalendar}
-            alt=""
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        />
+      <label htmlFor={id}>{label}</label>
+
+      {/* "relative" servira si tu ajoutes une icône positionnée sur le champ */}
+      <div className="relative">
+        {isDropdown ? (
+          // Variante liste : uniquement un <select>
+          <select id={id} name={id} className="input-default">
+            {options.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : (
+          // Variantes texte et calendrier : uniquement un <input>
+          <input
+            id={id}
+            name={id}
+            type={isCalendar ? "date" : type}
+            className="input-default"
+            min={isCalendar ? getToday() : undefined}
+            max={isCalendar ? "2050-12-31" : undefined}
+          />
         )}
-    </div>
+      </div>
     </div>
   )
 }

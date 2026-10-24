@@ -1,80 +1,125 @@
 @import "tailwindcss";
 
+
 :root {
   --background: #F9FAFB;
   --foreground: #171717;
   --brand-color-main: orange;
   --brand-color-light: #FFE8D9;
   --brand-color-dark: #D3590B;
-  --neutral-grey-950:#0F0F0F;
-  --neutral-grey-800:#1F1F1F;
-  --neutral-grey-600:#6B7280;
-  --neutral-grey-400:#9CA3AF;
-  --neutral-grey-200:#E5E7EB;
-  --system-success-green:#27AE60;
-  --system-success-green-light:#F1FFF7;
-  --system-error:#EF4444;
+  --neutral-grey-950: #0F0F0F;
+  --neutral-grey-800: #1F1F1F;
+  --neutral-grey-600: #6B7280;
+  --neutral-grey-400: #9CA3AF;
+  --neutral-grey-200: #E5E7EB;
+  --system-success-green: #27AE60;
+  --system-success-green-light: #F1FFF7;
+  --system-error: #EF4444;
   --system-error-light: #FFE0E0;
-  --system-warning:#E08D00;
-  --system-warning-light:#FFF0D7;
-  --system-info:#3B82F6;
-  --system-info-light:#E0ECFF;
-
-
+  --system-warning: #E08D00;
+  --system-warning-light: #FFF0D7;
+  --system-info: #3B82F6;
+  --system-info-light: #E0ECFF;
 }
 
-@theme inline{
+
+
+/* =========================================================
+   2. THÈME TAILWIND
+   Crée EN PLUS des classes courtes à partir de tes variables :
+   text-brand-dark, bg-grey-800, border-grey-200, bg-success…
+   Les anciennes écritures restent valables.
+   ========================================================= */
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-heading: var(--font-manrope);
-  --success : var(--system-success-green)
+  --success: var(--system-success-green); /* ancien nom, gardé */
+
+  /* Marque */
+  --color-brand: var(--brand-color-main);
+  --color-brand-light: var(--brand-color-light);
+  --color-brand-dark: var(--brand-color-dark);
+
+  /* Gris neutres */
+  --color-grey-950: var(--neutral-grey-950);
+  --color-grey-800: var(--neutral-grey-800);
+  --color-grey-600: var(--neutral-grey-600);
+  --color-grey-400: var(--neutral-grey-400);
+  --color-grey-200: var(--neutral-grey-200);
+
+  /* Couleurs système */
+  --color-success: var(--system-success-green);
+  --color-success-light: var(--system-success-green-light);
+  --color-error: var(--system-error);
+  --color-error-light: var(--system-error-light);
+  --color-warning: var(--system-warning);
+  --color-warning-light: var(--system-warning-light);
+  --color-info: var(--system-info);
+  --color-info-light: var(--system-info-light);
 }
 
-h1,h2,h3,h4,h5{
-  @apply font-heading;
-}
+/* =========================================================
+   3. STYLES DE BASE (balises HTML)
+   ========================================================= */
+@layer base {
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
 
-h1{
-  @apply text-[var(--brand-color-dark)] text-[40px] font-bold font-[700] mb-[20px];
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
 
-.input-default{
-  @apply w-[280px] h-[53px] px-[17px] py-[19px] rounded-[4px] border-1 border-solid border-[var(--neutral-grey-200)]  mb-[30px] mt-[10px];
-
-}
-
-.button-primary{
-  @apply self-center w-3xs rounded-[10px] text-white text-base font-normal px-[74px] py-[13px] bg-(--neutral-grey-800) mx-[12px];
-}
-
-.button-primary:hover{
-  @apply cursor-pointer bg-(--neutral-grey-950);
-}
-
-.button-secondary{
-  @apply self-center w-3xs rounded-[10px]  border-1 border-solid text-(--brand-color-dark) text-base font-normal px-[74px] py-[13px] bg-white mx-[12px];
-}
-
-.button-secondary:hover{
-  @apply cursor-pointer bg-gray-300;
-}
-
-
-.button-disabled{
-  @apply self-center w-3xs rounded-[10px]  text-(--neutral-grey-400) text-base font-normal px-[74px] py-[13px] bg-(--neutral-grey-200) mx-[12px];
-}
-
-
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  h1 {
+    @apply mb-5 text-[40px] font-bold text-brand-dark;
   }
 }
 
-body {
-  background: var(--background);
-  font-family: var(--font-inter)
+/* =========================================================
+   4. COMPOSANTS
+   Mêmes noms de classes et mêmes marges qu'avant.
+   (Déplacer les marges dans le JSX : plus tard, à ton rythme.)
+   ========================================================= */
+@layer components {
+  .input-default, 
+  .input-calendar,
+  .input-dropdown{
+    @apply mt-2.5 mb-7.5 h-[53px] w-70 rounded-sm border border-grey-200 px-[17px];
+  }
+
+  /* Commun aux 3 boutons */
+  .button-primary,
+  .button-secondary,
+  .button-disabled {
+    @apply mx-3 w-64 self-center rounded-[10px] py-[13px] text-center text-base font-normal;
+  }
+
+  .button-primary {
+    @apply cursor-pointer bg-grey-800 text-white hover:bg-grey-950;
+  }
+
+  .button-secondary {
+    @apply cursor-pointer border border-brand-dark bg-white text-brand-dark hover:bg-gray-300;
+  }
+
+  /* Bouton désactivé : avec la classe .button-disabled (comme avant)
+     OU avec l'attribut disabled sur le bouton (recommandé).
+     Placé en dernier pour passer devant les styles de survol. */
+  .button-disabled,
+  .button-primary:disabled,
+  .button-secondary:disabled {
+    @apply cursor-not-allowed border-transparent bg-grey-200 text-grey-400;
+  }
+
+  .tag{
+    @apply py-[4px] px-[16px] rounded-[50px]
+  }
+
 }
