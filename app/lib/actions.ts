@@ -80,20 +80,32 @@ export async function registerAction(
   const lastname = String(formData.get("lastname") ?? "").trim();
   const email = String(formData.get("mail") ?? "");
   const password = String(formData.get("newPassword") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
-  // 2. Appeler l'API — le backend n'a qu'un champ "name" : on y met "Prénom Nom"
+  // 2. Les deux mots de passe doivent être identiques.
+  //    On RENVOIE une erreur au formulaire (on ne fait pas "throw") :
+  //    elle s'affiche dans le bloc role="alert", comme les erreurs de l'API.
+  if (password !== confirmPassword) {
+    return {
+      message: "Les mots de passe ne correspondent pas",
+      errors: [],
+      values: { firstname, lastname, mail: email },
+    };
+  }
+
+  // 3. Appeler l'API — le backend n'a qu'un champ "name" : on y met "Prénom Nom"
   const response = await register({
     email,
     password,
     name: `${firstname} ${lastname}`.trim(),
   });
 
-  // 3. Erreur : on renvoie le message (et ce qui avait été tapé, sauf le mot de passe)
+  // 4. Erreur : on renvoie le message (et ce qui avait été tapé, sauf le mot de passe)
   if (!response.success) {
     return toFormState(response, { firstname, lastname, mail: email });
   }
 
-  // 4. Succès : l'utilisateur est inscrit ET connecté (le backend renvoie un token)
+  // 5. Succès : l'utilisateur est inscrit ET connecté (le backend renvoie un token)
   await saveToken(response.data.token);
   redirect("/dashboard");
 }

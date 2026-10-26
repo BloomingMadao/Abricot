@@ -1,4 +1,4 @@
-type TagVariant = "success" | "error" | "warning" | "info" | "brand" | "grey"
+export type TagVariant = "success" | "error" | "warning" | "info" | "brand" | "grey"
 
 type TagProps = {
   label: string
@@ -7,7 +7,7 @@ type TagProps = {
 
 // Les noms de classes sont écrits EN ENTIER : c'est ce qui permet
 // à Tailwind de les trouver et de les générer.
-const variantClasses: Record<TagVariant, string> = {
+export const variantClasses: Record<TagVariant, string> = {
     success: "bg-success-light text-success border-1",
     error: "bg-error-light text-error border-1",
     warning: "bg-warning-light text-warning border-1",

@@ -1,8 +1,11 @@
 "use client";
 
 import Form from "next/form";
-import { useActionState } from "react";
-import { loginAction, registerAction } from "@/app/lib/actions";
+import { useActionState, useState } from "react";
+import { loginAction, registerAction, type AuthFormState } from "@/app/lib/actions";
+import Input from "@/app/components/Input/Input";
+import Button from "@/app/components/Button/Button";
+import Alert from "@/app/components/Alert/Alert";
 
 export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
   // useActionState relie le formulaire à la Server Action :
@@ -14,47 +17,109 @@ export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
     undefined
   );
 
+  // L'erreur que l'utilisateur a fermée avec la croix.
+  // Chaque envoi du formulaire renvoie un NOUVEL objet state :
+  // une nouvelle erreur est donc différente de celle fermée, et réapparaît.
+  const [dismissedState, setDismissedState] = useState<AuthFormState>(undefined);
+
   return (
     <Form className="flex flex-col" action={formAction}>
-      {/* Message d'erreur renvoyé par l'API */}
-      {state && (
-        <div role="alert" className="mb-[20px]">
-          <p>{state.message}</p>
-          {state.errors.length > 0 && (
-            <ul>
-              {state.errors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {/* Message d'erreur renvoyé par l'API ou par la Server Action */}
+      {state && state !== dismissedState && (
+        <Alert
+          message={state.message}
+          errors={state.errors}
+          variant="error"
+          onClose={() => setDismissedState(state)}
+        />
       )}
 
       {isLogin && (
         <>
-          <label htmlFor="mail">Email</label>
-          <input type="email" name="mail" id="mail" autoComplete="email" required className="input" defaultValue={state?.values.mail} />
-          <label htmlFor="password">Mot de passe</label>
-          <input type="password" name="password" id="password" autoComplete="current-password" required className="input" />
-          <button type="submit" disabled={isPending} className="button">
-            {isPending ? "Connexion..." : "Se connecter"}
-          </button>
+          {/* id "mail" => name "mail" : c'est ce que loginAction lit avec formData.get("mail") */}
+          <Input
+            label="Email"
+            id="mail"
+            variant="default"
+            type="email"
+            autoComplete="email"
+            required
+            defaultValue={state?.values.mail}
+          />
+          <Input
+            label="Mot de passe"
+            id="password"
+            variant="default"
+            type="password"
+            autoComplete="current-password"
+            required
+          />
+
+          <Button
+            label={isPending ? "Connexion..." : "Se connecter"}
+            variant="primary"
+            type="submit"
+            disabled={isPending}
+          />
         </>
       )}
 
       {!isLogin && (
         <>
-          <label htmlFor="firstname">Pr&eacute;nom</label>
-          <input type="text" name="firstname" id="firstname" required className="input" defaultValue={state?.values.firstname} />
-          <label htmlFor="lastname">Nom</label>
-          <input type="text" name="lastname" id="lastname" required className="input" defaultValue={state?.values.lastname} />
-          <label htmlFor="mail">Email</label>
-          <input type="email" name="mail" id="mail" autoComplete="email" required className="input" defaultValue={state?.values.mail} />
-          <label htmlFor="newPassword">Mot de passe</label>
-          <input type="password" name="newPassword" id="newPassword" autoComplete="new-password" required className="input" />
-          <button type="submit" disabled={isPending} className="button">
-            {isPending ? "Inscription..." : "S'inscrire"}
-          </button>
+          <Input
+            label="Prénom"
+            id="firstname"
+            variant="default"
+            type="text"
+            autoComplete="given-name"
+            required
+            defaultValue={state?.values.firstname}
+          />
+          <Input
+            label="Nom"
+            id="lastname"
+            variant="default"
+            type="text"
+            autoComplete="family-name"
+            required
+            defaultValue={state?.values.lastname}
+          />
+          <Input
+            label="Email"
+            id="mail"
+            variant="default"
+            type="email"
+            autoComplete="email"
+            required
+            defaultValue={state?.values.mail}
+          />
+
+          {/* id "newPassword" : c'est ce que registerAction lit avec formData.get("newPassword") */}
+          <Input
+            label="Mot de passe"
+            id="newPassword"
+            variant="default"
+            type="password"
+            autoComplete="new-password"
+            required
+          />
+
+          {/* id DIFFÉRENT du champ précédent, lu avec formData.get("confirmPassword") */}
+          <Input
+            label="Confirmation du mot de passe"
+            id="confirmPassword"
+            variant="default"
+            type="password"
+            autoComplete="new-password"
+            required
+          />
+
+          <Button
+            label={isPending ? "Inscription..." : "S'inscrire"}
+            variant="primary"
+            type="submit"
+            disabled={isPending}
+          />
         </>
       )}
     </Form>

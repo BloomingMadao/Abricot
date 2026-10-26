@@ -1,9 +1,13 @@
 type InputProps = {
   label: string
   id: string
+  name?: string
   variant?: "default" | "calendar" | "dropdown"
   type?: string
   options?: string[]
+  required?: boolean
+  autoComplete?: string
+  defaultValue?: string
 }
 
 // Date du jour au format AAAA-MM-JJ :
@@ -19,9 +23,13 @@ function getToday() {
 export default function Input({
   label,
   id,
+  name = id,
   variant = "default",
   type = "text",
   options = [],
+  required,
+  autoComplete,
+  defaultValue,
 }: InputProps) {
   const isCalendar = variant === "calendar"
   const isDropdown = variant === "dropdown"
@@ -34,7 +42,14 @@ export default function Input({
       <div className="relative">
         {isDropdown ? (
           // Variante liste : uniquement un <select>
-          <select id={id} name={id} className="input-default">
+          <select
+            id={id}
+            name={name}
+            className="input-default"
+            required={required}
+            autoComplete={autoComplete}
+            defaultValue={defaultValue}
+          >
             {options.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -45,11 +60,14 @@ export default function Input({
           // Variantes texte et calendrier : uniquement un <input>
           <input
             id={id}
-            name={id}
+            name={name}
             type={isCalendar ? "date" : type}
             className="input-default"
             min={isCalendar ? getToday() : undefined}
             max={isCalendar ? "2050-12-31" : undefined}
+            required={required}
+            autoComplete={autoComplete}
+            defaultValue={defaultValue}
           />
         )}
       </div>

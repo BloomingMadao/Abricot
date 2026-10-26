@@ -98,7 +98,7 @@
   .button-primary,
   .button-secondary,
   .button-disabled {
-    @apply mx-3 w-64 self-center rounded-[10px] py-[13px] text-center text-base font-normal;
+    @apply mx-3 w-64 self-center rounded-[10px] py-[13px] text-center text-base font-normal transition-colors duration-300 ease-out;
   }
 
   .button-primary {
