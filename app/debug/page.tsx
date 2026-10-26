@@ -2,11 +2,20 @@ import Button from "@/app/components/Button/Button"
 import Input from "@/app/components/Input/Input"
 import Tag from "@/app/components/Tag/Tag"
 import MenuItems from "@/app/components/MenuItems/MenuItems"
-
+import Loader from "../components/Loader/Loader"
+import Chips from "../components/Chips/Chips"
 
 export default function Debug(){
     return(
     <div>
+        <div>
+            <h1>Chargement</h1>
+            <Loader></Loader>
+            <br /><br />
+            <hr />
+        </div>
+
+
         <div>
             <h1>
                 Button
@@ -74,6 +83,23 @@ export default function Debug(){
                 label="test2"
                 icon="dashboard"
                 href=""
+            />
+            <br /><br />
+            <hr />
+        </div>
+        <div>
+            <h1>Chips</h1>
+            <Chips
+                label="taches"
+                type="tasks"
+            />
+            <Chips
+                label="kanban"
+                type="kanban"
+            />
+            <Chips
+                label="projets"
+                type="projects"
             />
             <br /><br />
             <hr />
