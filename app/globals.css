@@ -84,7 +84,11 @@
   }
 
   h4{
-    @apply mb-5 text-[24px] font-sans;
+    @apply mb-5 text-[24px] font-bold;
+  }
+
+  h5{
+    @apply text-[18px] font-bold;
   }
 }
 
@@ -128,6 +132,6 @@
     @apply py-[4px] px-[16px] rounded-[50px]
   }
 
-  
+
 
 }
