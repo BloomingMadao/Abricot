@@ -8,6 +8,10 @@ type InputProps = {
   required?: boolean
   autoComplete?: string
   defaultValue?: string
+  // Texte gris affiché quand le champ est vide
+  placeholder?: string
+  // Classes en plus sur le champ, ex : "w-full" pour prendre toute la largeur
+  className?: string
 }
 
 // Date du jour au format AAAA-MM-JJ :
@@ -30,6 +34,8 @@ export default function Input({
   required,
   autoComplete,
   defaultValue,
+  placeholder,
+  className = "",
 }: InputProps) {
   const isCalendar = variant === "calendar"
   const isDropdown = variant === "dropdown"
@@ -45,7 +51,7 @@ export default function Input({
           <select
             id={id}
             name={name}
-            className="input-default"
+            className={`input-default ${className}`}
             required={required}
             autoComplete={autoComplete}
             defaultValue={defaultValue}
@@ -62,12 +68,13 @@ export default function Input({
             id={id}
             name={name}
             type={isCalendar ? "date" : type}
-            className="input-default"
+            className={`input-default ${className}`}
             min={isCalendar ? getToday() : undefined}
             max={isCalendar ? "2050-12-31" : undefined}
             required={required}
             autoComplete={autoComplete}
             defaultValue={defaultValue}
+            placeholder={placeholder}
           />
         )}
       </div>

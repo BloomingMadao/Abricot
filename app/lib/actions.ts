@@ -13,7 +13,14 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { login, register, TOKEN_COOKIE_NAME } from "@/app/lib/api";
+import { revalidatePath } from "next/cache";
+import {
+  login,
+  register,
+  updateProfile,
+  updatePassword,
+  TOKEN_COOKIE_NAME,
+} from "@/app/lib/api";
 import type { ApiError } from "@/app/lib/types";
 
 /** Ce que l'action renvoie au formulaire quand il y a une erreur */
@@ -108,6 +115,85 @@ export async function registerAction(
   // 5. Succès : l'utilisateur est inscrit ET connecté (le backend renvoie un token)
   await saveToken(response.data.token);
   redirect("/dashboard");
+}
+
+/** Ce que l'action du profil renvoie au formulaire (succès OU erreur) */
+export type ProfileFormState =
+  | {
+      success: boolean; // true = enregistré (alerte verte), false = erreur (alerte rouge)
+      message: string;
+      errors: string[];
+      values: Record<string, string>; // ce que l'utilisateur a tapé, pour pré-remplir les champs
+    }
+  | undefined;
+
+/** Liste des messages d'erreur détaillés d'une réponse de l'API */
+function errorMessages(response: ApiError): string[] {
+  return response.data?.errors.map((error) => error.message) ?? [];
+}
+
+/** Formulaire "Mon compte" */
+export async function updateProfileAction(
+  _previousState: ProfileFormState,
+  formData: FormData
+): Promise<ProfileFormState> {
+  // 1. Lire les champs du formulaire
+  const firstname = String(formData.get("firstname") ?? "").trim();
+  const lastname = String(formData.get("lastname") ?? "").trim();
+  const email = String(formData.get("mail") ?? "").trim();
+  const newPassword = String(formData.get("newPassword") ?? "");
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const values = { firstname, lastname, mail: email };
+
+  // 2. Pour changer de mot de passe, l'API exige aussi le mot de passe actuel.
+  //    On vérifie AVANT d'enregistrer quoi que ce soit.
+  if (newPassword && !currentPassword) {
+    return {
+      success: false,
+      message: "Indiquez votre mot de passe actuel pour en choisir un nouveau",
+      errors: [],
+      values,
+    };
+  }
+
+  // 3. Mot de passe EN PREMIER, seulement si un nouveau a été tapé (vide = on n'y touche pas).
+  //    Si le mot de passe actuel est faux, on s'arrête là : rien n'est enregistré.
+  if (newPassword) {
+    const passwordResponse = await updatePassword({ currentPassword, newPassword });
+    if (!passwordResponse.success) {
+      return {
+        success: false,
+        message: passwordResponse.message,
+        errors: errorMessages(passwordResponse),
+        values,
+      };
+    }
+  }
+
+  // 4. Nom et email — le backend n'a qu'un champ "name" : on y met "Prénom Nom"
+  const profileResponse = await updateProfile({
+    name: `${firstname} ${lastname}`.trim(),
+    email,
+  });
+  if (!profileResponse.success) {
+    return {
+      success: false,
+      message: profileResponse.message,
+      errors: errorMessages(profileResponse),
+      values,
+    };
+  }
+
+  // 5. Le nom a pu changer : on demande à Next.js de recalculer les pages,
+  //    pour que le Header (les initiales) et cette page affichent les nouvelles infos
+  revalidatePath("/", "layout");
+
+  return {
+    success: true,
+    message: "Vos informations ont été mises à jour",
+    errors: [],
+    values,
+  };
 }
 
 
