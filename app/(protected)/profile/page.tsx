@@ -5,10 +5,6 @@ export default function Profile(){
         <div>
             <h1>La page &quot;Mon compte&quot;</h1>
 
-            <form action={logout}>
-                <button type="submit" className="button">Déconnexion</button>
-
-            </form>
         </div>
     )
 }

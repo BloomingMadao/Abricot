@@ -12,6 +12,7 @@
   --neutral-grey-600: #6B7280;
   --neutral-grey-400: #9CA3AF;
   --neutral-grey-200: #E5E7EB;
+  --neutral-grey-50:#F9FAFB;
   --system-success-green: #27AE60;
   --system-success-green-light: #F1FFF7;
   --system-error: #EF4444;
@@ -48,6 +49,7 @@
   --color-grey-600: var(--neutral-grey-600);
   --color-grey-400: var(--neutral-grey-400);
   --color-grey-200: var(--neutral-grey-200);
+  --color-grey-50: var(--neutral-grey-50);
 
   /* Couleurs système */
   --color-success: var(--system-success-green);
@@ -79,6 +81,10 @@
 
   h1 {
     @apply mb-5 text-[40px] font-bold text-brand-dark;
+  }
+
+  h4{
+    @apply mb-5 text-[24px] font-sans;
   }
 }
 
@@ -121,5 +127,7 @@
   .tag{
     @apply py-[4px] px-[16px] rounded-[50px]
   }
+
+  
 
 }

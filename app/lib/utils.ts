@@ -56,3 +56,16 @@ export function getInitials(name: string | null | undefined): string {
     return intials
     
 }
+
+// export function getFirstname (name: string | null | undefined) : string {
+//   if(!name) return "";
+//   const firstname = name
+//   .split(" ")
+//   .filter((word) => word !== "")
+//   .slice(0,2)
+//   .map((word) => word.charAt(0).toUpperCase())
+//   .at(0)
+//   ?.toString()
+
+//   return firstname
+// }

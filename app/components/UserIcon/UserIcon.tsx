@@ -1,23 +1,16 @@
-import Link from "next/link";
 import { getProfile } from "@/app/lib/api";
 import { getInitials } from "@/app/lib/utils";
+import UserMenu from "@/app/components/UserMenu/UserMenu";
 
-export default async function UserIcon(){
+// Composant SERVEUR : il récupère le profil, puis passe les initiales
+// au composant CLIENT UserMenu qui gère l'ouverture du sous-menu.
+export default async function UserIcon() {
+  const response = await getProfile();
 
-const response = await getProfile();
+  if (!response.success) return null;
 
-if (!response.success) return null;
+  const { user } = response.data;
+  const initials = getInitials(user.name) || user.email.charAt(0).toUpperCase();
 
-const { user } = response.data;
-const initials = getInitials(user.name) || user.email.charAt(0).toUpperCase();
-
-  return (
-    <Link
-      href="/profile"
-      aria-label="Mon compte"
-      className="flex items-center justify-center size-[65px] rounded-full bg-(--brand-color-light) text-black font-(--font-sans) focus:text-white focus:bg-(--brand-color-dark)"
-    >
-      {initials}
-    </Link>
-  );
+  return <UserMenu initials={initials} />;
 }
