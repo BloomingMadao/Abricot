@@ -3,7 +3,6 @@ import Link from "next/link"
 import Logo from '@/public/image/logo.svg'
 import UserIcon from "@/app/components/UserIcon/UserIcon"
 import MenuItems from "@/app/components/MenuItems/MenuItems"
-import {logout} from "@/app/lib/actions"
  
 
 export default function Header(){

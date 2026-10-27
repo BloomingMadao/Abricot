@@ -69,3 +69,23 @@ export function getInitials(name: string | null | undefined): string {
 
 //   return firstname
 // }
+
+
+/** Importance des priorités : plus le chiffre est petit, plus c'est important.
+ *  (L'API trie par ordre ALPHABÉTIQUE : HIGH, LOW, MEDIUM, URGENT — pas par importance.) */
+export const PRIORITY_RANK: Record<Priority, number> = {
+  URGENT: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+};
+
+/** Exemple : formatShortDate("2025-03-09T00:00:00.000Z") → "9 mars" */
+export function formatShortDate(isoDate: string | null): string {
+  if (!isoDate) return "Sans échéance";
+  return new Date(isoDate).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    timeZone: "Europe/Paris",
+  });
+}
