@@ -4,8 +4,17 @@ import { useState } from "react"
 import Chips from "@/app/components/Chips/Chips"
 import Input from "@/app/components/Input/Input"
 import TaskCard from "@/app/components/TaskCard/TaskCard"
+import KanbanColumn from "@/app/components/KanbanColumn/KanbanColumn"
 import SearchIcon from "@/public/image/searchIcon.svg"
-import type { AssignedTask } from "@/app/lib/types"
+import type { AssignedTask, TaskStatus } from "@/app/lib/types"
+
+// Les colonnes du Kanban, dans l'ordre de la maquette.
+// (Les tâches "Annulée" n'ont pas de colonne : elles n'apparaissent pas dans le Kanban.)
+const KANBAN_COLUMNS: { status: TaskStatus; title: string }[] = [
+    { status: "TODO", title: "À faire" },
+    { status: "IN_PROGRESS", title: "En cours" },
+    { status: "DONE", title: "Terminées" },
+]
 
 // Composant CLIENT : il gère ce qui bouge sur la page (vue choisie, recherche).
 // Les tâches, elles, sont récupérées par la page (composant serveur) et arrivent en props.
@@ -46,7 +55,7 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
                     <div className="flex items-center justify-between">
                         <div>
                             {/* h2 : sous-titre de la page (le h1 est "Tableau de bord") */}
-                            <h5 className="text-lg text-grey-800">Mes tâches assignées</h5>
+                            <h5>Mes tâches assignées</h5>
                             <p className="mt-1 text-grey-600">Par ordre de priorité</p>
                         </div>
                         {/* value + onChange : React connaît le texte à chaque frappe.
@@ -84,11 +93,21 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
                 </section>
             )}
 
-            {/* À FAIRE : la vue Kanban (quand tu auras sa maquette) */}
+            {/* Vue Kanban : une colonne par statut.
+                grid-cols-3 : 3 colonnes de même largeur.
+                -mx-7.5 : sur la maquette, les colonnes débordent de 30px de chaque côté. */}
             {view === "kanban" && (
-                <section className="mt-7.5 rounded-[10px] border border-grey-200 bg-white px-[59px] py-10">
-                    <p className="text-grey-600">La vue Kanban arrive bientôt.</p>
-                </section>
+                <div className="-mx-7.5 mt-12.5 grid grid-cols-3 items-start gap-[23px]">
+                    {KANBAN_COLUMNS.map((column) => (
+                        <KanbanColumn
+                            key={column.status}
+                            title={column.title}
+                            // Chaque colonne ne reçoit que les tâches de son statut
+                            // (toujours dans l'ordre de priorité, car tasks est déjà trié)
+                            tasks={tasks.filter((task) => task.status === column.status)}
+                        />
+                    ))}
+                </div>
             )}
         </>
     )
