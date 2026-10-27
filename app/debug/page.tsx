@@ -4,6 +4,7 @@ import Tag from "@/app/components/Tag/Tag"
 import MenuItems from "@/app/components/MenuItems/MenuItems"
 import Loader from "../components/Loader/Loader"
 import Chips from "../components/Chips/Chips"
+import IconButton from "../components/IconButton/IconButton"
 
 export default function Debug(){
     return(
@@ -100,6 +101,21 @@ export default function Debug(){
             <Chips
                 label="projets"
                 type="projects"
+            />
+            <br /><br />
+            <hr />
+        </div>
+        <div className="flex flex-row gap-6">
+            <h1>IconButton</h1>
+            <IconButton
+                variant="back"
+                href="#"
+                label="test du bouton retour"
+            />
+            <IconButton
+                variant="more"
+                href="#"
+                label="test du bouton voir plus"
             />
             <br /><br />
             <hr />

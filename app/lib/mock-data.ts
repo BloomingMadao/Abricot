@@ -35,7 +35,7 @@ export const MOCK_PASSWORD = "P@ssword123";
 
 /** Délai simulé (en millisecondes) pour imiter le temps de réponse du réseau.
  *  Mets 0 pour des réponses instantanées, ou 2000 pour tester tes "loading". */
-export const MOCK_DELAY_MS = 300;
+export const MOCK_DELAY_MS = 500;
 
 // ----------------------------------------------------------------------------
 // IDs (repris de ta base de données) — des noms lisibles pour s'y retrouver
