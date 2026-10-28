@@ -19,9 +19,11 @@ import {
   register,
   updateProfile,
   updatePassword,
+  createProject,
+  searchUsers,
   TOKEN_COOKIE_NAME,
 } from "@/app/lib/api";
-import type { ApiError } from "@/app/lib/types";
+import type { ApiError, UserSummary } from "@/app/lib/types";
 
 /** Ce que l'action renvoie au formulaire quand il y a une erreur */
 export type AuthFormState =
@@ -194,6 +196,68 @@ export async function updateProfileAction(
     errors: [],
     values,
   };
+}
+
+/** Ce que l'action de création de projet renvoie au formulaire (même forme que ProfileFormState) */
+export type ProjectFormState =
+  | {
+      success: boolean;
+      message: string;
+      errors: string[];
+      values: Record<string, string>; // ce qui a été tapé, pour pré-remplir les champs
+    }
+  | undefined;
+
+/** Formulaire "Créer un projet" (dans la modale) */
+export async function createProjectAction(
+  _previousState: ProjectFormState,
+  formData: FormData
+): Promise<ProjectFormState> {
+  // 1. Lire les champs du formulaire.
+  //    getAll : il y a une case cochée "contributors" PAR personne choisie
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const contributors = formData.getAll("contributors").map(String);
+  const values = { name, description };
+
+  // 2. La maquette rend la description obligatoire (l'API, elle, l'accepte vide).
+  //    On le vérifie aussi ici : le "required" du navigateur peut être contourné.
+  if (!description) {
+    return {
+      success: false,
+      message: "La description est obligatoire",
+      errors: [],
+      values,
+    };
+  }
+
+  // 3. Appeler l'API
+  const response = await createProject({ name, description, contributors });
+
+  // 3. Erreur : on renvoie le message, la modale reste ouverte
+  if (!response.success) {
+    return {
+      success: false,
+      message: response.message,
+      errors: errorMessages(response),
+      values,
+    };
+  }
+
+  // 4. Succès : les pages qui affichent des projets devront se recalculer
+  revalidatePath("/", "layout");
+
+  return { success: true, message: "Projet créé", errors: [], values };
+}
+
+/** Recherche d'utilisateurs pour la liste "Contributeurs" (appelée pendant la frappe).
+ *  Ce n'est pas un formulaire : la fonction reçoit directement le texte tapé. */
+export async function searchUsersAction(
+  query: string
+): Promise<{ users: UserSummary[]; error?: string }> {
+  const response = await searchUsers(query);
+  if (!response.success) return { users: [], error: response.message };
+  return { users: response.data.users };
 }
 
 

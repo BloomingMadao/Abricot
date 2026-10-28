@@ -4,6 +4,8 @@ type ButtonProps = {
     // "submit" envoie le formulaire, "button" ne fait rien tout seul (pour un onClick)
     type?: "submit" | "button" | "reset"
     disabled?: boolean
+    // Ce qui se passe au clic (pour un bouton type="button", ex : ouvrir une modale)
+    onClick?: () => void
 }
 
 export default function Button({
@@ -11,10 +13,12 @@ export default function Button({
     variant = "primary",
     type = "submit",
     disabled = false,
+    onClick,
 }: ButtonProps) {
     return (
         <button
             type={type}
+            onClick={onClick}
             className={`button-${variant}`}
             // La variante "disabled" désactive aussi vraiment le bouton, pas seulement son style
             disabled={disabled || variant === "disabled"}

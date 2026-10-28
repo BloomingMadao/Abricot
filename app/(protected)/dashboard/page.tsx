@@ -1,8 +1,8 @@
 import { getProfile, getAssignedTasks } from "@/app/lib/api"
 import { PRIORITY_RANK } from "@/app/lib/utils"
-import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
 import DashboardTasks from "@/app/components/DashboardTasks/DashboardTasks"
+import CreateProjectButton from "@/app/components/CreateProjectButton/CreateProjectButton"
 
 export default async function Dashboard() {
     // Promise.all : les deux appels partent EN MÊME TEMPS au lieu de l'un après l'autre
@@ -49,7 +49,7 @@ export default async function Dashboard() {
                 <div>
                     {/* h1 : le titre principal de la page (un seul par page).
                         Les classes remplacent le style global des h1 (40px orange). */}
-                    <h1 className="mb-0 text-2xl font-semibold text-grey-800">Tableau de bord</h1>
+                    <h5>Tableau de bord</h5>
                     <p className="mt-4 text-lg">
                         Bonjour {name}, voici un aperçu de vos projets et tâches
                     </p>
@@ -57,11 +57,8 @@ export default async function Dashboard() {
 
                 {/* type="button" : on n'est pas dans un formulaire.
                     Plus tard, ce bouton ouvrira la création de projet. */}
-                <Button
-                    label="+ Créer un projet"
-                    type="button"
-                    variant="primary"
-                />
+                                {/* Le bouton ouvre la modale de création (composant client) */}
+                <CreateProjectButton currentUserEmail={user.email} />
             </div>
 
             {/* Chips, recherche et liste : tout ce qui réagit aux clics → composant client */}

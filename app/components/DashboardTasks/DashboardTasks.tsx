@@ -68,7 +68,7 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
                             type="search"
                             placeholder="Rechercher une tâche"
                             value={search}
-                            onChange={setSearch}
+                            onChange={(event) => setSearch(event.target.value)}
                             icon={SearchIcon}
                             className="my-0 h-[63px] w-[357px] rounded-[10px] pl-8 text-sm placeholder:text-grey-600"
                         />

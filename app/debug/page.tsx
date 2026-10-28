@@ -47,12 +47,13 @@ export default function Debug(){
                 type="date"
                 variant="calendar"
             />
+            <Input label="Zone de texte" id="textarea-test" variant="textarea" rows={4} />
+            <Input label="Case à cocher" id="checkbox-test" type="checkbox" />
             <Input
-                label="combobox"
-                id="combobox"
-                type="text"
+                label="Statut"
+                id="status"
                 variant="dropdown"
-                options={["test","test2"]}
+                options={[{ value: "TODO", label: "À faire" }, { value: "IN_PROGRESS", label: "En cours" }]}
             />
             <br/><br/> <hr />
         </div>
