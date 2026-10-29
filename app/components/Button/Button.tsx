@@ -1,6 +1,6 @@
 type ButtonProps = {
     label: string
-    variant?: "primary" | "secondary" | "disabled"
+    variant?: "primary" | "secondary" | "highlight" |"disabled"
     // "submit" envoie le formulaire, "button" ne fait rien tout seul (pour un onClick)
     type?: "submit" | "button" | "reset"
     disabled?: boolean

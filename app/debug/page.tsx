@@ -32,6 +32,10 @@ export default function Debug(){
                 label="test disabled"
                 variant="disabled"
             />
+            <Button
+                label="test highlight"
+                variant="highlight"
+            />
             <br/><br/> <hr />
         </div>
         <div>

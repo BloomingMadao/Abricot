@@ -3,85 +3,36 @@
 /**
  * TODO : Voir commment les données sont retournées par l'API
  */
-type TaskStatus = "À faire" | "En cours" | "Terminée";
-
-interface Task {
-  title: string;
-  description: string;
-  deadline: string;
-  users_assigned: string[];
-  status: TaskStatus;
-}
-
-interface Project {
-  title: string;
-  description: string;
-  tasks: Task[];
-}
-
-// Clé = id du projet
-type Projects = Record<string, Project>;
-
-const projects : Projects  = {
-  "projet-1": {
-    title: "Nom du projet 1",
-    description:
-      "Développement de la nouvelle version de l'API REST avec authentification JWT",
-    tasks: [
-      {
-        title: "une tâche",
-        description:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur soluta non mollitia doloremque! Praesentium eveniet, laudantium, facere nesciunt culpa exercitationem quasi assumenda optio error adipisci aut odio! Deserunt, quae ipsum?",
-        deadline: "13-10-2026",
-        users_assigned: ["user1", "user2"],
-        status : "À faire"
-      },
-      {
-        title: "une autre tâche",
-        description:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur soluta non mollitia doloremque! Praesentium eveniet, laudantium, facere nesciunt culpa exercitationem quasi assumenda optio error adipisci aut odio! Deserunt, quae ipsum?",
-        deadline: "13-10-2026",
-        users_assigned: ["user1", "user3"],
-        status : "Terminée"
-      },
-    ],
-    
-  },
-
-  "projet-2" : {
-    title: "Nom du projet 2",
-    description:
-      "Développement de la nouvelle version de l'API REST avec authentification JWT",
-    tasks: [
-      {
-        title: "une tâche",
-        description:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur soluta non mollitia doloremque! Praesentium eveniet, laudantium, facere nesciunt culpa exercitationem quasi assumenda optio error adipisci aut odio! Deserunt, quae ipsum?",
-        deadline: "13-10-2026",
-        users_assigned: ["user1", "user2"],
-        status : "À faire"
-      },
-      {
-        title: "une autre tâche",
-        description:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur soluta non mollitia doloremque! Praesentium eveniet, laudantium, facere nesciunt culpa exercitationem quasi assumenda optio error adipisci aut odio! Deserunt, quae ipsum?",
-        deadline: "13-10-2026",
-        users_assigned: ["user1", "user3"],
-        status : "Terminée"
-      },
-    ],
-    
-  },
-
-
-
-};
+import { getProject,getProjectTasks } from "@/app/lib/api";
+import Alert from "@/app/components/Alert/Alert"
+import IconButton from "@/app/components/IconButton/IconButton";
+import Button from "@/app/components/Button/Button";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function ProjectsDetails({ params }: Props) {
   const { id} = await params;
-  const project = projects[id];
+  const [responseProject,responseTasks] = await Promise.all([getProject(id),getProjectTasks(id)])
+  if (!responseProject || !responseTasks) {
+    return(
+
+        <div className="px-25 pt-22">
+          <Alert message="Impossible de charger vos projets...."/>
+      </div>
+    )
+  }
+
+  const {project} = responseProject.data
+  const {tasks} = responseTasks.data
+  console.log("tâches",tasks);
+  console.log("Projet : ",project);
+  console.log("Nombre de tâches : ",project._count.tasks);
+  console.log("membres : ",project.members);
+  
+  
+  
+
+
 
   // Si le projet n'existe pas, afficher un message
   if (!project) {
@@ -94,31 +45,36 @@ export default async function ProjectsDetails({ params }: Props) {
   }
 
   return (
-    <div>
-      <div>
-        <h1>{project.title}</h1>
-        <p>{project.description}</p>
-      </div>
-
-      <div>
-        <h2>Tâches</h2>
-        <div>
-          {project.tasks.map((task, index) => (
-            <div key={index}>
-              <h3>{task.title}</h3>
-              <p>{task.description}</p>
-              <p>Échéance : {task.deadline}</p>
-
-              <p>Assignée à :</p>
-              <ul>
-                {task.users_assigned.map((user) => (
-                  <li key={user}>{user}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
+    <div className="px-25 pt-22 pb-12">
+      <div className="flex items-center justify-between">
+        <div className="flex gap-6">
+          <IconButton 
+            variant="back"
+            href="/projects"
+          />
+          <div className="flex flex-col">
+            <h5>{project.name}</h5>
+            <p>{project.description}</p>
+          </div>
         </div>
+        <div>
+          <Button 
+            label="Créer une tâche"
+            type="button"
+            variant="primary"
+          />
+          <Button
+            label="faire le boutton IA"
+            type="button"
+            variant="highlight"
+            />
+        </div>
+
+
       </div>
+      {/* TODO : faire le composant qui affichera toutes les tâches du projet */}
+      {/* <ProjectTasks tasks = {tasks} /> */}
+
     </div>
   );
 }

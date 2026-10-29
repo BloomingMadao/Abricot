@@ -107,7 +107,8 @@
   /* Commun aux 3 boutons */
   .button-primary,
   .button-secondary,
-  .button-disabled {
+  .button-disabled,
+  .button-highlight {
     @apply mx-3 w-64 self-center rounded-[10px] py-[13px] text-center text-base font-normal transition-colors duration-300 ease-out;
   }
 
@@ -117,6 +118,10 @@
 
   .button-secondary {
     @apply cursor-pointer border border-brand-dark bg-white text-brand-dark hover:bg-gray-300;
+  }
+
+  .button-highlight {
+    @apply cursor-pointer border border-brand-dark bg-brand-dark text-white hover:bg-brand-light hover:text-brand-dark;
   }
 
   /* Bouton désactivé : avec la classe .button-disabled (comme avant)

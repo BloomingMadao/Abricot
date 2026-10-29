@@ -1,5 +1,4 @@
 import { getProfile,getProjects } from "@/app/lib/api"
-import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
 import CreateProjectButton from "@/app/components/CreateProjectButton/CreateProjectButton"
 
@@ -25,11 +24,12 @@ export default async function Projects() {
             <div className="flex items-center justify-between">
                 <div>
                     <h5>Mes projets</h5>
-                    <p className="mt-4 text-lg"> Gérer vos projets</p>
+                    <p className="mt-4 text-sans"> Gérer vos projets</p>
                 </div>
                 <CreateProjectButton currentUserEmail={responseUser.data.user.email} />
             </div>
 
+            {/* TODO : faire le composant qui affichera tout les projets de l'utilisateurs connecté */}
             {/* <ProjectsMainPage projects = {projetcts} /> */}
 
 

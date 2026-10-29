@@ -50,7 +50,7 @@ export default async function Dashboard() {
                     {/* h1 : le titre principal de la page (un seul par page).
                         Les classes remplacent le style global des h1 (40px orange). */}
                     <h5>Tableau de bord</h5>
-                    <p className="mt-4 text-lg">
+                    <p className="mt-4 text-sans">
                         Bonjour {name}, voici un aperçu de vos projets et tâches
                     </p>
                 </div>
