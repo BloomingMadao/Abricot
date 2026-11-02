@@ -21,9 +21,11 @@ import {
   updatePassword,
   createProject,
   searchUsers,
+  getProject,
+  updateTask,
   TOKEN_COOKIE_NAME,
 } from "@/app/lib/api";
-import type { ApiError, UserSummary } from "@/app/lib/types";
+import type { ApiError, TaskStatus, UserSummary } from "@/app/lib/types";
 
 /** Ce que l'action renvoie au formulaire quand il y a une erreur */
 export type AuthFormState =
@@ -258,6 +260,66 @@ export async function searchUsersAction(
   const response = await searchUsers(query);
   if (!response.success) return { users: [], error: response.message };
   return { users: response.data.users };
+}
+
+/** Les membres d'un projet, propriétaire compris : les seules personnes qu'on peut
+ *  assigner à une tâche (l'API refuse les autres). Appelée à l'ouverture de la modale "Modifier". */
+export async function getProjectMembersAction(
+  projectId: string
+): Promise<{ members: UserSummary[]; error?: string }> {
+  const response = await getProject(projectId);
+  if (!response.success) return { members: [], error: response.message };
+
+  const { owner, members } = response.data.project;
+  // ⚠️ L'API ne met pas le propriétaire dans members : on l'ajoute en premier
+  return { members: [owner, ...members.map((member) => member.user)] };
+}
+
+/** Même forme que pour un projet : success, message, errors, values */
+export type TaskFormState = ProjectFormState;
+
+/** Formulaire "Modifier" une tâche (dans la modale du tableau de bord) */
+export async function updateTaskAction(
+  _previousState: TaskFormState,
+  formData: FormData
+): Promise<TaskFormState> {
+  // 1. Quelle tâche ? (champs cachés du formulaire)
+  const projectId = String(formData.get("projectId") ?? "");
+  const taskId = String(formData.get("taskId") ?? "");
+
+  // 2. Les champs. getAll : une case cochée "assigneeIds" PAR personne assignée
+  //    (aucune case cochée = tableau vide = plus personne d'assigné)
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const dueDate = String(formData.get("dueDate") ?? ""); // "" = échéance effacée
+  const status = String(formData.get("status") ?? "");
+  const assigneeIds = formData.getAll("assigneeIds").map(String);
+  const values = { title, description, dueDate, status };
+
+  // 3. Appeler l'API (elle vérifie elle-même le titre, la date, le statut...)
+  const response = await updateTask(projectId, taskId, {
+    title,
+    description,
+    dueDate,
+    // Aucun statut choisi (tâche "Annulée", absente des choix) : on n'envoie rien, il ne change pas
+    status: status ? (status as TaskStatus) : undefined,
+    assigneeIds,
+  });
+
+  // 4. Erreur : on renvoie le message, la modale reste ouverte
+  if (!response.success) {
+    return {
+      success: false,
+      message: response.message,
+      errors: errorMessages(response),
+      values,
+    };
+  }
+
+  // 5. Succès : le tableau de bord se recalcule avec la tâche modifiée
+  revalidatePath("/", "layout");
+
+  return { success: true, message: "Tâche modifiée", errors: [], values };
 }
 
 

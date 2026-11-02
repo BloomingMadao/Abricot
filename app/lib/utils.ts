@@ -8,6 +8,7 @@
  */
 
 import type { Priority, Role, TaskStatus } from "./types";
+import type { TagVariant } from "@/app/components/Tag/Tag";
 
 /** Exemple : TASK_STATUS_LABELS["IN_PROGRESS"] → "En cours" */
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
@@ -15,6 +16,15 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   IN_PROGRESS: "En cours",
   DONE: "Terminée",
   CANCELLED: "Annulée",
+};
+
+/** Couleur de l'étiquette d'un statut (TaskCard, modale "Modifier").
+ *  Exemple : TASK_STATUS_VARIANTS["TODO"] → "error" (rouge) */
+export const TASK_STATUS_VARIANTS: Record<TaskStatus, TagVariant> = {
+  TODO: "error",
+  IN_PROGRESS: "warning",
+  DONE: "success",
+  CANCELLED: "grey",
 };
 
 /** Exemple : PRIORITY_LABELS["HIGH"] → "Haute" */
