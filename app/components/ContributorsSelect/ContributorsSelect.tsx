@@ -9,23 +9,38 @@ import DropdownIcon from "@/public/image/dropdown.svg"
 
 type ContributorsSelectProps = {
     label: string
-    // Nom envoyé avec le formulaire : chaque case COCHÉE envoie name = email
+    // Nom envoyé avec le formulaire : chaque case COCHÉE envoie name = email (ou id, voir valueKey)
     name: string
     // Email à ne jamais proposer (la personne connectée : elle est déjà propriétaire)
     excludeEmail?: string
+    // Liste FIXE de personnes à proposer (ex : les membres d'un projet).
+    // Donnée : pas de champ de recherche, toutes les personnes sont affichées.
+    // Absente : on cherche parmi tous les utilisateurs (comme pour créer un projet).
+    options?: UserSummary[]
+    // Personnes déjà cochées au départ (ex : les assignés actuels d'une tâche)
+    defaultSelected?: UserSummary[]
+    // Ce qu'envoie une case cochée : l'email (création de projet) ou l'id (assignés d'une tâche)
+    valueKey?: "email" | "id"
 }
 
-// Liste déroulante "à choix multiple" avec recherche.
-// L'API ne sait pas lister TOUS les utilisateurs : elle ne fait qu'une recherche
-// (searchUsers, 2 caractères minimum). D'où le champ de recherche dans la liste.
-export default function ContributorsSelect({ label, name, excludeEmail }: ContributorsSelectProps) {
+// Liste déroulante "à choix multiple".
+// Sans options : avec recherche, car l'API ne sait pas lister TOUS les utilisateurs,
+// elle ne fait qu'une recherche (searchUsers, 2 caractères minimum).
+export default function ContributorsSelect({
+    label,
+    name,
+    excludeEmail,
+    options,
+    defaultSelected = [],
+    valueKey = "email",
+}: ContributorsSelectProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState("")
     // Les lignes affichées dans la liste. Elles ne changent qu'à chaque RECHERCHE :
     // cocher / décocher ne fait donc jamais disparaître une ligne sous la souris
-    const [rows, setRows] = useState<UserSummary[]>([])
+    const [rows, setRows] = useState<UserSummary[]>(defaultSelected)
     const [message, setMessage] = useState("Tapez au moins 2 caractères")
-    const [selected, setSelected] = useState<UserSummary[]>([])
+    const [selected, setSelected] = useState<UserSummary[]>(defaultSelected)
 
     const wrapperRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLButtonElement>(null)
@@ -92,6 +107,20 @@ export default function ContributorsSelect({ label, name, excludeEmail }: Contri
 
     const displayName = (user: UserSummary) => user.name || user.email
 
+    // Avec une liste fixe : on affiche toujours toutes les options (pas de recherche)
+    const visibleRows = options ?? rows
+    const visibleMessage = options
+        ? options.length === 0 ? "Personne à proposer" : ""
+        : message
+
+    // Le texte du "champ" : 1 personne → son nom, plusieurs → "2 collaborateurs" (comme la maquette)
+    const summary =
+        selected.length === 0
+            ? "Choisir un ou plusieurs collaborateurs"
+            : selected.length === 1
+              ? displayName(selected[0])
+              : `${selected.length} collaborateurs`
+
     return (
         // mb-6 : même espace sous le champ que les autres champs de la modale
         <div ref={wrapperRef} className="mb-6 flex flex-col gap-2" onKeyDown={handleKeyDown}>
@@ -111,9 +140,7 @@ export default function ContributorsSelect({ label, name, excludeEmail }: Contri
                     className="input-default my-0 flex w-full cursor-pointer items-center justify-between gap-4 text-left text-sm"
                 >
                     <span className={`truncate ${selected.length === 0 ? "text-grey-600" : ""}`}>
-                        {selected.length === 0
-                            ? "Choisir un ou plusieurs collaborateurs"
-                            : selected.map(displayName).join(", ")}
+                        {summary}
                     </span>
                     {/* La flèche se retourne quand la liste est ouverte */}
                     <Image
@@ -130,33 +157,37 @@ export default function ContributorsSelect({ label, name, excludeEmail }: Contri
                     hidden={!isOpen}
                     className="absolute top-full right-0 left-0 z-10 mt-1 rounded-sm border border-grey-200 bg-white p-4 shadow-lg"
                 >
-                    <Input
-                        ref={searchRef}
-                        id={`${id}-search`}
-                        label="Rechercher un collaborateur"
-                        hideLabel
-                        type="search"
-                        // name="" : la recherche elle-même n'est PAS envoyée avec le formulaire
-                        name=""
-                        value={query}
-                        onChange={(event) => handleSearch(event.target.value)}
-                        // Entrée dans la recherche ne doit PAS envoyer le formulaire
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter") event.preventDefault()
-                        }}
-                        placeholder="Rechercher par nom ou email"
-                        autoComplete="off"
-                        className="my-0 h-10 w-full px-3 text-sm"
-                    />
+                    {/* Le champ de recherche n'existe que sans liste fixe */}
+                    {!options && (
+                        <Input
+                            ref={searchRef}
+                            id={`${id}-search`}
+                            label="Rechercher un collaborateur"
+                            hideLabel
+                            type="search"
+                            // name="" : la recherche elle-même n'est PAS envoyée avec le formulaire
+                            name=""
+                            value={query}
+                            onChange={(event) => handleSearch(event.target.value)}
+                            // Entrée dans la recherche ne doit PAS envoyer le formulaire
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter") event.preventDefault()
+                            }}
+                            placeholder="Rechercher par nom ou email"
+                            autoComplete="off"
+                            className="my-0 h-10 w-full px-3 text-sm"
+                        />
+                    )}
 
-                    {message && <p className="mt-3 text-sm text-grey-600">{message}</p>}
+                    {visibleMessage && <p className="mt-3 text-sm text-grey-600">{visibleMessage}</p>}
 
-                    {rows.length > 0 && (
+                    {visibleRows.length > 0 && (
                         // fieldset + legend : les cases à cocher forment un groupe
-                        <fieldset className="mt-3 max-h-56 overflow-y-auto">
+                        // first:mt-0 : pas de marge en haut quand rien n'est affiché au-dessus (pas de recherche)
+                        <fieldset className="mt-3 max-h-56 overflow-y-auto first:mt-0">
                             <legend className="sr-only">Collaborateurs</legend>
-                            {rows.map((user) => (
-                                // Une case cochée envoie name = email (ex : contributors = bob@example.com).
+                            {visibleRows.map((user) => (
+                                // Une case cochée envoie name = email ou id (ex : contributors = bob@example.com).
                                 // La Server Action les récupère toutes avec formData.getAll(name).
                                 //
                                 // defaultChecked (et pas checked) : après chaque envoi, React remet le
@@ -168,7 +199,7 @@ export default function ContributorsSelect({ label, name, excludeEmail }: Contri
                                     id={`${id}-${user.id}`}
                                     type="checkbox"
                                     name={name}
-                                    value={user.email}
+                                    value={user[valueKey]}
                                     defaultChecked={selected.some((s) => s.id === user.id)}
                                     onChange={() => toggle(user)}
                                     label={
