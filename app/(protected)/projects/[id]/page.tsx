@@ -13,7 +13,7 @@ type Props = { params: Promise<{ id: string }> };
 export default async function ProjectsDetails({ params }: Props) {
   const { id} = await params;
   const [responseProject,responseTasks] = await Promise.all([getProject(id),getProjectTasks(id)])
-  if (!responseProject || !responseTasks) {
+  if (!responseProject.success || !responseTasks.success) {
     return(
 
         <div className="px-25 pt-22">
