@@ -33,7 +33,7 @@ export default function Chips({ label, type, isActive = false, onClick }: ChipsP
             className="flex cursor-pointer items-center gap-3 rounded-md bg-white px-4 py-3 text-sm text-brand-dark transition-colors duration-300 ease-out hover:bg-brand-light aria-pressed:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
         >
             {/* alt="" : l'icône est décorative, le texte suffit */}
-            <Image src={icons[type]} alt="" width={18} height={18} />
+            <Image src={icons[type]} alt="" width={18} />
             {label}
         </button>
     )

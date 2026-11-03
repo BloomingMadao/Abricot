@@ -12,7 +12,7 @@ export default function Register() {
                     alt="Logo Abricot"
                     width={252.57}
                     height={32.17}
-                    loading="lazy"
+                    loading="eager"
                     className="mb-[30px] lg:mb-[70px]"
                 />
                 <h1>Inscription</h1>

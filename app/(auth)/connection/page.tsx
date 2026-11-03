@@ -12,7 +12,7 @@ export default function Connection() {
                     alt="Logo Abricot"
                     width={252.57}
                     height={32.17}
-                    loading="lazy"
+                    loading="eager"
                     className="mb-[150px]"
                 />
                 <h1>Connexion</h1>

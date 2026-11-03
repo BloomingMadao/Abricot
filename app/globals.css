@@ -67,7 +67,7 @@
    ========================================================= */
 @layer base {
   body {
-    @apply bg-background font-sans text-foreground;
+    @apply bg-background font-sans text-foreground max-w-screen;
   }
 
   h1,

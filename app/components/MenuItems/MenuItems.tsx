@@ -46,7 +46,6 @@ export default function MenuItems({ label, icon, href }: MenuItemsProps) {
           src={iconSrc}
           alt=""
           width={24}
-          height={24}
           className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-0 group-aria-[current=page]:opacity-0"
         />
 
@@ -55,7 +54,6 @@ export default function MenuItems({ label, icon, href }: MenuItemsProps) {
           src={iconHoverSrc}
           alt=""
           width={24}
-          height={24}
           className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-aria-[current=page]:opacity-100"
         />
       </span>

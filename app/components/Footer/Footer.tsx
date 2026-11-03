@@ -11,7 +11,6 @@ export default function Footer(){
                 alt="Logo Abricot noir"
                 loading="lazy"
                 width={101}
-                height={12.86}
             />
             <p className="text-base text-black">Abricot {year}</p>
         </footer>

@@ -12,9 +12,8 @@ export default function Header(){
                 <Image 
                     src={Logo}
                     alt="logo abricot"
-                    loading="lazy"
+                    loading="eager"
                     width={147}
-                    height={18.72}
                 />
             </Link>
             <nav className="flex items-center gap-4">
