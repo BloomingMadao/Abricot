@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react"
 import { updateTaskAction, type TaskFormState } from "@/app/lib/actions"
 import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS } from "@/app/lib/utils"
-import type { AssignedTask, TaskStatus, UserSummary } from "@/app/lib/types"
+import type { Task, TaskStatus, UserSummary } from "@/app/lib/types"
 import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
@@ -13,8 +13,15 @@ import ContributorsSelect from "@/app/components/ContributorsSelect/Contributors
 // Les 3 statuts de la maquette ("Annulée" n'est pas proposé)
 const STATUS_CHOICES: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE"]
 
+// Ce dont le formulaire a besoin d'une tâche.
+// Les tâches du tableau de bord (AssignedTask) ET celles de la page d'un projet (TaskDetail)
+// ont toutes ces infos : le même formulaire sert aux deux endroits.
+export type EditableTask = Pick<Task, "id" | "projectId" | "title" | "description" | "dueDate" | "status"> & {
+    assignees: { user: UserSummary }[]
+}
+
 type UpdateTaskFormProps = {
-    task: AssignedTask
+    task: EditableTask
     // Les membres du projet (propriétaire compris) : les seules personnes assignables
     members: UserSummary[]
     // Appelée quand la tâche est bien enregistrée, pour fermer la modale

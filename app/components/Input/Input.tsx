@@ -164,8 +164,9 @@ function Field({ id, label, hideLabel, icon, wrapperClassName, children }: Field
           <Image
             src={icon}
             alt=""
+            // Seulement width : Next.js calcule la hauteur avec les vraies proportions de l'icône
+            // (la flèche dropdown.svg n'est pas carrée : 17x10)
             width={16}
-            height={16}
             className="pointer-events-none absolute top-1/2 right-8 -translate-y-1/2"
           />
         )}

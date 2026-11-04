@@ -99,3 +99,19 @@ export function formatShortDate(isoDate: string | null): string {
     timeZone: "Europe/Paris",
   });
 }
+
+/** Exemple : formatDateTime("2026-03-23T10:20:00.000Z") → "23 mars, 11:20" (heure de Paris) */
+export function formatDateTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  const day = date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    timeZone: "Europe/Paris",
+  });
+  const time = date.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
+  return `${day}, ${time}`;
+}

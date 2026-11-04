@@ -23,6 +23,8 @@ import {
   searchUsers,
   getProject,
   updateTask,
+  deleteTask,
+  createComment,
   TOKEN_COOKIE_NAME,
 } from "@/app/lib/api";
 import type { ApiError, TaskStatus, UserSummary } from "@/app/lib/types";
@@ -324,6 +326,51 @@ export async function updateTaskAction(
   revalidatePath("/", "layout");
 
   return { success: true, message: "Tâche modifiée", errors: [], values };
+}
+
+/** Supprimer une tâche (bouton "Supprimer" du menu "…", après confirmation).
+ *  Ce n'est pas un formulaire : la fonction reçoit directement le projet et la tâche. */
+export async function deleteTaskAction(
+  projectId: string,
+  taskId: string
+): Promise<{ error?: string }> {
+  const response = await deleteTask(projectId, taskId);
+  if (!response.success) return { error: response.message };
+
+  // La page du projet (et le tableau de bord) se recalculent sans la tâche
+  revalidatePath("/", "layout");
+  return {};
+}
+
+/** Même forme que pour un projet : success, message, errors, values */
+export type CommentFormState = ProjectFormState;
+
+/** Formulaire "Ajouter un commentaire" (sous les commentaires d'une tâche) */
+export async function createCommentAction(
+  _previousState: CommentFormState,
+  formData: FormData
+): Promise<CommentFormState> {
+  // 1. Sur quelle tâche ? (champs cachés du formulaire) + le texte du commentaire
+  const projectId = String(formData.get("projectId") ?? "");
+  const taskId = String(formData.get("taskId") ?? "");
+  const content = String(formData.get("content") ?? "").trim();
+
+  // 2. Appeler l'API (elle vérifie elle-même le texte : vide, trop long...)
+  const response = await createComment(projectId, taskId, { content });
+
+  // 3. Erreur : on renvoie le message, et le texte tapé pour ne pas le perdre
+  if (!response.success) {
+    return {
+      success: false,
+      message: response.message,
+      errors: errorMessages(response),
+      values: { content },
+    };
+  }
+
+  // 4. Succès : la page se recalcule avec le nouveau commentaire
+  revalidatePath("/", "layout");
+  return { success: true, message: "Commentaire ajouté", errors: [], values: { content: "" } };
 }
 
 export async function logout() {

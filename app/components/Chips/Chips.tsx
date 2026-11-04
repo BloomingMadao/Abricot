@@ -2,8 +2,9 @@ import Image, { type StaticImageData } from "next/image"
 import TasksIcon from "@/public/image/taskIcon.svg"
 import KanbanIcon from "@/public/image/kanbanIcon.svg"
 import FolderIcon from "@/public/image/folderIcon.svg"
+import CalendarIconOrange from "@/public/image/calendarIconOrange.svg"
 
-type TypeVariant = "tasks" | "kanban" | "projects"
+type TypeVariant = "tasks" | "kanban" | "projects" | "calendar"
 
 type ChipsProps = {
     label: string
@@ -20,6 +21,7 @@ const icons: Record<TypeVariant, StaticImageData> = {
     tasks: TasksIcon,
     kanban: KanbanIcon,
     projects: FolderIcon,
+    calendar: CalendarIconOrange,
 }
 
 export default function Chips({ label, type, isActive = false, onClick }: ChipsProps) {

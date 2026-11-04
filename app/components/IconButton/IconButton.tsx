@@ -16,6 +16,8 @@ type IconButtonProps = {
     // Ce que lit un lecteur d'écran (le bouton n'a pas de texte visible).
     // Si tu ne le donnes pas, on prend le texte par défaut de la variante.
     label?: string
+    // Pour un bouton qui ouvre un menu : true = menu ouvert (aria-expanded)
+    expanded?: boolean
 }
 
 // Pour chaque variante : l'icône normale, l'icône au survol/focus, et le texte par défaut.
@@ -25,12 +27,14 @@ const variants: Record<IconVariant, { icon: StaticImageData; iconFocus: StaticIm
     more: { icon: SeeMore, iconFocus: SeeMoreFocus, label: "Plus d'options" },
 }
 
-export default function IconButton({ variant, href, onClick, label }: IconButtonProps) {
+export default function IconButton({ variant, href, onClick, label, expanded }: IconButtonProps) {
     const { icon, iconFocus, label: defaultLabel } = variants[variant]
 
     // "group" : les icônes à l'intérieur réagissent au survol / focus du bouton
+    // border border-grey-200 : le contour gris clair de la maquette (visible aussi sur fond blanc)
+    // shrink-0 : le bouton garde ses 57px même quand la place manque
     const className =
-        "group flex size-[57px] cursor-pointer items-center justify-center rounded-[10px] bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
+        "group flex size-[57px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-grey-200 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
 
     // Les deux icônes empilées, comme dans MenuItems :
     // la normale s'efface et l'icône "focus" apparaît au survol ou au clavier
@@ -59,7 +63,7 @@ export default function IconButton({ variant, href, onClick, label }: IconButton
     }
 
     return (
-        <button type="button" onClick={onClick} aria-label={label ?? defaultLabel} className={className}>
+        <button type="button" onClick={onClick} aria-label={label ?? defaultLabel} aria-expanded={expanded} className={className}>
             {icons}
         </button>
     )
