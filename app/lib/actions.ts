@@ -20,6 +20,9 @@ import {
   updateProfile,
   updatePassword,
   createProject,
+  updateProject,
+  addContributor,
+  removeContributor,
   searchUsers,
   getProject,
   updateTask,
@@ -256,6 +259,72 @@ export async function createProjectAction(
   //    ?created=1 : dit à la page du projet d'afficher "Le projet ... a été créé"
   //    (Comme pour loginAction : redirect() arrête la fonction, rien n'est renvoyé au formulaire)
   redirect(`/projects/${response.data.project.id}?created=1`);
+}
+
+/** Formulaire "Modifier le projet" (modale ouverte par le lien "Modifier" de la page du projet) */
+export async function updateProjectAction(
+  _previousState: ProjectFormState,
+  formData: FormData
+): Promise<ProjectFormState> {
+  // 1. Lire les champs. projectId : champ caché (QUEL projet modifier).
+  //    getAll : une case cochée "contributors" PAR personne gardée ou ajoutée (son email)
+  const projectId = String(formData.get("projectId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const contributors = formData.getAll("contributors").map(String);
+  const values = { name, description };
+
+  // 2. Description obligatoire, comme à la création
+  if (!description) {
+    return {
+      success: false,
+      message: "La description est obligatoire",
+      errors: [],
+      values,
+    };
+  }
+
+  // 3. Le nom et la description
+  const response = await updateProject(projectId, { name, description });
+  if (!response.success) {
+    return {
+      success: false,
+      message: response.message,
+      errors: errorMessages(response),
+      values,
+    };
+  }
+
+  // 4. Les contributeurs. L'API ne sait pas "remplacer la liste" d'un coup :
+  //    on compare avec les membres actuels (renvoyés par updateProject),
+  //    puis on AJOUTE les nouveaux et on RETIRE ceux qui ont été décochés.
+  const currentMembers = response.data.project.members.map((member) => member.user);
+  const toAdd = contributors.filter(
+    (email) => !currentMembers.some((user) => user.email === email)
+  );
+  const toRemove = currentMembers.filter((user) => !contributors.includes(user.email));
+
+  // Tous les appels partent EN MÊME TEMPS (Promise.all)
+  const results = await Promise.all([
+    ...toAdd.map((email) => addContributor(projectId, { email })),
+    ...toRemove.map((user) => removeContributor(projectId, user.id)),
+  ]);
+
+  // 5. La page du projet (et la liste des projets) se recalculent
+  revalidatePath("/", "layout");
+
+  // 6. Un ajout ou un retrait a échoué : on le dit (le nom et la description, eux, sont enregistrés)
+  const failed = results.filter((result) => !result.success);
+  if (failed.length > 0) {
+    return {
+      success: false,
+      message: "Le projet a été modifié, mais pas tous les contributeurs",
+      errors: failed.map((result) => result.message),
+      values,
+    };
+  }
+
+  return { success: true, message: "Projet modifié", errors: [], values };
 }
 
 /** Recherche d'utilisateurs pour la liste "Contributeurs" (appelée pendant la frappe).

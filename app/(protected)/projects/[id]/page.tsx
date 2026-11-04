@@ -4,7 +4,8 @@ import Alert from "@/app/components/Alert/Alert"
 import IconButton from "@/app/components/IconButton/IconButton";
 import Button from "@/app/components/Button/Button";
 import ProjectCreatedAlert from "@/app/components/ProjectCreatedAlert/ProjectCreatedAlert";
-import ContributorsBar from "@/app/components/ContributorsBar/ContributorsBars"
+import ContributorsBar from "@/app/components/ContributorsBar/ContributorsBars";
+import UpdateProjectButton from "@/app/components/UpdateProjectButton/UpdateProjectButton";
 import ProjectTasks from "@/app/components/ProjectTasks/ProjectTasks";
 
 // params : la partie variable de l'adresse (/projects/[id])
@@ -88,20 +89,18 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
           />
           <div>
             <div className="flex flex-wrap items-baseline gap-x-4">
-              <h5 className="text-2xl">{project.name}</h5>
-              {/* "Modifier" : il ouvrira la modale "Modification projet" (à venir).
-                  Un <button> et pas un lien : il ne change pas de page */}
+              <h5>{project.name}</h5>
+              {/* "Modifier" : ouvre la modale "Modifier un projet" (seulement pour le propriétaire / un admin) */}
               {canEdit && (
-                <button
-                  type="button"
-                  className="cursor-pointer text-sm text-brand-dark underline underline-offset-2 hover:text-grey-950"
-                >
-                  Modifier
-                </button>
+                <UpdateProjectButton
+                  project={{ id: project.id, name: project.name, description: project.description }}
+                  members={project.members.map((member) => member.user)}
+                  ownerEmail={project.owner.email}
+                />
               )}
             </div>
             {project.description && (
-              <p className="mt-2 text-lg text-grey-600">{project.description}</p>
+              <p className="text-grey-600">{project.description}</p>
             )}
           </div>
         </div>
