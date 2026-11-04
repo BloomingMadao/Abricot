@@ -1,5 +1,3 @@
-
-
 /**
  * TODO : Voir commment les données sont retournées par l'API
  */
@@ -7,11 +5,18 @@ import { getProject,getProjectTasks } from "@/app/lib/api";
 import Alert from "@/app/components/Alert/Alert"
 import IconButton from "@/app/components/IconButton/IconButton";
 import Button from "@/app/components/Button/Button";
+import ProjectCreatedAlert from "@/app/components/ProjectCreatedAlert/ProjectCreatedAlert";
 
-type Props = { params: Promise<{ id: string }> };
+// params : la partie variable de l'adresse (/projects/[id])
+// searchParams : ce qui suit le "?" dans l'adresse (ex : ?created=1 après une création)
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ created?: string }>;
+};
 
-export default async function ProjectsDetails({ params }: Props) {
+export default async function ProjectsDetails({ params, searchParams }: Props) {
   const { id} = await params;
+  const { created } = await searchParams;
   const [responseProject,responseTasks] = await Promise.all([getProject(id),getProjectTasks(id)])
   if (!responseProject.success || !responseTasks.success) {
     return(
@@ -24,10 +29,10 @@ export default async function ProjectsDetails({ params }: Props) {
 
   const {project} = responseProject.data
   const {tasks} = responseTasks.data
-  console.log("tâches",tasks);
-  console.log("Projet : ",project);
-  console.log("Nombre de tâches : ",project._count.tasks);
-  console.log("membres : ",project.members);
+  // console.log("tâches",tasks);
+  // console.log("Projet : ",project);
+  // console.log("Nombre de tâches : ",project._count.tasks);
+  // console.log("membres : ",project.members);
   
   
   
@@ -46,6 +51,9 @@ export default async function ProjectsDetails({ params }: Props) {
 
   return (
     <div className="px-25 pt-22 pb-12">
+      {/* On arrive de "Créer un projet" : message de confirmation */}
+      {created && <ProjectCreatedAlert projectName={project.name} />}
+
       <div className="flex items-center justify-between">
         <div className="flex gap-6">
           <IconButton 

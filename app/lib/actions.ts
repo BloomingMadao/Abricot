@@ -249,7 +249,11 @@ export async function createProjectAction(
   // 4. Succès : les pages qui affichent des projets devront se recalculer
   revalidatePath("/", "layout");
 
-  return { success: true, message: "Projet créé", errors: [], values };
+  // 5. Puis on part sur la page du projet qui vient d'être créé.
+  //    L'API renvoie le projet créé, avec son id : c'est lui qui donne l'adresse.
+  //    ?created=1 : dit à la page du projet d'afficher "Le projet ... a été créé"
+  //    (Comme pour loginAction : redirect() arrête la fonction, rien n'est renvoyé au formulaire)
+  redirect(`/projects/${response.data.project.id}?created=1`);
 }
 
 /** Recherche d'utilisateurs pour la liste "Contributeurs" (appelée pendant la frappe).
@@ -321,7 +325,6 @@ export async function updateTaskAction(
 
   return { success: true, message: "Tâche modifiée", errors: [], values };
 }
-
 
 export async function logout() {
   (await cookies()).delete("token")

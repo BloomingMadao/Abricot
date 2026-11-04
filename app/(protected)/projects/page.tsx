@@ -16,7 +16,6 @@ export default async function Projects() {
     }
 
     const {projects} =response.data
-    console.log("Projets : ",projects);
 
     // getProjects() ne donne que le NOMBRE de tâches (_count.tasks), pas leur statut.
     // Pour "x/y tâches terminées", on demande le détail de chaque projet,

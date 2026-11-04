@@ -1,29 +1,22 @@
 "use client"
 
 import { useActionState, useState } from "react"
-import { createProjectAction, type ProjectFormState } from "@/app/lib/actions"
+import { createProjectAction } from "@/app/lib/actions"
 import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
 import ContributorsSelect from "@/app/components/ContributorsSelect/ContributorsSelect"
 
 type CreateProjectFormProps = {
-    // Appelée quand le projet est bien créé (avec son nom), pour fermer la modale
-    onSuccess: (projectName: string) => void
     // Email de la personne connectée : on ne la propose pas comme contributeur
     currentUserEmail?: string
 }
 
-export default function CreateProjectForm({ onSuccess, currentUserEmail }: CreateProjectFormProps) {
-    // On "enveloppe" la Server Action : on l'appelle, puis on regarde le résultat.
-    // Si c'est un succès, on prévient le parent (qui ferme la modale).
-    async function submit(previousState: ProjectFormState, formData: FormData) {
-        const result = await createProjectAction(previousState, formData)
-        if (result?.success) onSuccess(result.values.name)
-        return result
-    }
-
-    const [state, formAction, isPending] = useActionState(submit, undefined)
+export default function CreateProjectForm({ currentUserEmail }: CreateProjectFormProps) {
+    // Si la création réussit, l'action redirige vers la page du nouveau projet
+    // (la modale disparaît avec la page). Sinon elle renvoie l'erreur, affichée ci-dessous.
+    // isPending reste vrai jusqu'à l'arrivée sur la nouvelle page : "Création..." pendant tout ce temps.
+    const [state, formAction, isPending] = useActionState(createProjectAction, undefined)
 
     // Bouton grisé tant que les champs obligatoires (required) ne sont pas remplis.
     // checkValidity() demande au navigateur si TOUS les champs du formulaire sont valides.
