@@ -25,6 +25,7 @@ import {
   removeContributor,
   searchUsers,
   getProject,
+  createTask,
   updateTask,
   deleteTask,
   createComment,
@@ -395,6 +396,65 @@ export async function updateTaskAction(
   revalidatePath("/", "layout");
 
   return { success: true, message: "Tâche modifiée", errors: [], values };
+}
+
+/** Formulaire "Créer une tâche" (modale du bouton "Créer une tâche" de la page d'un projet) */
+export async function createTaskAction(
+  _previousState: TaskFormState,
+  formData: FormData
+): Promise<TaskFormState> {
+  // 1. Lire les champs. projectId : champ caché (dans QUEL projet créer la tâche).
+  //    getAll : une case cochée "assigneeIds" PAR personne assignée (son id)
+  const projectId = String(formData.get("projectId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const dueDate = String(formData.get("dueDate") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const assigneeIds = formData.getAll("assigneeIds").map(String);
+  const values = { title, description, dueDate, status };
+
+  // 2. Description et échéance obligatoires sur la maquette (l'API, elle, les accepte vides).
+  //    On le vérifie aussi ici : le "required" du navigateur peut être contourné.
+  if (!description || !dueDate) {
+    return {
+      success: false,
+      message: "La description et l'échéance sont obligatoires",
+      errors: [],
+      values,
+    };
+  }
+
+  // 3. Créer la tâche
+  const response = await createTask(projectId, { title, description, dueDate, assigneeIds });
+  if (!response.success) {
+    return {
+      success: false,
+      message: response.message,
+      errors: errorMessages(response),
+      values,
+    };
+  }
+
+  // 4. Le statut : l'API crée TOUJOURS une tâche "À faire" (pas de statut à la création).
+  //    Si un autre statut a été choisi, on le change juste après, avec l'id de la nouvelle tâche.
+  if (status && status !== "TODO") {
+    const statusResponse = await updateTask(projectId, response.data.task.id, {
+      status: status as TaskStatus,
+    });
+    if (!statusResponse.success) {
+      revalidatePath("/", "layout");
+      return {
+        success: false,
+        message: "La tâche a été créée, mais pas son statut",
+        errors: errorMessages(statusResponse),
+        values,
+      };
+    }
+  }
+
+  // 5. Succès : la page du projet se recalcule avec la nouvelle tâche
+  revalidatePath("/", "layout");
+  return { success: true, message: "Tâche créée", errors: [], values };
 }
 
 /** Supprimer une tâche (bouton "Supprimer" du menu "…", après confirmation).

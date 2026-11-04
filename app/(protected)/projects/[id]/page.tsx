@@ -4,8 +4,9 @@ import Alert from "@/app/components/Alert/Alert"
 import IconButton from "@/app/components/IconButton/IconButton";
 import Button from "@/app/components/Button/Button";
 import ProjectCreatedAlert from "@/app/components/ProjectCreatedAlert/ProjectCreatedAlert";
-import ContributorsBar from "@/app/components/ContributorsBar/ContributorsBars";
+import ContributorsBar from "@/app/components/ContributorsBar/ContributorsBar";
 import UpdateProjectButton from "@/app/components/UpdateProjectButton/UpdateProjectButton";
+import CreateTaskButton from "@/app/components/CreateTaskButton/CreateTaskButton";
 import ProjectTasks from "@/app/components/ProjectTasks/ProjectTasks";
 
 // params : la partie variable de l'adresse (/projects/[id])
@@ -100,21 +101,16 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
               )}
             </div>
             {project.description && (
-              <p className="text-grey-600">{project.description}</p>
+              <p className="mt-2 text-grey-600">{project.description}</p>
             )}
           </div>
         </div>
 
-        {/* Créer une tâche et IA : affichés, on s'en occupera plus tard.
+        {/* "Créer une tâche" (bouton + modale) et IA (affiché, on s'en occupera plus tard).
             className : les classes Tailwind passent devant celles des boutons
             (mx-0 : pas de marge, w-auto : largeur selon le texte, self-auto : pas centré) */}
         <div className="flex shrink-0 gap-3">
-          <Button
-            label="Créer une tâche"
-            type="button"
-            variant="primary"
-            className="mx-0 w-auto self-auto px-2.5"
-          />
+          <CreateTaskButton projectId={project.id} members={members} />
           <Button
             label={
               <>

@@ -2,16 +2,12 @@
 
 import { useActionState, useState } from "react"
 import { updateTaskAction, type TaskFormState } from "@/app/lib/actions"
-import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS } from "@/app/lib/utils"
-import type { Task, TaskStatus, UserSummary } from "@/app/lib/types"
+import type { Task, UserSummary } from "@/app/lib/types"
 import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
-import { variantClasses } from "@/app/components/Tag/Tag"
 import ContributorsSelect from "@/app/components/ContributorsSelect/ContributorsSelect"
-
-// Les 3 statuts de la maquette ("Annulée" n'est pas proposé)
-const STATUS_CHOICES: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE"]
+import TaskStatusPicker from "@/app/components/TaskStatusPicker/TaskStatusPicker"
 
 // Ce dont le formulaire a besoin d'une tâche.
 // Les tâches du tableau de bord (AssignedTask) ET celles de la page d'un projet (TaskDetail)
@@ -100,33 +96,8 @@ export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskF
                 valueKey="id"
             />
 
-            {/* Statut : un seul choix possible → des boutons radio.
-                Un Tag n'est qu'un affichage (un <span>) : on ne peut pas le "choisir".
-                Ici, chaque radio est caché (sr-only) et son libellé prend l'apparence d'un Tag. */}
-            <fieldset>
-                <legend>Statut :</legend>
-                <div className="mt-2 flex gap-2">
-                    {STATUS_CHOICES.map((status) => (
-                        <Input
-                            key={status}
-                            id={`status-${status}`}
-                            type="radio"
-                            name="status"
-                            value={status}
-                            label={TASK_STATUS_LABELS[status]}
-                            defaultChecked={currentStatus === status}
-                            // sr-only : le rond du radio est invisible, mais reste utilisable au clavier
-                            className="sr-only"
-                            // tag + variantClasses : l'apparence et les couleurs du Tag
-                            // (py-0.5 text-sm : 26px de haut comme sur la maquette).
-                            // border-transparent, puis has-[:checked]:border-current : une bordure
-                            // de la couleur du texte apparaît sur le statut choisi.
-                            // has-[:focus-visible] : contour quand on arrive dessus au clavier
-                            wrapperClassName={`tag py-0.5 text-sm ${variantClasses[TASK_STATUS_VARIANTS[status]]} border-transparent has-[:checked]:border-current has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-grey-800`}
-                        />
-                    ))}
-                </div>
-            </fieldset>
+            {/* Statut : le statut actuel de la tâche est coché */}
+            <TaskStatusPicker defaultStatus={currentStatus} />
 
             {/* mx-0 : aligné à gauche comme les champs, w-61 : 244px de large comme sur la maquette */}
             <Button
