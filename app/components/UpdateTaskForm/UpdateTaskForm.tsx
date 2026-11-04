@@ -22,7 +22,7 @@ type UpdateTaskFormProps = {
 }
 
 export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskFormProps) {
-    // On "enveloppe" la Server Action (comme CreateProjectForm) :
+    // On "enveloppe" la Server Action :
     // si c'est un succès, on prévient le parent, qui ferme la modale
     async function submit(previousState: TaskFormState, formData: FormData) {
         const result = await updateTaskAction(previousState, formData)
