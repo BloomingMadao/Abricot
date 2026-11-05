@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getProfile, getProject, getProjectTasks } from "@/app/lib/api";
 import { PRIORITY_RANK } from "@/app/lib/utils";
 import Alert from "@/app/components/Alert/Alert"
@@ -8,6 +9,8 @@ import ContributorsBar from "@/app/components/ContributorsBar/ContributorsBar";
 import UpdateProjectButton from "@/app/components/UpdateProjectButton/UpdateProjectButton";
 import CreateTaskButton from "@/app/components/CreateTaskButton/CreateTaskButton";
 import ProjectTasks from "@/app/components/ProjectTasks/ProjectTasks";
+import AIIcon from "@/public/image/AIIcon.svg";
+import AIIconHover from "@/public/image/AIIconHover.svg";
 
 // params: the variable part of the URL (/projects/[id])
 // searchParams: what comes after the "?" in the URL (e.g. ?created=1 after a creation)
@@ -111,21 +114,38 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
             (mx-0: no margin, w-auto: width fits the text, self-auto: not centered) */}
         <div className="flex shrink-0 gap-3">
           <CreateTaskButton projectId={project.id} members={members} />
+
+          {/* TODO: replace this button with CreateTaskAIButton */}
           <Button
             label={
               <>
-                {/* The star from the mockup, drawn in SVG.
-                    currentColor: it takes the text color (and changes with it on hover) */}
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
-                  <path d="M9 0C9.6 4.8 13.2 8.4 18 9C13.2 9.6 9.6 13.2 9 18C8.4 13.2 4.8 9.6 0 9C4.8 8.4 8.4 4.8 9 0Z" />
-                </svg>
+                {/* The mockup's star: two stacked icons, like in MenuItems.
+                    The white one on the orange button; on hover the button turns light orange,
+                    so the white one fades out and the orange one appears (group-hover: reacts
+                    to the hover of the button, which has the "group" class).
+                    alt="": decorative, the "IA" text gives the button its name */}
+                <span className="relative block size-[13px] shrink-0">
+                  <Image
+                    src={AIIcon}
+                    alt=""
+                    width={13}
+                    className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-0"
+                  />
+                  <Image
+                    src={AIIconHover}
+                    alt=""
+                    width={13}
+                    className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+                  />
+                </span>
                 IA
               </>
             }
             type="button"
             variant="highlight"
             // py-3: .button-highlight has a border (2px more), py-3 keeps it 50px tall
-            className="mx-0 flex w-auto items-center gap-[13px] self-auto px-6 py-3"
+            // group: lets the icons inside react to the hover of the button
+            className="group mx-0 flex w-auto items-center gap-[13px] self-auto px-6 py-3"
           />
         </div>
       </div>
