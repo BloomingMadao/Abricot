@@ -9,7 +9,7 @@ import type { TaskDetail, TaskStatus, UserSummary } from "@/app/lib/types"
 import SearchIcon from "@/public/image/searchIcon.svg"
 import DropdownIcon from "@/public/image/dropdown.svg"
 
-// Les choix du filtre "Statut". value "" = pas de filtre (toutes les tâches)
+// The "Statut" filter options. value "" = no filter (all tasks)
 const STATUS_OPTIONS = [
     { value: "", label: "Statut" },
     ...(["TODO", "IN_PROGRESS", "DONE", "CANCELLED"] as TaskStatus[]).map((status) => ({
@@ -19,23 +19,23 @@ const STATUS_OPTIONS = [
 ]
 
 type ProjectTasksProps = {
-    // Les tâches du projet, déjà triées par priorité
+    // The project's tasks, already sorted by priority
     tasks: TaskDetail[]
-    // Les membres du projet (propriétaire compris) : pour modifier une tâche
+    // The project members (owner included): to edit a task
     members: UserSummary[]
-    // La personne connectée : pour ajouter un commentaire
+    // The logged-in user: to add a comment
     currentUser: UserSummary
 }
 
-// La section "Tâches" de la page d'un projet.
-// Composant CLIENT : il gère ce qui bouge (filtre Statut, recherche).
-// Les tâches, elles, sont récupérées par la page (composant serveur) et arrivent déjà triées.
+// The "Tâches" section of a project page.
+// CLIENT component: it handles what changes (Status filter, search).
+// The tasks themselves are fetched by the page (server component) and arrive already sorted.
 export default function ProjectTasks({ tasks, members, currentUser }: ProjectTasksProps) {
     const [status, setStatus] = useState("")
     const [search, setSearch] = useState("")
 
-    // On garde les tâches du statut choisi (si un statut est choisi),
-    // dont le titre ou la description contient le texte cherché (sans tenir compte des majuscules)
+    // We keep the tasks with the chosen status (if a status is chosen),
+    // whose title or description contains the search text (case-insensitive)
     const query = search.trim().toLowerCase()
     const filteredTasks = tasks.filter(
         (task) =>
@@ -46,7 +46,7 @@ export default function ProjectTasks({ tasks, members, currentUser }: ProjectTas
 
     return (
         <section className="rounded-[10px] border border-grey-200 bg-white px-[59px] py-10">
-            {/* En-tête : titre à gauche, vues + filtre + recherche à droite */}
+            {/* Header: title on the left, views + filter + search on the right */}
             <div className="flex items-center justify-between gap-6">
                 <div>
                     <h5>Tâches</h5>
@@ -54,15 +54,15 @@ export default function ProjectTasks({ tasks, members, currentUser }: ProjectTas
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* Vues : "Liste" est la seule pour l'instant.
-                        "Calendrier" est affiché comme sur la maquette, mais ne fait rien (pas de onClick) */}
+                    {/* Views: "Liste" is the only one for now.
+                        "Calendrier" is displayed as in the mockup, but does nothing (no onClick) */}
                     <div className="flex gap-2.5">
                         <Chips label="Liste" type="tasks" isActive />
                         <Chips label="Calendrier" type="calendar" />
                     </div>
 
-                    {/* Filtre Statut : une vraie liste <select>.
-                        appearance-none : cache la flèche du navigateur, on affiche la nôtre (icon) */}
+                    {/* Status filter: a real <select> list.
+                        appearance-none: hides the browser's arrow, we show our own (icon) */}
                     <Input
                         variant="dropdown"
                         label="Filtrer par statut"
@@ -89,8 +89,8 @@ export default function ProjectTasks({ tasks, members, currentUser }: ProjectTas
                 </div>
             </div>
 
-            {/* La liste des tâches (ou un message s'il n'y en a pas).
-                mx-10 : sur la maquette, les tâches sont en retrait de 40px par rapport au titre */}
+            {/* The task list (or a message if there are none).
+                mx-10: in the mockup, the tasks are indented 40px relative to the title */}
             {tasks.length === 0 ? (
                 <p className="mx-10 mt-10 text-grey-600">Aucune tâche dans ce projet pour l&apos;instant.</p>
             ) : filteredTasks.length === 0 ? (

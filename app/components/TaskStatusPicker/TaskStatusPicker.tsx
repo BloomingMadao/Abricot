@@ -3,19 +3,19 @@ import { variantClasses } from "@/app/components/Tag/Tag"
 import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS } from "@/app/lib/utils"
 import type { TaskStatus } from "@/app/lib/types"
 
-// Les 3 statuts des maquettes ("Annulée" n'est pas proposé)
+// The 3 statuses from the mockups ("Annulée" is not offered)
 const STATUS_CHOICES: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE"]
 
 type TaskStatusPickerProps = {
-    // Le statut coché au départ (aucun si absent : l'API met alors "À faire")
+    // The status checked at first (none if missing: the API then sets "À faire")
     defaultStatus?: string
 }
 
-// Le choix du statut d'une tâche : "À faire", "En cours", "Terminée".
-// Sert dans les modales "Créer une tâche" ET "Modifier" (UpdateTaskForm).
-// Un seul choix possible → des boutons radio, envoyés avec le formulaire sous le nom "status".
-// Un Tag n'est qu'un affichage (un <span>) : on ne peut pas le "choisir".
-// Ici, chaque radio est caché (sr-only) et son libellé prend l'apparence d'un Tag.
+// Choosing a task's status: "À faire", "En cours", "Terminée".
+// Used in the "Créer une tâche" AND "Modifier" (UpdateTaskForm) modals.
+// Only one choice possible → radio buttons, sent with the form under the name "status".
+// A Tag is display-only (a <span>): it can't be "selected".
+// Here, each radio is hidden (sr-only) and its label looks like a Tag.
 export default function TaskStatusPicker({ defaultStatus }: TaskStatusPickerProps) {
     return (
         <fieldset>
@@ -30,13 +30,13 @@ export default function TaskStatusPicker({ defaultStatus }: TaskStatusPickerProp
                         value={status}
                         label={TASK_STATUS_LABELS[status]}
                         defaultChecked={defaultStatus === status}
-                        // sr-only : le rond du radio est invisible, mais reste utilisable au clavier
+                        // sr-only: the radio circle is invisible, but still usable with the keyboard
                         className="sr-only"
-                        // tag + variantClasses : l'apparence et les couleurs du Tag
-                        // (py-0.5 text-sm : 26px de haut comme sur la maquette).
-                        // border-transparent, puis has-[:checked]:border-current : une bordure
-                        // de la couleur du texte apparaît sur le statut choisi.
-                        // has-[:focus-visible] : contour quand on arrive dessus au clavier
+                        // tag + variantClasses: the Tag's look and colors
+                        // (py-0.5 text-sm: 26px tall as in the mockup).
+                        // border-transparent, then has-[:checked]:border-current: a border
+                        // in the text color appears on the chosen status.
+                        // has-[:focus-visible]: outline when reached with the keyboard
                         wrapperClassName={`tag py-0.5 text-sm ${variantClasses[TASK_STATUS_VARIANTS[status]]} border-transparent has-[:checked]:border-current has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-grey-800`}
                     />
                 ))}

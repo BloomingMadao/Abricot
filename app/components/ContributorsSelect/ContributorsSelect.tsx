@@ -9,23 +9,23 @@ import DropdownIcon from "@/public/image/dropdown.svg"
 
 type ContributorsSelectProps = {
     label: string
-    // Nom envoyé avec le formulaire : chaque case COCHÉE envoie name = email (ou id, voir valueKey)
+    // Name sent with the form: each CHECKED box sends name = email (or id, see valueKey)
     name: string
-    // Email à ne jamais proposer (la personne connectée : elle est déjà propriétaire)
+    // Email that is never suggested (the logged-in user: they are already the owner)
     excludeEmail?: string
-    // Liste FIXE de personnes à proposer (ex : les membres d'un projet).
-    // Donnée : pas de champ de recherche, toutes les personnes sont affichées.
-    // Absente : on cherche parmi tous les utilisateurs (comme pour créer un projet).
+    // FIXED list of people to suggest (e.g. a project's members).
+    // Provided: no search field, all the people are displayed.
+    // Missing: we search among all users (as when creating a project).
     options?: UserSummary[]
-    // Personnes déjà cochées au départ (ex : les assignés actuels d'une tâche)
+    // People already checked at the start (e.g. a task's current assignees)
     defaultSelected?: UserSummary[]
-    // Ce qu'envoie une case cochée : l'email (création de projet) ou l'id (assignés d'une tâche)
+    // What a checked box sends: the email (project creation) or the id (task assignees)
     valueKey?: "email" | "id"
 }
 
-// Liste déroulante "à choix multiple".
-// Sans options : avec recherche, car l'API ne sait pas lister TOUS les utilisateurs,
-// elle ne fait qu'une recherche (searchUsers, 2 caractères minimum).
+// "Multiple choice" dropdown list.
+// Without options: with a search, because the API can't list ALL users,
+// it can only search (searchUsers, 2 characters minimum).
 export default function ContributorsSelect({
     label,
     name,
@@ -36,8 +36,8 @@ export default function ContributorsSelect({
 }: ContributorsSelectProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [query, setQuery] = useState("")
-    // Les lignes affichées dans la liste. Elles ne changent qu'à chaque RECHERCHE :
-    // cocher / décocher ne fait donc jamais disparaître une ligne sous la souris
+    // The rows displayed in the list. They only change on each SEARCH:
+    // so checking / unchecking never makes a row disappear under the mouse
     const [rows, setRows] = useState<UserSummary[]>(defaultSelected)
     const [message, setMessage] = useState("Tapez au moins 2 caractères")
     const [selected, setSelected] = useState<UserSummary[]>(defaultSelected)
@@ -49,10 +49,10 @@ export default function ContributorsSelect({
     const latestQueryRef = useRef("")
     const id = useId()
 
-    // Même principe que UserMenu : un clic en dehors ferme la liste
+    // Same idea as UserMenu: a click outside closes the list
     useEffect(() => {
         if (!isOpen) return
-        searchRef.current?.focus() // on peut taper tout de suite
+        searchRef.current?.focus() // so you can type right away
         function handleClickOutside(event: PointerEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false)
@@ -62,25 +62,25 @@ export default function ContributorsSelect({
         return () => document.removeEventListener("pointerdown", handleClickOutside)
     }, [isOpen])
 
-    // Échap ferme la LISTE seulement (sans fermer la modale autour)
+    // Escape closes the LIST only (without closing the surrounding modal)
     function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
         if (event.key === "Escape" && isOpen) {
-            event.preventDefault() // empêche la modale <dialog> de se fermer aussi
+            event.preventDefault() // prevents the <dialog> modal from closing too
             event.stopPropagation()
             setIsOpen(false)
             buttonRef.current?.focus()
         }
     }
 
-    // Recherche à chaque frappe, mais seulement 300 ms après la dernière touche
-    // (sinon on appellerait l'API à chaque lettre)
+    // Search on every keystroke, but only 300 ms after the last key
+    // (otherwise we would call the API on every letter)
     function handleSearch(value: string) {
         setQuery(value)
         latestQueryRef.current = value
         if (timerRef.current) clearTimeout(timerRef.current)
 
         if (value.trim().length < 2) {
-            setRows(selected) // on montre au moins les personnes déjà choisies
+            setRows(selected) // show at least the people already selected
             setMessage("Tapez au moins 2 caractères")
             return
         }
@@ -88,10 +88,10 @@ export default function ContributorsSelect({
         setMessage("Recherche…")
         timerRef.current = setTimeout(async () => {
             const { users, error } = await searchUsersAction(value)
-            // Une réponse plus ancienne ne doit pas écraser une recherche plus récente
+            // An older response must not overwrite a more recent search
             if (value !== latestQueryRef.current) return
             const found = users.filter((user) => user.email !== excludeEmail)
-            // Les personnes déjà choisies d'abord, puis les nouveaux résultats
+            // The people already selected first, then the new results
             setRows([...selected, ...found.filter((user) => !selected.some((s) => s.id === user.id))])
             setMessage(error ?? (found.length === 0 ? "Aucun utilisateur trouvé" : ""))
         }, 300)
@@ -107,13 +107,13 @@ export default function ContributorsSelect({
 
     const displayName = (user: UserSummary) => user.name || user.email
 
-    // Avec une liste fixe : on affiche toujours toutes les options (pas de recherche)
+    // With a fixed list: always show all the options (no search)
     const visibleRows = options ?? rows
     const visibleMessage = options
         ? options.length === 0 ? "Personne à proposer" : ""
         : message
 
-    // Le texte du "champ" : 1 personne → son nom, plusieurs → "2 collaborateurs" (comme la maquette)
+    // The "field" text: 1 person → their name, several → "2 collaborateurs" (as in the mockup)
     const summary =
         selected.length === 0
             ? "Choisir un ou plusieurs collaborateurs"
@@ -122,14 +122,14 @@ export default function ContributorsSelect({
               : `${selected.length} collaborateurs`
 
     return (
-        // mb-6 : même espace sous le champ que les autres champs de la modale
+        // mb-6: same spacing below the field as the other fields of the modal
         <div ref={wrapperRef} className="mb-6 flex flex-col gap-2" onKeyDown={handleKeyDown}>
             <label htmlFor={`${id}-button`}>{label}</label>
 
-            {/* "relative" : la liste (en "absolute") s'ouvre juste sous le champ */}
+            {/* "relative": the list (in "absolute") opens right below the field */}
             <div className="relative">
-                {/* Le "champ" : un BOUTON qui ouvre / ferme la liste (ce n'est pas un vrai champ
-                    de saisie, donc pas un Input). input-default lui donne le même look, my-0 retire ses marges */}
+                {/* The "field": a BUTTON that opens / closes the list (it's not a real input
+                    field, so not an Input). input-default gives it the same look, my-0 removes its margins */}
                 <button
                     ref={buttonRef}
                     id={`${id}-button`}
@@ -142,7 +142,7 @@ export default function ContributorsSelect({
                     <span className={`truncate ${selected.length === 0 ? "text-grey-600" : ""}`}>
                         {summary}
                     </span>
-                    {/* La flèche se retourne quand la liste est ouverte */}
+                    {/* The arrow flips when the list is open */}
                     <Image
                         src={DropdownIcon}
                         alt=""
@@ -150,14 +150,14 @@ export default function ContributorsSelect({
                     />
                 </button>
 
-                {/* La liste reste dans la page même fermée (hidden = juste cachée) :
-                    ce sont ses cases COCHÉES qui partent avec le formulaire */}
+                {/* The list stays in the page even when closed (hidden = just hidden):
+                    its CHECKED boxes are what gets sent with the form */}
                 <div
                     id={`${id}-panel`}
                     hidden={!isOpen}
                     className="absolute top-full right-0 left-0 z-10 mt-1 rounded-sm border border-grey-200 bg-white p-4 shadow-lg"
                 >
-                    {/* Le champ de recherche n'existe que sans liste fixe */}
+                    {/* The search field only exists without a fixed list */}
                     {!options && (
                         <Input
                             ref={searchRef}
@@ -165,11 +165,11 @@ export default function ContributorsSelect({
                             label="Rechercher un collaborateur"
                             hideLabel
                             type="search"
-                            // name="" : la recherche elle-même n'est PAS envoyée avec le formulaire
+                            // name="": the search itself is NOT sent with the form
                             name=""
                             value={query}
                             onChange={(event) => handleSearch(event.target.value)}
-                            // Entrée dans la recherche ne doit PAS envoyer le formulaire
+                            // Enter in the search must NOT submit the form
                             onKeyDown={(event) => {
                                 if (event.key === "Enter") event.preventDefault()
                             }}
@@ -182,18 +182,18 @@ export default function ContributorsSelect({
                     {visibleMessage && <p className="mt-3 text-sm text-grey-600">{visibleMessage}</p>}
 
                     {visibleRows.length > 0 && (
-                        // fieldset + legend : les cases à cocher forment un groupe
-                        // first:mt-0 : pas de marge en haut quand rien n'est affiché au-dessus (pas de recherche)
+                        // fieldset + legend: the checkboxes form a group
+                        // first:mt-0: no top margin when nothing is displayed above (no search)
                         <fieldset className="mt-3 max-h-56 overflow-y-auto first:mt-0">
                             <legend className="sr-only">Collaborateurs</legend>
                             {visibleRows.map((user) => (
-                                // Une case cochée envoie name = email ou id (ex : contributors = bob@example.com).
-                                // La Server Action les récupère toutes avec formData.getAll(name).
+                                // A checked box sends name = email or id (e.g. contributors = bob@example.com).
+                                // The Server Action gets them all with formData.getAll(name).
                                 //
-                                // defaultChecked (et pas checked) : après chaque envoi, React remet le
-                                // formulaire à zéro. Avec checked, la case se décochait dans la page alors
-                                // que React la croyait cochée (et elle n'était plus envoyée). Avec
-                                // defaultChecked, la remise à zéro revient à la sélection actuelle.
+                                // defaultChecked (and not checked): after each submission, React resets the
+                                // form. With checked, the box got unchecked in the page while
+                                // React thought it was checked (and it was no longer sent). With
+                                // defaultChecked, the reset goes back to the current selection.
                                 <Input
                                     key={user.id}
                                     id={`${id}-${user.id}`}

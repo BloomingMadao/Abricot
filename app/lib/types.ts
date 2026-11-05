@@ -1,57 +1,57 @@
 /**
  * ============================================================================
- *  TYPES TYPESCRIPT
+ *  TYPESCRIPT TYPES
  * ============================================================================
- *  Ces types décrivent EXACTEMENT le JSON renvoyé par le backend Abricot.
- *  Ils ont été écrits à partir de :
- *    - prisma/schema.prisma           (la forme des "tables")
- *    - src/controllers/*.ts           (ce que chaque route renvoie)
+ *  These types describe EXACTLY the JSON returned by the Abricot backend.
+ *  They were written based on:
+ *    - prisma/schema.prisma           (the shape of the "tables")
+ *    - src/controllers/*.ts           (what each route returns)
  *
- *  ⚠️ Les dates arrivent toujours en texte (format ISO, ex : "2026-10-13T12:18:56.055Z")
- *     car le JSON ne connaît pas le type Date. Pour les afficher, utilise
- *     formatDate() dans utils.ts.
+ *  ⚠️ Dates always arrive as text (ISO format, e.g. "2026-10-13T12:18:56.055Z")
+ *     because JSON has no Date type. To display them, use
+ *     formatDate() in utils.ts.
  * ============================================================================
  */
 
 // ----------------------------------------------------------------------------
-// Valeurs possibles (identiques au backend)
+// Possible values (identical to the backend)
 // ----------------------------------------------------------------------------
 export type Role = "ADMIN" | "CONTRIBUTOR";
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "CANCELLED";
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 // ----------------------------------------------------------------------------
-// Format de TOUTES les réponses du backend (voir src/utils/response.ts)
+// Format of ALL backend responses (see src/utils/response.ts)
 // ----------------------------------------------------------------------------
 export interface ValidationError {
   field: string;
   message: string;
 }
 
-/** Réponse quand tout s'est bien passé */
+/** Response when everything went well */
 export interface ApiSuccess<T> {
   success: true;
   message: string;
   data: T;
 }
 
-/** Réponse quand il y a une erreur (403, 404, données invalides...) */
+/** Response when there's an error (403, 404, invalid data...) */
 export interface ApiError {
   success: false;
-  message: string; // message lisible, ex : "Accès refusé au projet"
-  error?: string; // code d'erreur, ex : "FORBIDDEN", "PROJECT_NOT_FOUND"
-  data?: { errors: ValidationError[] }; // seulement pour les erreurs de validation
+  message: string; // human-readable message, e.g. "Accès refusé au projet"
+  error?: string; // error code, e.g. "FORBIDDEN", "PROJECT_NOT_FOUND"
+  data?: { errors: ValidationError[] }; // only for validation errors
 }
 
 /**
- * Une réponse est SOIT un succès, SOIT une erreur.
- * Astuce : après `if (!response.success) return ...`, TypeScript sait que
- * `response.data` existe forcément.
+ * A response is EITHER a success OR an error.
+ * Tip: after `if (!response.success) return ...`, TypeScript knows that
+ * `response.data` necessarily exists.
  */
 export type ApiResponse<T = undefined> = ApiSuccess<T> | ApiError;
 
 // ----------------------------------------------------------------------------
-// Les "tables" de la base de données (schema.prisma)
+// The database "tables" (schema.prisma)
 // ----------------------------------------------------------------------------
 export interface User {
   id: string;
@@ -59,7 +59,7 @@ export interface User {
   name: string | null;
   createdAt: string;
   updatedAt: string;
-  // (le mot de passe n'est jamais renvoyé par l'API)
+  // (the password is never returned by the API)
 }
 
 export interface Project {
@@ -99,7 +99,7 @@ export interface TaskAssignee {
   userId: string;
 }
 
-/** Un commentaire (appelé "Comment" dans Prisma) */
+/** A comment (called "Comment" in Prisma) */
 export interface TaskComment {
   id: string;
   content: string;
@@ -110,10 +110,10 @@ export interface TaskComment {
 }
 
 // ----------------------------------------------------------------------------
-// Formes "enrichies" renvoyées par les routes
+// "Enriched" shapes returned by the routes
 // ----------------------------------------------------------------------------
 
-/** Un utilisateur résumé (utilisé partout : owner, creator, author...) */
+/** A summarized user (used everywhere: owner, creator, author...) */
 export interface UserSummary {
   id: string;
   email: string;
@@ -124,16 +124,16 @@ export interface ProjectMemberWithUser extends ProjectMember {
   user: UserSummary;
 }
 
-/** POST /projects et PUT /projects/:id */
+/** POST /projects and PUT /projects/:id */
 export interface ProjectWithRelations extends Project {
   owner: UserSummary;
-  members: ProjectMemberWithUser[]; // ⚠️ le propriétaire n'est PAS dans members
+  members: ProjectMemberWithUser[]; // ⚠️ the owner is NOT in members
   _count: { tasks: number };
 }
 
-/** GET /projects (chaque élément de la liste) */
+/** GET /projects (each item in the list) */
 export interface ProjectWithRole extends ProjectWithRelations {
-  userRole: Role | null; // le propriétaire a le rôle "ADMIN"
+  userRole: Role | null; // the owner has the "ADMIN" role
 }
 
 export interface TaskWithCreator extends Task {
@@ -142,17 +142,17 @@ export interface TaskWithCreator extends Task {
 
 /** GET /projects/:id */
 export interface ProjectDetail extends ProjectWithRole {
-  tasks: TaskWithCreator[]; // ⚠️ sans assignés ni commentaires (utilise getProjectTasks pour ça)
+  tasks: TaskWithCreator[]; // ⚠️ without assignees or comments (use getProjectTasks for that)
 }
 
-/** Les assignés tels que renvoyés par les routes /tasks */
+/** Assignees as returned by the /tasks routes */
 export interface TaskAssigneeSummary {
   id: string;
   assignedAt: string;
   user: UserSummary;
 }
 
-/** Les commentaires tels que renvoyés par les routes /tasks */
+/** Comments as returned by the /tasks routes */
 export interface TaskCommentSummary {
   id: string;
   content: string;
@@ -169,14 +169,14 @@ export interface TaskDetail extends Task {
   comments: TaskCommentSummary[];
 }
 
-/** Routes /projects/:id/tasks/:taskId/comments */
+/** /projects/:id/tasks/:taskId/comments routes */
 export interface CommentDetail extends TaskComment {
   author: UserSummary;
   task: { id: string; title: string };
 }
 
 // ----------------------------------------------------------------------------
-// Tableau de bord (/dashboard/...)
+// Dashboard (/dashboard/...)
 // ----------------------------------------------------------------------------
 export interface TaskAssigneeWithUser extends TaskAssignee {
   user: UserSummary;
@@ -186,10 +186,10 @@ export interface TaskCommentWithAuthor extends TaskComment {
   author: UserSummary;
 }
 
-/** Une tâche dans les routes du dashboard */
+/** A task in the dashboard routes */
 export interface DashboardTask extends Task {
   assignees: TaskAssigneeWithUser[];
-  comments: TaskCommentWithAuthor[]; // du plus récent au plus ancien
+  comments: TaskCommentWithAuthor[]; // from newest to oldest
 }
 
 /** GET /dashboard/assigned-tasks */
@@ -200,22 +200,22 @@ export interface AssignedTask extends DashboardTask {
 /** GET /dashboard/projects-with-tasks */
 export interface DashboardProject extends Project {
   owner: UserSummary;
-  tasks: DashboardTask[]; // uniquement les tâches assignées à l'utilisateur connecté
+  tasks: DashboardTask[]; // only the tasks assigned to the logged-in user
 }
 
 /** GET /dashboard/stats */
 export interface DashboardStats {
   tasks: {
     total: number;
-    urgent: number; // ⚠️ compte les priorités URGENT **et** HIGH
-    overdue: number; // échéance dépassée et statut différent de DONE
-    byStatus: Partial<Record<TaskStatus, number>>; // ex : { TODO: 2, IN_PROGRESS: 1 }
+    urgent: number; // ⚠️ counts URGENT **and** HIGH priorities
+    overdue: number; // due date passed and status other than DONE
+    byStatus: Partial<Record<TaskStatus, number>>; // e.g. { TODO: 2, IN_PROGRESS: 1 }
   };
   projects: { total: number };
 }
 
 // ----------------------------------------------------------------------------
-// Authentification (/auth/...)
+// Authentication (/auth/...)
 // ----------------------------------------------------------------------------
 export interface AuthUser {
   id: string;
@@ -224,21 +224,21 @@ export interface AuthUser {
   createdAt: string;
 }
 
-/** POST /auth/login et POST /auth/register */
+/** POST /auth/login and POST /auth/register */
 export interface AuthData {
   user: AuthUser;
-  token: string; // le token JWT à envoyer ensuite dans "Authorization: Bearer <token>"
+  token: string; // the JWT token to send afterwards in "Authorization: Bearer <token>"
 }
 
 /** GET /auth/profile */
 export interface ProfileUser {
   id: string;
   email: string;
-  name?: string; // absent si l'utilisateur n'a pas de nom
+  name?: string; // missing if the user has no name
 }
 
 // ----------------------------------------------------------------------------
-// Corps des requêtes (ce qu'on ENVOIE au backend)
+// Request bodies (what we SEND to the backend)
 // ----------------------------------------------------------------------------
 export interface RegisterBody {
   email: string;
@@ -264,7 +264,7 @@ export interface UpdatePasswordBody {
 export interface CreateProjectBody {
   name: string;
   description?: string;
-  contributors?: string[]; // liste d'emails
+  contributors?: string[]; // list of emails
 }
 
 export interface UpdateProjectBody {
@@ -281,8 +281,8 @@ export interface CreateTaskBody {
   title: string;
   description?: string;
   priority?: Priority;
-  dueDate?: string; // date ISO, ex : "2026-11-30" ou "2026-11-30T00:00:00.000Z"
-  assigneeIds?: string[]; // IDs des utilisateurs (doivent être membres du projet)
+  dueDate?: string; // ISO date, e.g. "2026-11-30" or "2026-11-30T00:00:00.000Z"
+  assigneeIds?: string[]; // User IDs (must be project members)
 }
 
 export interface UpdateTaskBody {
@@ -291,7 +291,7 @@ export interface UpdateTaskBody {
   status?: TaskStatus;
   priority?: Priority;
   dueDate?: string;
-  assigneeIds?: string[]; // remplace TOUS les assignés existants
+  assigneeIds?: string[]; // replaces ALL existing assignees
 }
 
 export interface CommentBody {

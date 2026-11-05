@@ -7,7 +7,7 @@ import Button from "@/app/components/Button/Button";
 import Alert from "@/app/components/Alert/Alert";
 
 type ProfileFormProps = {
-  // Les infos actuelles, récupérées par la page (composant serveur)
+  // The current info, fetched by the page (server component)
   firstname: string;
   lastname: string;
   email: string;
@@ -16,12 +16,12 @@ type ProfileFormProps = {
 export default function ProfileForm({ firstname, lastname, email }: ProfileFormProps) {
   const [state, formAction, isPending] = useActionState(updateProfileAction, undefined);
 
-  // Même principe que dans AuthForm : l'alerte fermée avec la croix
+  // Same idea as in AuthForm: the alert dismissed with the cross
   const [dismissedState, setDismissedState] = useState<ProfileFormState>(undefined);
 
   return (
     <form action={formAction} className="mt-10">
-      {/* Alerte verte si c'est enregistré, rouge s'il y a une erreur */}
+      {/* Green alert if it's saved, red if there's an error */}
       {state && state !== dismissedState && (
         <Alert
           message={state.message}
@@ -31,8 +31,8 @@ export default function ProfileForm({ firstname, lastname, email }: ProfileFormP
         />
       )}
 
-      {/* defaultValue : ce que l'utilisateur vient de taper (après un envoi),
-          sinon ses infos actuelles */}
+      {/* defaultValue: what the user just typed (after a submission),
+          otherwise their current info */}
       <Input
         label="Nom"
         id="lastname"
@@ -61,7 +61,7 @@ export default function ProfileForm({ firstname, lastname, email }: ProfileFormP
         className="w-full"
       />
 
-      {/* Les mots de passe ne sont jamais pré-remplis (l'API ne les renvoie pas) */}
+      {/* Passwords are never pre-filled (the API doesn't return them) */}
       <Input
         label="Mot de passe"
         id="newPassword"
@@ -79,7 +79,7 @@ export default function ProfileForm({ firstname, lastname, email }: ProfileFormP
         className="w-full"
       />
 
-      {/* Le bouton est DANS le <form> : c'est ce qui lui permet de l'envoyer */}
+      {/* The button is INSIDE the <form>: that's what lets it submit it */}
       <Button
         label={isPending ? "Enregistrement..." : "Modifier les informations"}
         variant="primary"

@@ -2,50 +2,50 @@ import Image, { type StaticImageData } from "next/image"
 import type { ComponentProps, ReactNode } from "react"
 
 // ============================================================================
-//  Les props
+//  The props
 // ============================================================================
 
-// Ce qui est propre à NOTRE composant (ce ne sont pas des attributs HTML)
+// What belongs to OUR component (these are not HTML attributes)
 type BaseProps = {
-  label: ReactNode // texte du libellé (peut contenir du HTML, ex : nom + email)
+  label: ReactNode // label text (can contain HTML, e.g. name + email)
   id: string
-  hideLabel?: boolean // true = libellé caché à l'écran mais lu par les lecteurs d'écran
-  icon?: StaticImageData // icône affichée à droite dans le champ (ex : une loupe)
-  className?: string // classes en plus sur le CHAMP
-  wrapperClassName?: string // classes en plus sur le BLOC autour (libellé + champ)
+  hideLabel?: boolean // true = label hidden on screen but read by screen readers
+  icon?: StaticImageData // icon displayed on the right inside the field (e.g. a magnifying glass)
+  className?: string // extra classes on the FIELD
+  wrapperClassName?: string // extra classes on the WRAPPER (label + field)
 }
 
-// Variante "default" (ou rien) : un <input> de N'IMPORTE QUEL type
+// "default" variant (or nothing): an <input> of ANY type
 // (text, email, password, number, date, search, tel, url, file, checkbox, radio...).
-// ComponentProps<"input"> = tous les attributs qu'accepte un <input> HTML :
+// ComponentProps<"input"> = every attribute an HTML <input> accepts:
 // required, placeholder, min, max, value, onChange, defaultValue, autoComplete...
-// → plus besoin d'ajouter une prop à la main à chaque nouveau besoin.
+// → no need to add a prop by hand for every new need.
 type InputFieldProps = BaseProps &
   Omit<ComponentProps<"input">, keyof BaseProps> & {
-    variant?: "default" | "calendar" // calendar = <input type="date"> à partir d'aujourd'hui
+    variant?: "default" | "calendar" // calendar = <input type="date"> from today onwards
   }
 
-// Variante "textarea" : un texte sur plusieurs lignes (+ tous les attributs d'un <textarea>, ex : rows)
+// "textarea" variant: multi-line text (+ all the attributes of a <textarea>, e.g. rows)
 type TextareaFieldProps = BaseProps &
   Omit<ComponentProps<"textarea">, keyof BaseProps> & {
     variant: "textarea"
   }
 
-// Variante "dropdown" : une liste <select> (+ tous les attributs d'un <select>, ex : multiple)
+// "dropdown" variant: a <select> list (+ all the attributes of a <select>, e.g. multiple)
 type DropdownFieldProps = BaseProps &
   Omit<ComponentProps<"select">, keyof BaseProps> & {
     variant: "dropdown"
-    // Soit du texte simple, soit { value, label } quand la valeur envoyée
-    // diffère du texte affiché (ex : value "TODO", label "À faire")
+    // Either plain text, or { value, label } when the submitted value
+    // differs from the displayed text (e.g. value "TODO", label "À faire")
     options: (string | { value: string; label: string })[]
   }
 
-// Le composant accepte l'une OU l'autre de ces formes, selon "variant".
-// TypeScript vérifie que les attributs vont avec la variante (ex : pas de "rows" sur un <input>).
+// The component accepts one OR the other of these shapes, depending on "variant".
+// TypeScript checks that the attributes match the variant (e.g. no "rows" on an <input>).
 export type InputProps = InputFieldProps | TextareaFieldProps | DropdownFieldProps
 
-// Date du jour au format AAAA-MM-JJ :
-// c'est le seul format que min et max acceptent sur un <input type="date">
+// Today's date in YYYY-MM-DD format:
+// it's the only format min and max accept on an <input type="date">
 function getToday() {
   const now = new Date()
   const year = now.getFullYear()
@@ -54,28 +54,28 @@ function getToday() {
   return `${year}-${month}-${day}`
 }
 
-// Retire nos props (label, icon...) pour ne garder QUE les attributs HTML
-// à transmettre à la balise (<input>, <textarea> ou <select>)
+// Strips our props (label, icon...) to keep ONLY the HTML attributes
+// to pass on to the tag (<input>, <textarea> or <select>)
 function htmlAttributes<T extends BaseProps>({ label, hideLabel, icon, className, wrapperClassName, ...attributes }: T) {
   return attributes
 }
 
 // ============================================================================
-//  Le composant
+//  The component
 // ============================================================================
 
 export default function Input(props: InputProps) {
-  // On sépare ce qui est à nous (label, icon...) de ce qui part dans la balise HTML
+  // We separate what is ours (label, icon...) from what goes into the HTML tag
   const { label, hideLabel = false, icon, className = "", wrapperClassName = "" } = props
 
-  // Style commun aux champs "boîte" (texte, liste, zone de texte).
-  // pr-12 : laisse la place à l'icône pour que le texte ne passe pas dessous.
+  // Shared style for "box" fields (text, list, text area).
+  // pr-12: leaves room for the icon so the text doesn't go underneath it.
   const boxClass = `input-default ${icon ? "pr-12" : ""} ${className}`
 
-  // ---- Variante "textarea" ------------------------------------------------
+  // ---- "textarea" variant -------------------------------------------------
   if (props.variant === "textarea") {
-    // variant n'est pas un attribut HTML non plus : on le retire,
-    // et tout le reste ({...attributes}) part dans la balise
+    // variant isn't an HTML attribute either: we strip it,
+    // and everything else ({...attributes}) goes into the tag
     const { variant, ...attributes } = htmlAttributes(props)
     return (
       <Field id={props.id} label={label} hideLabel={hideLabel} icon={icon} wrapperClassName={wrapperClassName}>
@@ -84,7 +84,7 @@ export default function Input(props: InputProps) {
     )
   }
 
-  // ---- Variante "dropdown" ------------------------------------------------
+  // ---- "dropdown" variant -------------------------------------------------
   if (props.variant === "dropdown") {
     const { variant, options, ...attributes } = htmlAttributes(props)
     return (
@@ -104,12 +104,12 @@ export default function Input(props: InputProps) {
     )
   }
 
-  // ---- Variante "default" / "calendar" : un <input> ------------------------
+  // ---- "default" / "calendar" variant: an <input> --------------------------
   const { variant, ...attributes } = htmlAttributes(props)
   const isCalendar = variant === "calendar"
   const type = isCalendar ? "date" : (attributes.type ?? "text")
 
-  // Case à cocher / bouton radio : la case à GAUCHE, le libellé à DROITE, sur une ligne
+  // Checkbox / radio button: the box on the LEFT, the label on the RIGHT, on one line
   if (type === "checkbox" || type === "radio") {
     return (
       <label htmlFor={props.id} className={`flex cursor-pointer items-center gap-3 ${wrapperClassName}`}>
@@ -123,7 +123,7 @@ export default function Input(props: InputProps) {
     <Field id={props.id} label={label} hideLabel={hideLabel} icon={icon} wrapperClassName={wrapperClassName}>
       <input
         name={props.id}
-        // Calendrier : par défaut, pas de date passée (min/max restent modifiables via les attributs)
+        // Calendar: by default, no past dates (min/max can still be changed via the attributes)
         min={isCalendar ? getToday() : undefined}
         max={isCalendar ? "2050-12-31" : undefined}
         {...attributes}
@@ -135,7 +135,7 @@ export default function Input(props: InputProps) {
 }
 
 // ============================================================================
-//  Le "cadre" commun : libellé au-dessus + champ + icône éventuelle
+//  The shared "frame": label above + field + optional icon
 // ============================================================================
 
 type FieldProps = {
@@ -144,28 +144,28 @@ type FieldProps = {
   hideLabel: boolean
   icon?: StaticImageData
   wrapperClassName: string
-  children: ReactNode // le champ lui-même (<input>, <textarea> ou <select>)
+  children: ReactNode // the field itself (<input>, <textarea> or <select>)
 }
 
 function Field({ id, label, hideLabel, icon, wrapperClassName, children }: FieldProps) {
   return (
     <div className={`flex flex-col gap-2 ${wrapperClassName}`}>
-      {/* sr-only : invisible à l'écran, mais le champ garde un vrai label */}
+      {/* sr-only: invisible on screen, but the field keeps a real label */}
       <label htmlFor={id} className={hideLabel ? "sr-only" : undefined}>
         {label}
       </label>
 
-      {/* "relative" : l'icône (en "absolute") se place par rapport à ce bloc */}
+      {/* "relative": the icon (in "absolute") is positioned relative to this block */}
       <div className="relative">
         {children}
 
-        {/* pointer-events-none : un clic sur l'icône arrive quand même dans le champ */}
+        {/* pointer-events-none: a click on the icon still reaches the field */}
         {icon && (
           <Image
             src={icon}
             alt=""
-            // Seulement width : Next.js calcule la hauteur avec les vraies proportions de l'icône
-            // (la flèche dropdown.svg n'est pas carrée : 17x10)
+            // Only width: Next.js computes the height from the icon's real proportions
+            // (the dropdown.svg arrow isn't square: 17x10)
             width={16}
             className="pointer-events-none absolute top-1/2 right-8 -translate-y-1/2"
           />

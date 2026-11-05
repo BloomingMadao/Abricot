@@ -9,20 +9,20 @@ import Alert from "@/app/components/Alert/Alert"
 import ContributorsSelect from "@/app/components/ContributorsSelect/ContributorsSelect"
 
 type UpdateProjectFormProps = {
-    // Le projet à modifier (pour pré-remplir les champs)
+    // The project to edit (to pre-fill the fields)
     project: { id: string; name: string; description: string | null }
-    // Les contributeurs actuels (sans le propriétaire) : déjà cochés dans la liste
+    // The current contributors (without the owner): already checked in the list
     members: UserSummary[]
-    // Email du propriétaire : on ne le propose pas (il reste toujours dans le projet)
+    // Owner's email: not offered (they always stay in the project)
     ownerEmail: string
-    // Appelée quand le projet est bien enregistré, pour fermer la modale
+    // Called when the project has been saved, to close the modal
     onSuccess: () => void
 }
 
-// Le formulaire "Modifier le projet" : le même que "Créer un projet", mais pré-rempli
+// The "Modifier le projet" form: the same as "Créer un projet", but pre-filled
 export default function UpdateProjectForm({ project, members, ownerEmail, onSuccess }: UpdateProjectFormProps) {
-    // On "enveloppe" la Server Action (comme UpdateTaskForm) :
-    // si c'est un succès, on prévient le parent, qui ferme la modale
+    // We "wrap" the Server Action (like UpdateTaskForm):
+    // on success, we notify the parent, which closes the modal
     async function submit(previousState: ProjectFormState, formData: FormData) {
         const result = await updateProjectAction(previousState, formData)
         if (result?.success) onSuccess()
@@ -31,23 +31,23 @@ export default function UpdateProjectForm({ project, members, ownerEmail, onSucc
 
     const [state, formAction, isPending] = useActionState(submit, undefined)
 
-    // "Enregistrer" est grisé à l'ouverture : rien n'a encore changé (comme dans UpdateTaskForm).
-    // À la 1re modification, on vérifie le formulaire (titre ou description vide → reste grisé).
+    // "Enregistrer" is greyed out on open: nothing has changed yet (as in UpdateTaskForm).
+    // On the 1st change, we check the form (empty title or description → stays greyed out).
     const [isValid, setIsValid] = useState(false)
 
     return (
-        // onInput : à chaque frappe ou case cochée, on revérifie le formulaire
+        // onInput: on every keystroke or checked box, we re-check the form
         <form action={formAction} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
-            {/* Erreur renvoyée par l'API (nom trop court, contributeur introuvable...) */}
+            {/* Error returned by the API (name too short, contributor not found...) */}
             {state && !state.success && (
                 <Alert message={state.message} errors={state.errors} variant="error" />
             )}
 
-            {/* Champ caché : l'action doit savoir QUEL projet modifier */}
+            {/* Hidden field: the action needs to know WHICH project to edit */}
             <input type="hidden" name="projectId" value={project.id} />
 
-            {/* Valeurs : ce qui a été envoyé (après une erreur), sinon le projet actuel.
-                mt-0 mb-4 w-full text-sm : espacements et taille de la maquette (comme UpdateTaskForm) */}
+            {/* Values: what was submitted (after an error), otherwise the current project.
+                mt-0 mb-4 w-full text-sm: spacing and size from the mockup (like UpdateTaskForm) */}
             <Input
                 label="Titre*"
                 id="name"
@@ -67,8 +67,8 @@ export default function UpdateProjectForm({ project, members, ownerEmail, onSucc
                 className="mt-0 mb-4 w-full text-sm"
             />
 
-            {/* defaultSelected : les contributeurs actuels sont déjà cochés.
-                Les décocher les retire du projet, en cocher d'autres (recherche) les ajoute. */}
+            {/* defaultSelected: the current contributors are already checked.
+                Unchecking them removes them from the project, checking others (search) adds them. */}
             <ContributorsSelect
                 label="Contributeurs"
                 name="contributors"
@@ -76,7 +76,7 @@ export default function UpdateProjectForm({ project, members, ownerEmail, onSucc
                 defaultSelected={members}
             />
 
-            {/* mx-0 : aligné à gauche comme les champs, w-[181px] : sa largeur sur la maquette */}
+            {/* mx-0: left-aligned like the fields, w-[181px]: its width in the mockup */}
             <Button
                 label={isPending ? "Enregistrement..." : "Enregistrer"}
                 variant="primary"

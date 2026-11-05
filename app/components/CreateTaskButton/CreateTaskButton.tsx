@@ -8,20 +8,20 @@ import CreateTaskForm from "@/app/components/CreateTaskForm/CreateTaskForm"
 
 type CreateTaskButtonProps = {
     projectId: string
-    // Les membres du projet (propriétaire compris) : les personnes qu'on peut assigner
+    // The project members (owner included): the people who can be assigned
     members: UserSummary[]
 }
 
-// Le bouton "Créer une tâche" de la page d'un projet + sa modale.
-// Même principe que CreateProjectButton : composant CLIENT qui retient si la modale est ouverte.
-// Une fois la tâche créée, la modale se ferme et la tâche apparaît dans la liste.
+// The "Créer une tâche" button on a project page + its modal.
+// Same idea as CreateProjectButton: CLIENT component that remembers whether the modal is open.
+// Once the task is created, the modal closes and the task appears in the list.
 export default function CreateTaskButton({ projectId, members }: CreateTaskButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
         <>
-            {/* className : les classes Tailwind passent devant celles de .button-primary
-                (mx-0 : pas de marge, w-auto : largeur selon le texte, self-auto : pas centré) */}
+            {/* className: Tailwind classes take precedence over those of .button-primary
+                (mx-0: no margin, w-auto: width fits the text, self-auto: not centered) */}
             <Button
                 label="Créer une tâche"
                 type="button"

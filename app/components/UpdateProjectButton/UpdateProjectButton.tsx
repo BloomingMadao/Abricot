@@ -7,27 +7,27 @@ import UpdateProjectForm from "@/app/components/UpdateProjectForm/UpdateProjectF
 
 type UpdateProjectButtonProps = {
     project: { id: string; name: string; description: string | null }
-    // Les contributeurs actuels (sans le propriétaire)
+    // The current contributors (without the owner)
     members: UserSummary[]
-    // Email du propriétaire (on ne le propose pas dans la liste)
+    // Owner's email (not offered in the list)
     ownerEmail: string
 }
 
-// Le lien "Modifier" à côté du nom du projet + sa modale.
-// Même principe que CreateProjectButton : composant CLIENT qui retient si la modale est ouverte.
+// The "Modifier" link next to the project name + its modal.
+// Same idea as CreateProjectButton: CLIENT component that remembers whether the modal is open.
 export default function UpdateProjectButton({ project, members, ownerEmail }: UpdateProjectButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
         <>
-            {/* Un <button> qui ressemble à un lien : il ouvre une modale, il ne change pas de page */}
+            {/* A <button> that looks like a link: it opens a modal, it doesn't change page */}
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
                 className="cursor-pointer text-sm text-brand-dark underline underline-offset-2 hover:text-grey-950"
             >
                 Modifier
-                {/* Pour un lecteur d'écran : "Modifier le projet" plutôt que juste "Modifier" */}
+                {/* For a screen reader: "Modifier le projet" rather than just "Modifier" */}
                 <span className="sr-only"> le projet</span>
             </button>
 

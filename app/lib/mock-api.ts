@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- *  FAUSSE API (MOCK)
+ *  FAKE API (MOCK)
  * ============================================================================
- *  Chaque fonction de ce fichier imite UNE route du backend : elle lit (ou
- *  modifie) les données de mock-data.ts et renvoie EXACTEMENT le même JSON
- *  que le vrai backend, avec les mêmes messages et codes d'erreur.
+ *  Each function in this file mimics ONE backend route: it reads (or
+ *  modifies) the data in mock-data.ts and returns EXACTLY the same JSON
+ *  as the real backend, with the same messages and error codes.
  *
- *  ⚠️ N'importe pas ce fichier dans tes pages : passe toujours par api.ts,
- *     qui choisit automatiquement entre ce mock et le vrai backend.
+ *  ⚠️ Don't import this file in your pages: always go through api.ts,
+ *     which automatically picks between this mock and the real backend.
  * ============================================================================
  */
 
@@ -59,58 +59,58 @@ import {
   type MockUser,
 } from "./mock-data";
 
-/** L'utilisateur actuellement "connecté" dans le mock (change après login/register) */
+/** The user currently "logged in" in the mock (changes after login/register) */
 let currentUserId = MOCK_DEFAULT_USER_ID;
 
 // ============================================================================
-//  OUTILS INTERNES
+//  INTERNAL HELPERS
 // ============================================================================
 
-/** Appelé au début de chaque fonction du mock */
+/** Called at the start of every mock function */
 async function wait(): Promise<void> {
-  // Comme avec le vrai backend, la page est recalculée à chaque visite
-  // (sinon Next.js pourrait "figer" les fausses données au moment du build)
+  // As with the real backend, the page is re-rendered on every visit
+  // (otherwise Next.js could "freeze" the fake data at build time)
   await connection();
-  // Simule le temps de réponse du réseau
+  // Simulates network response time
   await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
 }
 
 const now = () => new Date().toISOString();
 
-/** Génère un identifiant unique (le backend utilise des "cuid") */
+/** Generates a unique id (the backend uses "cuid"s) */
 const newId = () =>
   `mock${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
 
-/** Faux token renvoyé par login/register en mode mock */
+/** Fake token returned by login/register in mock mode */
 const fakeToken = (userId: string) => `mock-token-${userId}`;
 
-/** Passe les données par JSON, comme si elles venaient du réseau.
- *  (Ça crée aussi une copie : ta page ne peut pas modifier les données du mock par erreur.) */
+/** Passes the data through JSON, as if it came from the network.
+ *  (It also creates a copy: your page can't modify the mock data by mistake.) */
 const toJson = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
-/** Réponse de succès (comme sendSuccess dans le backend) */
+/** Success response (like sendSuccess in the backend) */
 function ok<T>(message: string, data: T): ApiSuccess<T> {
   return toJson({ success: true, message, data });
 }
 
-/** Réponse d'erreur (comme sendError dans le backend) */
+/** Error response (like sendError in the backend) */
 function fail(message: string, error: string): ApiError {
   return { success: false, message, error };
 }
 
-/** Réponse d'erreur de validation (comme sendValidationError dans le backend) */
+/** Validation error response (like sendValidationError in the backend) */
 function invalid(message: string, errors: ValidationError[]): ApiError {
   return { success: false, message, error: "Validation failed", data: { errors } };
 }
 
-/** Supprime d'un tableau tous les éléments qui respectent une condition */
+/** Removes from an array every element that matches a condition */
 function removeWhere<T>(array: T[], predicate: (item: T) => boolean): void {
   for (let i = array.length - 1; i >= 0; i--) {
     if (predicate(array[i])) array.splice(i, 1);
   }
 }
 
-/** Compare deux textes comme la base SQLite (ordre alphabétique, null en premier) */
+/** Compares two strings like the SQLite database does (alphabetical order, null first) */
 function compare(a: string | null, b: string | null): number {
   if (a === b) return 0;
   if (a === null) return -1;
@@ -118,7 +118,7 @@ function compare(a: string | null, b: string | null): number {
   return a < b ? -1 : 1;
 }
 
-// Règles de validation (copiées de src/utils/validation.ts)
+// Validation rules (copied from src/utils/validation.ts)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -127,7 +127,7 @@ const STATUSES = ["TODO", "IN_PROGRESS", "DONE", "CANCELLED"];
 const isValidDate = (value: string) => !isNaN(new Date(value).getTime());
 
 // ----------------------------------------------------------------------------
-// Recherches dans les "tables"
+// Lookups in the "tables"
 // ----------------------------------------------------------------------------
 const findUser = (id: string) => users.find((u) => u.id === id);
 const findUserByEmail = (email: string) =>
@@ -143,10 +143,10 @@ const isAssignedTo = (taskId: string, userId: string) =>
   taskAssignees.some((a) => a.taskId === taskId && a.userId === userId);
 
 // ----------------------------------------------------------------------------
-// Permissions (copiées de src/utils/permissions.ts)
+// Permissions (copied from src/utils/permissions.ts)
 // ----------------------------------------------------------------------------
 
-/** Rôle d'un utilisateur dans un projet : le propriétaire est "ADMIN", null = aucun accès */
+/** A user's role in a project: the owner is "ADMIN", null = no access */
 function getUserRole(userId: string, projectId: string): Role | null {
   const project = findProject(projectId);
   if (!project) return null;
@@ -165,7 +165,7 @@ const isProjectOwner = (userId: string, projectId: string) =>
   findProject(projectId)?.ownerId === userId;
 
 // ----------------------------------------------------------------------------
-// Construction des objets "enrichis" (l'équivalent des "include" de Prisma)
+// Building the "enriched" objects (the equivalent of Prisma's "include")
 // ----------------------------------------------------------------------------
 function toUserSummary(userId: string): UserSummary {
   const user = findUser(userId);
@@ -194,11 +194,11 @@ function buildTaskDetail(task: Task): TaskDetail {
     project: { id: task.projectId, name: findProject(task.projectId)?.name ?? "" },
     assignees: taskAssignees
       .filter((a) => a.taskId === task.id)
-      .sort((a, b) => compare(a.userId, b.userId)) // même ordre que la base SQLite
+      .sort((a, b) => compare(a.userId, b.userId)) // same order as the SQLite database
       .map((a) => ({ id: a.id, assignedAt: a.assignedAt, user: toUserSummary(a.userId) })),
     comments: comments
       .filter((c) => c.taskId === task.id)
-      .sort((a, b) => compare(a.createdAt, b.createdAt)) // du plus ancien au plus récent
+      .sort((a, b) => compare(a.createdAt, b.createdAt)) // from oldest to newest
       .map((c) => ({
         id: c.id,
         content: c.content,
@@ -223,22 +223,22 @@ function buildDashboardTask(task: Task): DashboardTask {
     ...task,
     assignees: taskAssignees
       .filter((a) => a.taskId === task.id)
-      .sort((a, b) => compare(a.userId, b.userId)) // même ordre que la base SQLite
+      .sort((a, b) => compare(a.userId, b.userId)) // same order as the SQLite database
       .map((a) => ({ ...a, user: toUserSummary(a.userId) })),
     comments: comments
       .filter((c) => c.taskId === task.id)
-      .sort((a, b) => compare(b.createdAt, a.createdAt)) // du plus récent au plus ancien
+      .sort((a, b) => compare(b.createdAt, a.createdAt)) // from newest to oldest
       .map((c) => ({ ...c, author: toUserSummary(c.authorId) })),
   };
 }
 
-/** Tri du dashboard : priorité puis date d'échéance.
- *  ⚠️ Comme dans le backend, la priorité est triée par ordre ALPHABÉTIQUE
- *     (HIGH, LOW, MEDIUM, URGENT) et pas par importance. */
+/** Dashboard sorting: priority then due date.
+ *  ⚠️ As in the backend, priority is sorted in ALPHABETICAL order
+ *     (HIGH, LOW, MEDIUM, URGENT) and not by importance. */
 const dashboardOrder = (a: Task, b: Task) =>
   compare(a.priority, b.priority) || compare(a.dueDate, b.dueDate);
 
-/** Remplace tous les assignés d'une tâche */
+/** Replaces all of a task's assignees */
 function setTaskAssignees(taskId: string, userIds: string[]): void {
   removeWhere(taskAssignees, (a) => a.taskId === taskId);
   for (const userId of userIds) {
@@ -246,7 +246,7 @@ function setTaskAssignees(taskId: string, userIds: string[]): void {
   }
 }
 
-/** Valide les champs d'une tâche (création ET modification) */
+/** Validates a task's fields (creation AND update) */
 function validateTask(
   body: Partial<UpdateTaskBody>,
   isCreation: boolean
@@ -291,7 +291,7 @@ function validateTask(
   return errors;
 }
 
-/** Valide le contenu d'un commentaire */
+/** Validates a comment's content */
 function validateComment(content: string | undefined): ValidationError[] {
   if (!content) {
     return [{ field: "content", message: "Le contenu du commentaire est requis" }];
@@ -306,7 +306,7 @@ function validateComment(content: string | undefined): ValidationError[] {
 }
 
 // ============================================================================
-//  AUTHENTIFICATION  (/auth/...)
+//  AUTHENTICATION  (/auth/...)
 // ============================================================================
 
 /** POST /auth/register */
@@ -342,7 +342,7 @@ export async function register(body: RegisterBody): Promise<ApiResponse<AuthData
     updatedAt: date,
   };
   users.push(user);
-  currentUserId = user.id; // le nouvel utilisateur devient l'utilisateur connecté
+  currentUserId = user.id; // the new user becomes the logged-in user
 
   return ok("Utilisateur créé avec succès", {
     user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
@@ -364,7 +364,7 @@ export async function login(body: LoginBody): Promise<ApiResponse<AuthData>> {
   if (!user || user.password !== password) {
     return fail("Email ou mot de passe incorrect", "INVALID_CREDENTIALS");
   }
-  currentUserId = user.id; // cet utilisateur devient l'utilisateur connecté
+  currentUserId = user.id; // this user becomes the logged-in user
 
   return ok("Connexion réussie", {
     user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
@@ -458,15 +458,15 @@ export async function updatePassword(body: UpdatePasswordBody): Promise<ApiRespo
 }
 
 // ============================================================================
-//  PROJETS  (/projects/...)
+//  PROJECTS  (/projects/...)
 // ============================================================================
 
-/** GET /projects — les projets dont l'utilisateur est propriétaire ou membre */
+/** GET /projects — the projects the user owns or is a member of */
 export async function getProjects(): Promise<ApiResponse<{ projects: ProjectWithRole[] }>> {
   await wait();
   const result = projects
     .filter((p) => hasProjectAccess(currentUserId, p.id))
-    .sort((a, b) => compare(b.updatedAt, a.updatedAt)) // du plus récemment modifié au plus ancien
+    .sort((a, b) => compare(b.updatedAt, a.updatedAt)) // from most recently updated to oldest
     .map((p) => ({ ...buildProject(p), userRole: getUserRole(currentUserId, p.id) }));
 
   return ok("Projets récupérés avec succès", { projects: result });
@@ -477,7 +477,7 @@ export async function getProject(
   projectId: string
 ): Promise<ApiResponse<{ project: ProjectDetail }>> {
   await wait();
-  // Comme le backend : un projet inexistant renvoie aussi "Accès refusé" (403)
+  // Like the backend: a non-existent project also returns "Accès refusé" (403)
   if (!hasProjectAccess(currentUserId, projectId)) {
     return fail("Accès refusé au projet", "FORBIDDEN");
   }
@@ -486,7 +486,7 @@ export async function getProject(
 
   const projectTasks = tasks
     .filter((t) => t.projectId === projectId)
-    .sort((a, b) => compare(b.createdAt, a.createdAt)) // de la plus récente à la plus ancienne
+    .sort((a, b) => compare(b.createdAt, a.createdAt)) // from newest to oldest
     .map((t) => ({ ...t, creator: toUserSummary(t.creatorId) }));
 
   return ok("Projet récupéré avec succès", {
@@ -536,7 +536,7 @@ export async function createProject(
   };
   projects.push(project);
 
-  // Ajout des contributeurs (les emails inconnus sont ignorés, comme dans le backend)
+  // Adding the contributors (unknown emails are ignored, as in the backend)
   for (const email of contributors ?? []) {
     const user = findUserByEmail(email);
     const alreadyMember = projectMembers.some(
@@ -556,7 +556,7 @@ export async function createProject(
   return ok("Projet créé avec succès", { project: buildProject(project) });
 }
 
-/** PUT /projects/:id — réservé au propriétaire et aux admins */
+/** PUT /projects/:id — restricted to the owner and admins */
 export async function updateProject(
   projectId: string,
   body: UpdateProjectBody
@@ -590,14 +590,14 @@ export async function updateProject(
   return ok("Projet mis à jour avec succès", { project: buildProject(project) });
 }
 
-/** DELETE /projects/:id — réservé au propriétaire */
+/** DELETE /projects/:id — restricted to the owner */
 export async function deleteProject(projectId: string): Promise<ApiResponse> {
   await wait();
   if (!isProjectOwner(currentUserId, projectId)) {
     return fail("Vous n'avez pas les permissions pour supprimer ce projet", "FORBIDDEN");
   }
 
-  // Suppression "en cascade" : tâches, assignations, commentaires et membres du projet
+  // "Cascading" deletion: the project's tasks, assignments, comments and members
   const taskIds = tasks.filter((t) => t.projectId === projectId).map((t) => t.id);
   removeWhere(comments, (c) => taskIds.includes(c.taskId));
   removeWhere(taskAssignees, (a) => taskIds.includes(a.taskId));
@@ -608,7 +608,7 @@ export async function deleteProject(projectId: string): Promise<ApiResponse> {
   return ok("Projet supprimé avec succès", undefined);
 }
 
-/** POST /projects/:id/contributors — réservé au propriétaire et aux admins */
+/** POST /projects/:id/contributors — restricted to the owner and admins */
 export async function addContributor(
   projectId: string,
   body: AddContributorBody
@@ -630,7 +630,7 @@ export async function addContributor(
   return ok("Contributeur ajouté avec succès", undefined);
 }
 
-/** DELETE /projects/:id/contributors/:userId — réservé au propriétaire et aux admins */
+/** DELETE /projects/:id/contributors/:userId — restricted to the owner and admins */
 export async function removeContributor(
   projectId: string,
   userId: string
@@ -648,10 +648,10 @@ export async function removeContributor(
 }
 
 // ============================================================================
-//  UTILISATEURS  (/users/search)
+//  USERS  (/users/search)
 // ============================================================================
 
-/** GET /users/search?query=... — recherche par nom ou email (10 résultats max) */
+/** GET /users/search?query=... — search by name or email (10 results max) */
 export async function searchUsers(
   query: string
 ): Promise<ApiResponse<{ users: UserSummary[] }>> {
@@ -677,12 +677,12 @@ export async function searchUsers(
 }
 
 // ============================================================================
-//  TÂCHES  (/projects/:id/tasks/...)
+//  TASKS  (/projects/:id/tasks/...)
 // ============================================================================
 
 /** GET /projects/:id/tasks
- *  ⚠️ Comme le backend, le tri par priorité est ALPHABÉTIQUE inversé
- *     (URGENT, MEDIUM, LOW, HIGH), puis de la plus récente à la plus ancienne. */
+ *  ⚠️ Like the backend, priority sorting is reverse ALPHABETICAL
+ *     (URGENT, MEDIUM, LOW, HIGH), then from newest to oldest. */
 export async function getProjectTasks(
   projectId: string
 ): Promise<ApiResponse<{ tasks: TaskDetail[] }>> {
@@ -800,10 +800,10 @@ export async function deleteTask(projectId: string, taskId: string): Promise<Api
 }
 
 // ============================================================================
-//  COMMENTAIRES  (/projects/:id/tasks/:taskId/comments/...)
+//  COMMENTS  (/projects/:id/tasks/:taskId/comments/...)
 // ============================================================================
 
-/** GET /projects/:id/tasks/:taskId/comments — du plus ancien au plus récent */
+/** GET /projects/:id/tasks/:taskId/comments — from oldest to newest */
 export async function getComments(
   projectId: string,
   taskId: string
@@ -867,7 +867,7 @@ export async function createComment(
   return ok("Commentaire créé avec succès", { comment: buildCommentDetail(comment) });
 }
 
-/** PUT /projects/:id/tasks/:taskId/comments/:commentId — seulement par l'auteur */
+/** PUT /projects/:id/tasks/:taskId/comments/:commentId — by the author only */
 export async function updateComment(
   projectId: string,
   taskId: string,
@@ -894,7 +894,7 @@ export async function updateComment(
 }
 
 /** DELETE /projects/:id/tasks/:taskId/comments/:commentId
- *  (comme dans le backend, tout membre du projet peut supprimer un commentaire) */
+ *  (as in the backend, any project member can delete a comment) */
 export async function deleteComment(
   projectId: string,
   taskId: string,
@@ -913,10 +913,10 @@ export async function deleteComment(
 }
 
 // ============================================================================
-//  TABLEAU DE BORD  (/dashboard/...)
+//  DASHBOARD  (/dashboard/...)
 // ============================================================================
 
-/** GET /dashboard/assigned-tasks — les tâches assignées à l'utilisateur connecté */
+/** GET /dashboard/assigned-tasks — the tasks assigned to the logged-in user */
 export async function getAssignedTasks(): Promise<ApiResponse<{ tasks: AssignedTask[] }>> {
   await wait();
   const result = tasks
@@ -937,7 +937,7 @@ export async function getAssignedTasks(): Promise<ApiResponse<{ tasks: AssignedT
   return ok("Tâches assignées récupérées", { tasks: result });
 }
 
-/** GET /dashboard/projects-with-tasks — les projets où l'utilisateur a des tâches assignées */
+/** GET /dashboard/projects-with-tasks — the projects where the user has assigned tasks */
 export async function getProjectsWithTasks(): Promise<
   ApiResponse<{ projects: DashboardProject[] }>
 > {

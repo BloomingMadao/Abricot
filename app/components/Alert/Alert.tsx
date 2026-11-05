@@ -2,10 +2,10 @@ import { variantClasses, type TagVariant } from "@/app/components/Tag/Tag"
 
 type AlertProps = {
   message: string
-  // Détails éventuels (ex : règles du mot de passe non respectées)
+  // Optional details (e.g. password rules not met)
   errors?: string[]
   variant?: TagVariant
-  // Si onClose est fourni, une croix s'affiche pour fermer l'alerte
+  // If onClose is provided, a cross is shown to close the alert
   onClose?: () => void
 }
 
@@ -32,8 +32,8 @@ export default function Alert({
       </div>
 
       {onClose && (
-        // type="button" est OBLIGATOIRE : dans un formulaire, un bouton sans type
-        // vaut "submit" et cliquer sur la croix renverrait le formulaire.
+        // type="button" is REQUIRED: inside a form, a button without a type
+        // defaults to "submit" and clicking the cross would submit the form.
         <button
           type="button"
           onClick={onClose}

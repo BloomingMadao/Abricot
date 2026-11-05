@@ -9,14 +9,14 @@ import CommentIcon from "@/public/image/commentIcon.svg"
 
 type TaskCardProps = {
     task: AssignedTask
-    // "list" : infos à gauche, statut + bouton à droite (vue Liste)
-    // "kanban" : tout empilé, le bouton en bas (vue Kanban, carte plus étroite)
+    // "list": info on the left, status + button on the right (List view)
+    // "kanban": everything stacked, the button at the bottom (Kanban view, narrower card)
     layout?: "list" | "kanban"
 }
 
 export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
-    // Les morceaux communs aux deux mises en page, rangés dans des variables
-    // pour ne pas les écrire deux fois
+    // The pieces shared by both layouts, stored in variables
+    // so we don't write them twice
     const statusTag = (
         <Tag label={TASK_STATUS_LABELS[task.status]} variant={TASK_STATUS_VARIANTS[task.status]} />
     )
@@ -27,9 +27,9 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
         <p className="mt-1 text-sm text-grey-600">{task.description}</p>
     )
 
-    // Projet | échéance | nombre de commentaires — toujours sur UNE ligne.
-    // Si la carte est trop étroite (vue Kanban), le nom du projet est coupé avec "…"
-    // (min-w-0 + truncate), et le nom complet s'affiche au survol (title).
+    // Project | due date | number of comments — always on ONE line.
+    // If the card is too narrow (Kanban view), the project name is cut off with "…"
+    // (min-w-0 + truncate), and the full name is shown on hover (title).
     const infos = (
         <ul className="mt-8 flex items-center gap-3 text-xs whitespace-nowrap text-grey-600">
             <li className="flex min-w-0 items-center gap-2" title={task.project.name}>
@@ -39,7 +39,7 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
             <li aria-hidden="true">|</li>
             <li className="flex shrink-0 items-center gap-2">
                 <Image src={CalendarIconGrey} alt="" width={15} height={17} />
-                {/* <time> : une date lisible par les machines (dateTime) et par les humains */}
+                {/* <time>: a date readable by machines (dateTime) and by humans */}
                 {task.dueDate ? (
                     <time dateTime={task.dueDate}>{formatShortDate(task.dueDate)}</time>
                 ) : (
@@ -50,22 +50,22 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
             <li className="flex shrink-0 items-center gap-2">
                 <Image src={CommentIcon} alt="" width={15} height={15} />
                 {task.comments.length}
-                {/* Le nombre seul ne veut rien dire pour un lecteur d'écran */}
+                {/* The number alone means nothing to a screen reader */}
                 <span className="sr-only">commentaire(s)</span>
             </li>
         </ul>
     )
 
-    // "Voir" ouvre la modale de modification (bouton + modale dans UpdateTaskButton)
+    // "Voir" opens the edit modal (button + modal in UpdateTaskButton)
     const seeButton = <UpdateTaskButton task={task} />
 
-    // Vue Kanban : titre + statut sur la même ligne, puis le reste empilé
+    // Kanban view: title + status on the same line, then the rest stacked
     if (layout === "kanban") {
         return (
             <article className="rounded-[10px] border border-grey-200 bg-white px-10 py-6">
                 <div className="flex items-start justify-between gap-4">
                     {title}
-                    {/* shrink-0 : le statut ne se fait jamais écraser par un long titre */}
+                    {/* shrink-0: the status never gets squashed by a long title */}
                     <div className="shrink-0">{statusTag}</div>
                 </div>
                 {description}
@@ -75,18 +75,18 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
         )
     }
 
-    // Vue Liste : deux colonnes
+    // List view: two columns
     return (
-        // <article> : un bloc qui a du sens tout seul (une tâche)
+        // <article>: a block that makes sense on its own (a task)
         <article className="flex justify-between gap-6 rounded-[10px] border border-grey-200 bg-white px-10 py-6">
-            {/* Colonne de gauche : titre, description, infos */}
+            {/* Left column: title, description, info */}
             <div className="pt-2.5">
                 {title}
                 {description}
                 {infos}
             </div>
 
-            {/* Colonne de droite : statut en haut, bouton en bas */}
+            {/* Right column: status at the top, button at the bottom */}
             <div className="flex shrink-0 flex-col items-end justify-between gap-6">
                 {statusTag}
                 {seeButton}

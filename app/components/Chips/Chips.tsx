@@ -9,14 +9,14 @@ type TypeVariant = "tasks" | "kanban" | "projects" | "calendar"
 type ChipsProps = {
     label: string
     type: TypeVariant
-    // true = chip sélectionnée (fond orange clair)
+    // true = selected chip (light orange background)
     isActive?: boolean
-    // Ce qui se passe au clic (ex : changer de vue Liste / Kanban)
+    // What happens on click (e.g. switching between List / Kanban view)
     onClick?: () => void
 }
 
-// Une icône par type. Grâce au Record, TypeScript signale une erreur
-// si tu ajoutes un type sans lui donner d'icône.
+// One icon per type. Thanks to the Record, TypeScript reports an error
+// if you add a type without giving it an icon.
 const icons: Record<TypeVariant, StaticImageData> = {
     tasks: TasksIcon,
     kanban: KanbanIcon,
@@ -26,15 +26,15 @@ const icons: Record<TypeVariant, StaticImageData> = {
 
 export default function Chips({ label, type, isActive = false, onClick }: ChipsProps) {
     return (
-        // aria-pressed : indique aux lecteurs d'écran si la chip est sélectionnée,
-        // et sert AUSSI à Tailwind pour le style actif (aria-pressed:)
+        // aria-pressed: tells screen readers whether the chip is selected,
+        // and is ALSO used by Tailwind for the active style (aria-pressed:)
         <button
             type="button"
             onClick={onClick}
             aria-pressed={isActive}
             className="flex cursor-pointer items-center gap-3 rounded-md bg-white px-4 py-3 text-sm text-brand-dark transition-colors duration-300 ease-out hover:bg-brand-light aria-pressed:bg-brand-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
         >
-            {/* alt="" : l'icône est décorative, le texte suffit */}
+            {/* alt="": the icon is decorative, the text is enough */}
             <Image src={icons[type]} alt="" width={18} />
             {label}
         </button>

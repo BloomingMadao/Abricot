@@ -1,8 +1,8 @@
 import Loader from "@/app/components/Loader/Loader"
 
-// Fichier spécial de Next.js : affiché automatiquement pendant qu'une page
-// de (protected) attend ses données (await getProfile(), etc.).
-// Le Header et le Footer du layout restent affichés autour.
+// Special Next.js file: shown automatically while a page
+// in (protected) is waiting for its data (await getProfile(), etc.).
+// The layout's Header and Footer stay displayed around it.
 export default function Loading() {
     return (
         <div className="pt-22">

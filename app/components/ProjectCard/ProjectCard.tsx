@@ -6,30 +6,30 @@ import type { ProjectWithRole, UserSummary } from "@/app/lib/types"
 import TeamIcon from "@/public/image/teamsIcon.svg"
 
 type ProjectCardProps = {
-    // ProjectWithRole (et pas Project) : c'est ce que renvoie getProjects(),
-    // avec le propriétaire, les membres et le nombre de tâches (_count.tasks)
+    // ProjectWithRole (and not Project): this is what getProjects() returns,
+    // with the owner, the members and the number of tasks (_count.tasks)
     project: ProjectWithRole
-    // Nombre de tâches terminées : getProjects() ne le donne pas,
-    // c'est la page qui le calcule (voir projects/page.tsx)
+    // Number of completed tasks: getProjects() doesn't provide it,
+    // the page computes it (see projects/page.tsx)
     doneTasks: number
 }
 
-// Au-delà, on affiche "+N" au lieu de toutes les pastilles
+// Beyond that, we show "+N" instead of all the avatars
 const MAX_VISIBLE_MEMBERS = 4
 
-// Un Tag transformé en pastille ronde de 27px (au lieu de sa forme de "pilule") :
-// p-0 retire les marges intérieures de .tag, size-[27px] le rend carré,
-// et ses coins arrondis (rounded-[50px] dans .tag) en font un rond.
-// border border-white : le petit contour blanc qui sépare les pastilles qui se chevauchent
+// A Tag turned into a round 27px avatar (instead of its "pill" shape):
+// p-0 removes .tag's padding, size-[27px] makes it square,
+// and its rounded corners (rounded-[50px] in .tag) make it a circle.
+// border border-white: the thin white outline separating overlapping avatars
 const AVATAR_CLASSES = "flex size-[27px] items-center justify-center border border-white p-0"
 
-// Initiales d'une personne (ou 1re lettre de l'email si elle n'a pas de nom)
+// A person's initials (or the 1st letter of the email if they have no name)
 function initialsOf(user: UserSummary) {
     return getInitials(user.name) || user.email.charAt(0).toUpperCase()
 }
 
-// Le contenu d'une pastille : les initiales À L'ÉCRAN (aria-hidden : pas lues),
-// le nom complet POUR LES LECTEURS D'ÉCRAN (sr-only : invisible)
+// An avatar's content: the initials ON SCREEN (aria-hidden: not read),
+// the full name FOR SCREEN READERS (sr-only: invisible)
 function avatarLabel(user: UserSummary) {
     return (
         <>
@@ -39,21 +39,21 @@ function avatarLabel(user: UserSummary) {
     )
 }
 
-// Pas de "async" : la carte n'attend rien (pas d'await), elle reçoit déjà ses données
+// No "async": the card waits for nothing (no await), it already receives its data
 export default function ProjectCard({ project, doneTasks }: ProjectCardProps) {
     const totalTasks = project._count.tasks
-    // Pas de tâche = 0 % (on évite une division par zéro)
+    // No tasks = 0% (avoids a division by zero)
     const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100)
 
-    // ⚠️ L'API ne met PAS le propriétaire dans members : on l'ajoute pour compter l'équipe
+    // ⚠️ The API does NOT include the owner in members: we add them to count the team
     const members = project.members.map((member) => member.user)
     const teamSize = members.length + 1
     const visibleMembers = members.slice(0, MAX_VISIBLE_MEMBERS)
     const hiddenCount = members.length - visibleMembers.length
 
-    // Toute la carte est cliquable, mais le LIEN reste le titre :
-    // after:absolute after:inset-0 étire sa zone de clic sur toute la carte (qui est "relative").
-    // Un lecteur d'écran annonce juste "Nom du projet, lien" (et pas toute la carte).
+    // The whole card is clickable, but the LINK is still the title:
+    // after:absolute after:inset-0 stretches its click area over the whole card (which is "relative").
+    // A screen reader just announces "Project name, link" (and not the whole card).
     const title = (
         <h5>
             <Link href={`/projects/${project.id}`} className="outline-none after:absolute after:inset-0">
@@ -66,14 +66,14 @@ export default function ProjectCard({ project, doneTasks }: ProjectCardProps) {
         <p className="mt-2 text-[14px] text-grey-600">{project.description}</p>
     )
 
-    // Progression : texte + barre + nombre de tâches terminées
+    // Progress: text + bar + number of completed tasks
     const progression = (
         <div className="mt-12">
             <div className="flex items-center justify-between text-xs">
                 <span className="text-grey-600">Progression</span>
                 <span className="text-grey-800">{progress}%</span>
             </div>
-            {/* role="progressbar" + aria-value* : un lecteur d'écran annonce "Progression, 50 %" */}
+            {/* role="progressbar" + aria-value*: a screen reader announces "Progression, 50 %" */}
             <div
                 role="progressbar"
                 aria-label="Progression"
@@ -82,7 +82,7 @@ export default function ProjectCard({ project, doneTasks }: ProjectCardProps) {
                 aria-valuenow={progress}
                 className="mt-4 h-[7px] overflow-hidden rounded-full bg-grey-200"
             >
-                {/* La largeur de la barre orange = le pourcentage (style, car la valeur change) */}
+                {/* The width of the orange bar = the percentage (style, because the value changes) */}
                 <div className="h-full rounded-full bg-brand-dark" style={{ width: `${progress}%` }} />
             </div>
             <p className="mt-[5px] text-[11px] text-grey-600">
@@ -91,7 +91,7 @@ export default function ProjectCard({ project, doneTasks }: ProjectCardProps) {
         </div>
     )
 
-    // Équipe : mt-auto pousse ce bloc en bas de la carte (cartes de même hauteur dans la grille)
+    // Team: mt-auto pushes this block to the bottom of the card (cards of equal height in the grid)
     const team = (
         <div className="mt-auto pt-[51px]">
             <p className="flex items-center gap-2 text-[11px] text-grey-600">
@@ -100,24 +100,24 @@ export default function ProjectCard({ project, doneTasks }: ProjectCardProps) {
             </p>
 
             <ul className="mt-[13px] flex items-center text-sm">
-                {/* Le propriétaire : pastille orange (variant "brand") + étiquette "Propriétaire".
-                    text-grey-800! : initiales foncées comme sur la maquette (voir les membres plus bas) */}
+                {/* The owner: orange avatar ("brand" variant) + "Propriétaire" label.
+                    text-grey-800!: dark initials as in the mockup (see the members below) */}
                 <li className="mr-1 flex items-center gap-[5px]">
                     <Tag label={avatarLabel(project.owner)} variant="brand" className={`${AVATAR_CLASSES} text-grey-800!`} />
                     <Tag label="Propriétaire" variant="brand" />
                 </li>
 
-                {/* Les membres : pastilles grises (variant "grey") qui se chevauchent (-ml-2).
-                    text-grey-800! : le variant donne déjà une couleur de texte (text-grey-600).
-                    Quand deux classes Tailwind règlent la MÊME chose, on ne choisit pas laquelle gagne :
-                    le "!" à la fin force la nôtre. */}
+                {/* The members: grey avatars ("grey" variant) that overlap (-ml-2).
+                    text-grey-800!: the variant already sets a text color (text-grey-600).
+                    When two Tailwind classes set the SAME thing, we don't get to choose which one wins:
+                    the "!" at the end forces ours. */}
                 {visibleMembers.map((user, index) => (
                     <li key={user.id} title={user.name || user.email} className={index > 0 ? "-ml-2" : ""}>
                         <Tag label={avatarLabel(user)} variant="grey" className={`${AVATAR_CLASSES} text-grey-800!`} />
                     </li>
                 ))}
 
-                {/* "+N" : même pastille grise, texte gris du variant (pas de "!") */}
+                {/* "+N": same grey avatar, grey text from the variant (no "!") */}
                 {hiddenCount > 0 && (
                     <li className="-ml-2">
                         <Tag
@@ -137,9 +137,9 @@ export default function ProjectCard({ project, doneTasks }: ProjectCardProps) {
     )
 
     return (
-        // relative : pour le lien étiré du titre
-        // flex flex-col h-full : la carte prend toute la hauteur de sa ligne dans la grille
-        // has-[:focus-visible] : contour de la carte quand on arrive sur le lien au clavier
+        // relative: for the title's stretched link
+        // flex flex-col h-full: the card takes the full height of its row in the grid
+        // has-[:focus-visible]: card outline when the link is reached with the keyboard
         <article className="relative flex h-full flex-col rounded-[10px] border border-grey-200 bg-white px-[34px] pt-[28px] pb-[29px] transition-shadow duration-300 hover:shadow-md has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-dark">
             {title}
             {description}

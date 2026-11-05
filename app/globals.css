@@ -27,24 +27,24 @@
 
 
 /* =========================================================
-   2. THÈME TAILWIND
-   Crée EN PLUS des classes courtes à partir de tes variables :
+   2. TAILWIND THEME
+   ALSO creates short classes from your variables:
    text-brand-dark, bg-grey-800, border-grey-200, bg-success…
-   Les anciennes écritures restent valables.
+   The old syntax still works.
    ========================================================= */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-heading: var(--font-manrope);
-  --success: var(--system-success-green); /* ancien nom, gardé */
+  --success: var(--system-success-green); /* old name, kept */
 
-  /* Marque */
+  /* Brand */
   --color-brand: var(--brand-color-main);
   --color-brand-light: var(--brand-color-light);
   --color-brand-dark: var(--brand-color-dark);
 
-  /* Gris neutres */
+  /* Neutral greys */
   --color-grey-950: var(--neutral-grey-950);
   --color-grey-800: var(--neutral-grey-800);
   --color-grey-600: var(--neutral-grey-600);
@@ -53,7 +53,7 @@
   --color-grey-100: var(--neutral-grey-100);
   --color-grey-50: var(--neutral-grey-50);
 
-  /* Couleurs système */
+  /* System colors */
   --color-success: var(--system-success-green);
   --color-success-light: var(--system-success-green-light);
   --color-error: var(--system-error);
@@ -65,7 +65,7 @@
 }
 
 /* =========================================================
-   3. STYLES DE BASE (balises HTML)
+   3. BASE STYLES (HTML tags)
    ========================================================= */
 @layer base {
   body {
@@ -95,9 +95,9 @@
 }
 
 /* =========================================================
-   4. COMPOSANTS
-   Mêmes noms de classes et mêmes marges qu'avant.
-   (Déplacer les marges dans le JSX : plus tard, à ton rythme.)
+   4. COMPONENTS
+   Same class names and same margins as before.
+   (Moving the margins into the JSX: later, at your own pace.)
    ========================================================= */
 @layer components {
   .input-default, 
@@ -106,7 +106,7 @@
     @apply mt-2.5 mb-7.5 h-[53px] w-70 rounded-sm border border-grey-200 px-[17px];
   }
 
-  /* Commun aux 3 boutons */
+  /* Shared by the 3 buttons */
   .button-primary,
   .button-secondary,
   .button-disabled,
@@ -126,9 +126,9 @@
     @apply cursor-pointer border border-brand-dark bg-brand-dark text-white hover:bg-brand-light hover:text-brand-dark;
   }
 
-  /* Bouton désactivé : avec la classe .button-disabled (comme avant)
-     OU avec l'attribut disabled sur le bouton (recommandé).
-     Placé en dernier pour passer devant les styles de survol. */
+  /* Disabled button: with the .button-disabled class (as before)
+     OR with the disabled attribute on the button (recommended).
+     Placed last so it takes precedence over the hover styles. */
   .button-disabled,
   .button-primary:disabled,
   .button-secondary:disabled {

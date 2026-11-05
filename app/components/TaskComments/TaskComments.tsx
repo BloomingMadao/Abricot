@@ -13,23 +13,23 @@ import DropdownIcon from "@/public/image/dropdown.svg"
 
 type TaskCommentsProps = {
     task: TaskDetail
-    // La personne connectée : sa pastille s'affiche à côté du champ "Ajouter un commentaire"
+    // The logged-in user: their avatar is shown next to the "Ajouter un commentaire" field
     currentUser: UserSummary
 }
 
-// Le bas d'une carte de tâche : "Commentaires (n)", qu'on déplie pour voir
-// les commentaires et en ajouter un.
-// Composant CLIENT : il retient si c'est déplié, et gère le formulaire.
+// The bottom of a task card: "Commentaires (n)", which expands to show
+// the comments and add one.
+// CLIENT component: it remembers whether it's expanded, and handles the form.
 export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
     const [isOpen, setIsOpen] = useState(false)
-    // Identifiant unique pour relier le bouton à la zone qu'il déplie (aria-controls)
+    // Unique id to link the button to the area it expands (aria-controls)
     const panelId = useId()
 
-    // "Envoyer" grisé tant que le champ (required) est vide
+    // "Envoyer" greyed out while the (required) field is empty
     const [isValid, setIsValid] = useState(false)
 
-    // On "enveloppe" la Server Action : après un envoi réussi, React vide le champ,
-    // donc "Envoyer" doit redevenir grisé
+    // We "wrap" the Server Action: after a successful submission, React clears the field,
+    // so "Envoyer" must go back to greyed out
     async function submit(previousState: CommentFormState, formData: FormData) {
         const result = await createCommentAction(previousState, formData)
         if (result?.success) setIsValid(false)
@@ -42,14 +42,14 @@ export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                // aria-expanded : dit au lecteur d'écran si la zone est dépliée
+                // aria-expanded: tells the screen reader whether the area is expanded
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 className="flex w-full cursor-pointer items-center justify-between text-sm text-grey-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-dark"
             >
                 Commentaires ({task.comments.length})
-                {/* Comme sur la maquette : la flèche pointe vers le HAUT quand c'est replié,
-                    vers le BAS quand c'est déplié (dropdown.svg pointe vers le bas) */}
+                {/* As in the mockup: the arrow points UP when collapsed,
+                    DOWN when expanded (dropdown.svg points down) */}
                 <Image
                     src={DropdownIcon}
                     alt=""
@@ -58,18 +58,18 @@ export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
                 />
             </button>
 
-            {/* hidden : la zone reste dans la page, juste cachée quand c'est replié
-                (le texte en cours de saisie n'est pas perdu si on replie) */}
+            {/* hidden: the area stays in the page, just hidden when collapsed
+                (text being typed isn't lost when collapsing) */}
             <div id={panelId} hidden={!isOpen} className="mt-6">
-                {/* Les commentaires, du plus ancien au plus récent (l'ordre de l'API) */}
+                {/* The comments, from oldest to newest (the API's order) */}
                 {task.comments.length > 0 && (
                     <ul className="mb-4 flex flex-col gap-4">
                         {task.comments.map((comment) => (
-                            // text-xs : la taille des initiales dans la pastille
+                            // text-xs: the size of the initials in the avatar
                             <li key={comment.id} className="flex gap-4 text-xs">
-                                {/* decorative : le nom est écrit dans la bulle */}
+                                {/* decorative: the name is written in the bubble */}
                                 <UserAvatar user={comment.author} decorative />
-                                {/* La bulle grise : nom + date en haut, texte en dessous */}
+                                {/* The grey bubble: name + date at the top, text below */}
                                 <div className="flex-1 rounded-[10px] bg-grey-100 p-4">
                                     <div className="flex items-baseline justify-between gap-4">
                                         <p className="text-sm text-grey-800">
@@ -86,19 +86,19 @@ export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
                     </ul>
                 )}
 
-                {/* Ajouter un commentaire */}
+                {/* Add a comment */}
                 <form action={formAction} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
-                    {/* Erreur renvoyée par l'API (texte trop long...) */}
+                    {/* Error returned by the API (text too long...) */}
                     {state && !state.success && (
                         <Alert message={state.message} errors={state.errors} variant="error" />
                     )}
 
-                    {/* Champs cachés : l'action doit savoir sur QUELLE tâche commenter */}
+                    {/* Hidden fields: the action needs to know on WHICH task to comment */}
                     <input type="hidden" name="projectId" value={task.projectId} />
                     <input type="hidden" name="taskId" value={task.id} />
 
                     <div className="flex gap-4 text-xs">
-                        {/* La personne connectée, en orange (variant "brand") comme sur la maquette */}
+                        {/* The logged-in user, in orange ("brand" variant) as in the mockup */}
                         <UserAvatar user={currentUser} variant="brand" decorative />
                         <Input
                             variant="textarea"
@@ -109,19 +109,19 @@ export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
                             required
                             rows={3}
                             placeholder="Ajouter un commentaire..."
-                            // Après une erreur, React remet le formulaire à zéro : on garde le texte tapé
+                            // After an error, React resets the form: we keep the typed text
                             defaultValue={state?.values.content}
-                            // flex-1 : le champ prend toute la largeur restante
+                            // flex-1: the field takes all the remaining width
                             wrapperClassName="flex-1"
-                            // Les classes Tailwind passent devant celles de .input-default
-                            // (bordure, marges, largeur...) : fond gris clair, sans bordure, comme la maquette.
-                            // min-h-[83px] : la hauteur de la maquette (3 lignes de texte font un peu moins)
+                            // Tailwind classes take precedence over those of .input-default
+                            // (border, margins, width...): light grey background, no border, as in the mockup.
+                            // min-h-[83px]: the height from the mockup (3 lines of text are slightly less)
                             className="my-0 min-h-[83px] w-full resize-none rounded-[10px] border-0 bg-grey-50 px-4 text-xs placeholder:text-grey-800"
                         />
                     </div>
 
-                    {/* justify-end : "Envoyer" à droite.
-                        mx-0 w-[206px] : sa largeur sur la maquette (au lieu des 256px de .button-primary) */}
+                    {/* justify-end: "Envoyer" on the right.
+                        mx-0 w-[206px]: its width in the mockup (instead of .button-primary's 256px) */}
                     <div className="mt-4 flex justify-end">
                         <Button
                             label={isPending ? "Envoi..." : "Envoyer"}

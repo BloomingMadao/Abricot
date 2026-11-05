@@ -7,18 +7,18 @@ import { logout } from "@/app/lib/actions";
 import Button from "@/app/components/Button/Button";
 
 export default function UserMenu({ initials }: { initials: string }) {
-  // true = sous-menu ouvert, false = fermé
+  // true = submenu open, false = closed
   const [isOpen, setIsOpen] = useState(false);
 
-  // Référence vers le bloc qui contient le bouton ET le sous-menu,
-  // pour savoir si un clic a eu lieu dedans ou en dehors
+  // Reference to the block containing the button AND the submenu,
+  // to know whether a click happened inside or outside
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Comme dans MenuItems : est-ce qu'on est sur la page profil (ou une sous-page) ?
+  // As in MenuItems: are we on the profile page (or a sub-page)?
   const pathname = usePathname();
   const isProfilePage = pathname === "/profile" || pathname.startsWith("/profile/");
 
-  // Quand le menu est ouvert : on le ferme si on clique ailleurs ou si on appuie sur Échap
+  // When the menu is open: close it if the user clicks elsewhere or presses Escape
   useEffect(() => {
     if (!isOpen) return;
 
@@ -35,22 +35,22 @@ export default function UserMenu({ initials }: { initials: string }) {
     document.addEventListener("pointerdown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
 
-    // Nettoyage : on retire les écouteurs quand le menu se ferme
+    // Cleanup: remove the listeners when the menu closes
     return () => {
       document.removeEventListener("pointerdown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen]);
 
-  // Couleurs de base de l'icône : foncée sur la page profil, claire ailleurs.
-  // On CHOISIT l'une ou l'autre (on ne met pas les deux à la fois) :
-  // avec deux classes bg- dans le même className, on ne sait pas laquelle gagne.
+  // Base colors of the icon: dark on the profile page, light elsewhere.
+  // We PICK one or the other (we don't apply both at once):
+  // with two bg- classes in the same className, there's no telling which one wins.
   const colorClasses = isProfilePage
     ? "bg-(--brand-color-dark) text-white"
     : "bg-(--brand-color-light) text-black";
 
   return (
-    // "relative" : le sous-menu (en "absolute") se place par rapport à ce bloc
+    // "relative": the submenu (in "absolute") is positioned relative to this block
     <div ref={menuRef} className="relative">
       <button
         type="button"
@@ -68,7 +68,7 @@ export default function UserMenu({ initials }: { initials: string }) {
           id="user-menu"
           className="absolute right-0 top-full z-50 mt-2 flex w-auto flex-col overflow-hidden rounded-[10px] border border-grey-200 bg-white py-2 shadow-lg"
         >
-          {/* On ferme le menu au clic : le Header reste affiché quand on change de page */}
+          {/* Close the menu on click: the Header stays displayed when changing page */}
           <Link
             href="/profile"
             onClick={() => setIsOpen(false)}
@@ -78,7 +78,7 @@ export default function UserMenu({ initials }: { initials: string }) {
             Mon profil
           </Link>
 
-          {/* La déconnexion passe par la Server Action logout (supprime le cookie puis redirige) */}
+          {/* Logging out goes through the logout Server Action (deletes the cookie then redirects) */}
           <form action={logout}>
             <Button
                 label="Déconnexion"

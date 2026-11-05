@@ -1,19 +1,19 @@
 /**
  * ============================================================================
- *  DONNÉES MOCKÉES (fausses données)
+ *  MOCK DATA (fake data)
  * ============================================================================
- *  Ce fichier imite le contenu de la base de données du backend.
- *  Les données viennent du script de seed du backend (npm run seed) :
- *    - 10 utilisateurs, 5 projets, 17 tâches, 34 commentaires
- *    - avec les MÊMES IDs que dans ta base (prisma/db.sqlite), donc une URL
- *      comme /projects/cmv6ndtvc000budhw9lfyrupc marche en mock ET en vrai.
+ *  This file mimics the content of the backend's database.
+ *  The data comes from the backend's seed script (npm run seed):
+ *    - 10 users, 5 projects, 17 tasks, 34 comments
+ *    - with the SAME IDs as in your database (prisma/db.sqlite), so a URL
+ *      like /projects/cmv6ndtvc000budhw9lfyrupc works both in mock AND for real.
  *
- *  👉 Tu peux modifier, ajouter ou supprimer des données librement ici :
- *     c'est TON terrain de jeu pour tester l'affichage de l'application.
+ *  👉 You can freely edit, add or delete data here:
+ *     it's YOUR playground for testing how the app displays things.
  *
- *  ⚠️ Les modifications faites PENDANT que l'app tourne (créer une tâche,
- *     ajouter un commentaire...) sont gardées en mémoire, puis perdues quand
- *     tu redémarres "npm run dev" ou que tu modifies un fichier. C'est normal.
+ *  ⚠️ Changes made WHILE the app is running (creating a task,
+ *     adding a comment...) are kept in memory, then lost when
+ *     you restart "npm run dev" or edit a file. That's expected.
  * ============================================================================
  */
 
@@ -27,21 +27,21 @@ import type {
 } from "./types";
 
 // ----------------------------------------------------------------------------
-// Réglages du mock
+// Mock settings
 // ----------------------------------------------------------------------------
 
-/** Mot de passe de tous les utilisateurs (comme dans le seed du backend) */
+/** Password for every user (as in the backend seed) */
 export const MOCK_PASSWORD = "P@ssword123";
 
-/** Délai simulé (en millisecondes) pour imiter le temps de réponse du réseau.
- *  Mets 0 pour des réponses instantanées, ou 2000 pour tester tes "loading". */
+/** Simulated delay (in milliseconds) to mimic network response time.
+ *  Set 0 for instant responses, or 2000 to test your "loading" states. */
 export const MOCK_DELAY_MS = 500;
 
 // ----------------------------------------------------------------------------
-// IDs (repris de ta base de données) — des noms lisibles pour s'y retrouver
+// IDs (taken from your database) — readable names to keep track
 // ----------------------------------------------------------------------------
 
-// Utilisateurs
+// Users
 const ALICE = "cmv6ndtgr0000udhwcc32yw45"; // Alice Martin
 const BOB = "cmv6ndtie0001udhwdwq51jir"; // Bob Dupont
 const CAROLINE = "cmv6ndtk00002udhw6q1bgr54"; // Caroline Leroy
@@ -53,43 +53,43 @@ const HENRI = "cmv6ndts00007udhw896pesax"; // Henri Laurent
 const ISABELLE = "cmv6ndttm0008udhw5odbko6c"; // Isabelle Petit
 const JACQUES = "cmv6ndtv70009udhwt7lll4wg"; // Jacques Durand
 
-// Projets
-const PROJET_ECOMMERCE = "cmv6ndtvc000budhw9lfyrupc"; // Application E-commerce
-const PROJET_RH = "cmv6ndtvu000judhwza444bwp"; // Système de Gestion RH
-const PROJET_FITNESS = "cmv6ndtw6000pudhwtpo2l4p1"; // Application Mobile Fitness
-const PROJET_FORMATION = "cmv6ndtwf000tudhwva1ysjbt"; // Plateforme de Formation
-const PROJET_ANALYTICS = "cmv6ndtwo000xudhwgnzna1zr"; // Dashboard Analytics
+// Projects
+const PROJET_ECOMMERCE = "cmv6ndtvc000budhw9lfyrupc"; // E-commerce Application
+const PROJET_RH = "cmv6ndtvu000judhwza444bwp"; // HR Management System
+const PROJET_FITNESS = "cmv6ndtw6000pudhwtpo2l4p1"; // Fitness Mobile App
+const PROJET_FORMATION = "cmv6ndtwf000tudhwva1ysjbt"; // Training Platform
+const PROJET_ANALYTICS = "cmv6ndtwo000xudhwgnzna1zr"; // Analytics Dashboard
 
-// Tâches
-const TACHE_CONCEPTION_BDD = "cmv6ndtx20013udhw53nka4t7"; // Conception de la base de données
-const TACHE_API_REST = "cmv6ndtxl001budhwnx5f6hpu"; // Développement de l'API REST
-const TACHE_INTERFACE_RESPONSIVE = "cmv6ndty6001ludhwjx7wziai"; // Interface utilisateur responsive
-const TACHE_PAIEMENT = "cmv6ndtyp001tudhwgtzniyue"; // Intégration système de paiement
-const TACHE_TESTS = "cmv6ndtz3001zudhwlzv7278f"; // Tests automatisés
-const TACHE_CONGES = "cmv6ndtzu002budhwf3ncqx8u"; // Module de gestion des congés
-const TACHE_EVALUATION = "cmv6ndu0d002judhw3hpn4txv"; // Interface d'évaluation des employés
-const TACHE_DASHBOARD_RH = "cmv6ndu0x002tudhw8gq77yky"; // Tableau de bord RH
-const TACHE_DESIGN_MOBILE = "cmv6ndu1f0031udhw2ssum66s"; // Design de l'interface mobile
-const TACHE_ECRANS = "cmv6ndu1w0039udhwka2sq013"; // Développement des écrans principaux
-const TACHE_API_NUTRITION = "cmv6ndu2e003hudhwklifbkoc"; // Intégration API nutrition
-const TACHE_GESTION_COURS = "cmv6ndu2u003pudhwquhlcjg0"; // Système de gestion des cours
-const TACHE_LECTEUR_VIDEO = "cmv6ndu42003zudhwpe566l38"; // Lecteur vidéo personnalisé
-const TACHE_QUIZ = "cmv6ndu4u004budhwrnvztbm0"; // Système de quiz interactif
-const TACHE_ARCHI_DONNEES = "cmv6ndu5e004ludhwxr8xtyxm"; // Architecture des données
-const TACHE_GRAPHIQUES = "cmv6ndu5x004tudhwpbl5z4kr"; // Développement des graphiques
-const TACHE_ALERTES = "cmv6ndu6l0053udhwi2cs7tlb"; // Système d'alertes
+// Tasks
+const TACHE_CONCEPTION_BDD = "cmv6ndtx20013udhw53nka4t7"; // Database design
+const TACHE_API_REST = "cmv6ndtxl001budhwnx5f6hpu"; // REST API development
+const TACHE_INTERFACE_RESPONSIVE = "cmv6ndty6001ludhwjx7wziai"; // Responsive user interface
+const TACHE_PAIEMENT = "cmv6ndtyp001tudhwgtzniyue"; // Payment system integration
+const TACHE_TESTS = "cmv6ndtz3001zudhwlzv7278f"; // Automated tests
+const TACHE_CONGES = "cmv6ndtzu002budhwf3ncqx8u"; // Leave management module
+const TACHE_EVALUATION = "cmv6ndu0d002judhw3hpn4txv"; // Employee evaluation interface
+const TACHE_DASHBOARD_RH = "cmv6ndu0x002tudhw8gq77yky"; // HR dashboard
+const TACHE_DESIGN_MOBILE = "cmv6ndu1f0031udhw2ssum66s"; // Mobile interface design
+const TACHE_ECRANS = "cmv6ndu1w0039udhwka2sq013"; // Main screens development
+const TACHE_API_NUTRITION = "cmv6ndu2e003hudhwklifbkoc"; // Nutrition API integration
+const TACHE_GESTION_COURS = "cmv6ndu2u003pudhwquhlcjg0"; // Course management system
+const TACHE_LECTEUR_VIDEO = "cmv6ndu42003zudhwpe566l38"; // Custom video player
+const TACHE_QUIZ = "cmv6ndu4u004budhwrnvztbm0"; // Interactive quiz system
+const TACHE_ARCHI_DONNEES = "cmv6ndu5e004ludhwxr8xtyxm"; // Data architecture
+const TACHE_GRAPHIQUES = "cmv6ndu5x004tudhwpbl5z4kr"; // Charts development
+const TACHE_ALERTES = "cmv6ndu6l0053udhwi2cs7tlb"; // Alert system
 
-/** L'utilisateur "connecté" par défaut dans le mock : Alice Martin.
- *  Change cette valeur (ex : BOB) pour voir l'application avec les yeux de quelqu'un d'autre.
- *  (Un appel à login() ou register() en mode mock change aussi l'utilisateur connecté.) */
+/** The default "logged-in" user in the mock: Alice Martin.
+ *  Change this value (e.g. BOB) to see the app through someone else's eyes.
+ *  (Calling login() or register() in mock mode also changes the logged-in user.) */
 export const MOCK_DEFAULT_USER_ID = ALICE;
 
 // ----------------------------------------------------------------------------
 // Table "users"
 // ----------------------------------------------------------------------------
 
-/** Dans le mock, on garde le mot de passe en clair pour pouvoir simuler la connexion.
- *  (Le vrai backend, lui, le stocke chiffré et ne le renvoie jamais.) */
+/** In the mock, we keep the password in plain text so we can simulate logging in.
+ *  (The real backend stores it hashed and never returns it.) */
 export type MockUser = User & { password: string };
 
 export const users: MockUser[] = [
@@ -222,7 +222,7 @@ export const projects: Project[] = [
 ];
 
 // ----------------------------------------------------------------------------
-// Table "project_members" (les contributeurs ; le propriétaire n'y est PAS)
+// Table "project_members" (the contributors; the owner is NOT in it)
 // ----------------------------------------------------------------------------
 export const projectMembers: ProjectMember[] = [
   {
@@ -294,7 +294,7 @@ export const projectMembers: ProjectMember[] = [
 // Table "tasks"
 // ----------------------------------------------------------------------------
 export const tasks: Task[] = [
-  // --- Application E-commerce ---
+  // --- E-commerce Application ---
   {
     id: TACHE_CONCEPTION_BDD,
     title: "Conception de la base de données",
@@ -355,7 +355,7 @@ export const tasks: Task[] = [
     projectId: PROJET_ECOMMERCE,
     creatorId: ALICE,
   },
-  // --- Système de Gestion RH ---
+  // --- HR Management System ---
   {
     id: TACHE_CONGES,
     title: "Module de gestion des congés",
@@ -392,7 +392,7 @@ export const tasks: Task[] = [
     projectId: PROJET_RH,
     creatorId: EMMA,
   },
-  // --- Application Mobile Fitness ---
+  // --- Fitness Mobile App ---
   {
     id: TACHE_DESIGN_MOBILE,
     title: "Design de l'interface mobile",
@@ -429,7 +429,7 @@ export const tasks: Task[] = [
     projectId: PROJET_FITNESS,
     creatorId: HENRI,
   },
-  // --- Plateforme de Formation ---
+  // --- Training Platform ---
   {
     id: TACHE_GESTION_COURS,
     title: "Système de gestion des cours",
@@ -466,7 +466,7 @@ export const tasks: Task[] = [
     projectId: PROJET_FORMATION,
     creatorId: JACQUES,
   },
-  // --- Dashboard Analytics ---
+  // --- Analytics Dashboard ---
   {
     id: TACHE_ARCHI_DONNEES,
     title: "Architecture des données",
@@ -506,7 +506,7 @@ export const tasks: Task[] = [
 ];
 
 // ----------------------------------------------------------------------------
-// Table "task_assignees" (qui est assigné à quelle tâche)
+// Table "task_assignees" (who is assigned to which task)
 // ----------------------------------------------------------------------------
 export const taskAssignees: TaskAssignee[] = [
   { id: "cmv6ndtx60015udhwk38pnjrl", assignedAt: "2026-10-13T12:18:56.059Z", taskId: TACHE_CONCEPTION_BDD, userId: BOB },

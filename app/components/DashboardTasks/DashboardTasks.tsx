@@ -8,22 +8,22 @@ import KanbanColumn from "@/app/components/KanbanColumn/KanbanColumn"
 import SearchIcon from "@/public/image/searchIcon.svg"
 import type { AssignedTask, TaskStatus } from "@/app/lib/types"
 
-// Les colonnes du Kanban, dans l'ordre de la maquette.
-// (Les tâches "Annulée" n'ont pas de colonne : elles n'apparaissent pas dans le Kanban.)
+// The Kanban columns, in the mockup's order.
+// (Cancelled tasks have no column: they don't appear in the Kanban.)
 const KANBAN_COLUMNS: { status: TaskStatus; title: string }[] = [
     { status: "TODO", title: "À faire" },
     { status: "IN_PROGRESS", title: "En cours" },
     { status: "DONE", title: "Terminées" },
 ]
 
-// Composant CLIENT : il gère ce qui bouge sur la page (vue choisie, recherche).
-// Les tâches, elles, sont récupérées par la page (composant serveur) et arrivent en props.
+// CLIENT component: it handles what changes on the page (selected view, search).
+// The tasks themselves are fetched by the page (server component) and come in as props.
 export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
     const [view, setView] = useState<"list" | "kanban">("list")
     const [search, setSearch] = useState("")
 
-    // Filtrage à chaque frappe : on garde les tâches dont le titre ou la description
-    // contient le texte cherché (sans tenir compte des majuscules)
+    // Filtering on every keystroke: we keep the tasks whose title or description
+    // contains the search text (case-insensitive)
     const query = search.trim().toLowerCase()
     const filteredTasks = tasks.filter(
         (task) =>
@@ -33,7 +33,7 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
 
     return (
         <>
-            {/* Choix de la vue */}
+            {/* View selection */}
             <div className="mt-14 flex gap-2.5">
                 <Chips
                     label="Liste"
@@ -51,16 +51,16 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
 
             {view === "list" && (
                 <section className="mt-7.5 rounded-[10px] border border-grey-200 bg-white px-[59px] py-10">
-                    {/* En-tête de la carte : titre à gauche, recherche à droite */}
+                    {/* Card header: title on the left, search on the right */}
                     <div className="flex items-center justify-between">
                         <div>
-                            {/* h2 : sous-titre de la page (le h1 est "Tableau de bord") */}
+                            {/* h2: the page's subtitle (the h1 is "Tableau de bord") */}
                             <h5>Mes tâches assignées</h5>
                             <p className="mt-1 text-grey-600">Par ordre de priorité</p>
                         </div>
-                        {/* value + onChange : React connaît le texte à chaque frappe.
-                            className : les classes Tailwind passent devant celles
-                            de .input-default (marges, hauteur, largeur) */}
+                        {/* value + onChange: React knows the text on every keystroke.
+                            className: Tailwind classes take precedence over those
+                            of .input-default (margins, height, width) */}
                         <Input
                             label="Rechercher une tâche"
                             hideLabel
@@ -74,7 +74,7 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
                         />
                     </div>
 
-                    {/* La liste des tâches (ou un message s'il n'y en a pas) */}
+                    {/* The task list (or a message if there are none) */}
                     {tasks.length === 0 ? (
                         <p className="mt-10 text-grey-600">Aucune tâche ne vous est assignée.</p>
                     ) : filteredTasks.length === 0 ? (
@@ -93,17 +93,17 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
                 </section>
             )}
 
-            {/* Vue Kanban : une colonne par statut.
-                grid-cols-3 : 3 colonnes de même largeur.
-                -mx-7.5 : sur la maquette, les colonnes débordent de 30px de chaque côté. */}
+            {/* Kanban view: one column per status.
+                grid-cols-3: 3 columns of equal width.
+                -mx-7.5: in the mockup, the columns overflow by 30px on each side. */}
             {view === "kanban" && (
                 <div className="-mx-7.5 mt-12.5 grid grid-cols-3 items-start gap-[23px]">
                     {KANBAN_COLUMNS.map((column) => (
                         <KanbanColumn
                             key={column.status}
                             title={column.title}
-                            // Chaque colonne ne reçoit que les tâches de son statut
-                            // (toujours dans l'ordre de priorité, car tasks est déjà trié)
+                            // Each column only gets the tasks with its status
+                            // (still in priority order, since tasks is already sorted)
                             tasks={tasks.filter((task) => task.status === column.status)}
                         />
                     ))}

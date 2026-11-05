@@ -10,18 +10,18 @@ import ContributorsSelect from "@/app/components/ContributorsSelect/Contributors
 import TaskStatusPicker from "@/app/components/TaskStatusPicker/TaskStatusPicker"
 
 type CreateTaskFormProps = {
-    // Le projet dans lequel on crée la tâche
+    // The project in which the task is created
     projectId: string
-    // Les membres du projet (propriétaire compris) : les seules personnes assignables
+    // The project members (owner included): the only people who can be assigned
     members: UserSummary[]
-    // Appelée quand la tâche est bien créée, pour fermer la modale
+    // Called when the task has been created, to close the modal
     onSuccess: () => void
 }
 
-// Le formulaire "Créer une tâche" : la même mise en page que "Modifier" (UpdateTaskForm), mais vide
+// The "Créer une tâche" form: the same layout as "Modifier" (UpdateTaskForm), but empty
 export default function CreateTaskForm({ projectId, members, onSuccess }: CreateTaskFormProps) {
-    // On "enveloppe" la Server Action (comme UpdateTaskForm) :
-    // si c'est un succès, on prévient le parent, qui ferme la modale
+    // We "wrap" the Server Action (like UpdateTaskForm):
+    // on success, we notify the parent, which closes the modal
     async function submit(previousState: TaskFormState, formData: FormData) {
         const result = await createTaskAction(previousState, formData)
         if (result?.success) onSuccess()
@@ -30,25 +30,25 @@ export default function CreateTaskForm({ projectId, members, onSuccess }: Create
 
     const [state, formAction, isPending] = useActionState(submit, undefined)
 
-    // Bouton grisé tant que les champs obligatoires (required) ne sont pas remplis
-    // (comme CreateProjectForm). Au départ ils sont vides : le formulaire n'est pas valide.
+    // Button greyed out until the required fields are filled in
+    // (like CreateProjectForm). At first they are empty: the form is not valid.
     const [isValid, setIsValid] = useState(false)
 
-    // Après une erreur, React remet le formulaire à zéro : on garde ce qui avait été tapé
+    // After an error, React resets the form: we keep what had been typed
     const values = state?.values
 
     return (
-        // onInput : à chaque frappe, case cochée ou statut choisi, on revérifie le formulaire
+        // onInput: on every keystroke, checked box or chosen status, we re-check the form
         <form action={formAction} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
-            {/* Erreur renvoyée par l'API (titre trop court, date invalide...) */}
+            {/* Error returned by the API (title too short, invalid date...) */}
             {state && !state.success && (
                 <Alert message={state.message} errors={state.errors} variant="error" />
             )}
 
-            {/* Champ caché : l'action doit savoir dans QUEL projet créer la tâche */}
+            {/* Hidden field: the action needs to know in WHICH project to create the task */}
             <input type="hidden" name="projectId" value={projectId} />
 
-            {/* mt-0 mb-4 w-full text-sm : espacements et taille de la maquette (comme UpdateTaskForm) */}
+            {/* mt-0 mb-4 w-full text-sm: spacing and size from the mockup (like UpdateTaskForm) */}
             <Input
                 label="Titre*"
                 id="title"
@@ -68,7 +68,7 @@ export default function CreateTaskForm({ projectId, members, onSuccess }: Create
                 defaultValue={values?.description}
                 className="mt-0 mb-4 w-full text-sm"
             />
-            {/* variant="calendar" : une date à partir d'aujourd'hui (une nouvelle tâche n'est pas en retard) */}
+            {/* variant="calendar": a date from today onwards (a new task can't be overdue) */}
             <Input
                 label="Échéance*"
                 id="dueDate"
@@ -78,14 +78,14 @@ export default function CreateTaskForm({ projectId, members, onSuccess }: Create
                 className="mt-0 mb-4 w-full text-sm"
             />
 
-            {/* options : seulement les membres du projet, sans recherche.
-                valueKey="id" : l'API attend des ids d'utilisateurs (assigneeIds) */}
+            {/* options: only the project members, without search.
+                valueKey="id": the API expects user ids (assigneeIds) */}
             <ContributorsSelect label="Assigné à :" name="assigneeIds" options={members} valueKey="id" />
 
-            {/* Aucun statut coché au départ : sans choix, la tâche est "À faire" */}
+            {/* No status checked at first: without a choice, the task is "À faire" (to do) */}
             <TaskStatusPicker defaultStatus={values?.status} />
 
-            {/* mx-0 : aligné à gauche comme les champs, w-[181px] : sa largeur sur la maquette */}
+            {/* mx-0: left-aligned like the fields, w-[181px]: its width in the mockup */}
             <Button
                 label={isPending ? "Création..." : "+ Ajouter une tâche"}
                 variant="primary"

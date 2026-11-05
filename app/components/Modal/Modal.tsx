@@ -5,24 +5,24 @@ import { useEffect, useId, useRef, type ReactNode } from "react"
 type ModalProps = {
     title: string
     isOpen: boolean
-    // Appelée pour fermer : croix, touche Échap ou clic sur le fond gris
+    // Called to close: cross, Escape key or click on the grey backdrop
     onClose: () => void
     children: ReactNode
 }
 
-// Modale "générique" : elle ne sait rien du formulaire qu'elle contient.
-// Elle repose sur la balise HTML <dialog>, qui gère déjà pour nous :
-// - la touche Échap,
-// - le focus qui reste DANS la modale quand on navigue avec Tab,
-// - le reste de la page qui devient inutilisable tant qu'elle est ouverte,
-// - le retour du focus sur le bouton d'ouverture quand on la ferme.
+// "Generic" modal: it knows nothing about the form it contains.
+// It relies on the HTML <dialog> tag, which already handles for us:
+// - the Escape key,
+// - focus staying INSIDE the modal when navigating with Tab,
+// - the rest of the page becoming unusable while it's open,
+// - focus returning to the opening button when it closes.
 export default function Modal({ title, isOpen, onClose, children }: ModalProps) {
     const dialogRef = useRef<HTMLDialogElement>(null)
-    // Identifiant unique pour relier la modale à son titre (aria-labelledby)
+    // Unique id to link the modal to its title (aria-labelledby)
     const titleId = useId()
 
-    // React dit "ouverte / fermée" (isOpen), le navigateur exécute :
-    // showModal() affiche la modale par-dessus la page, close() la ferme
+    // React says "open / closed" (isOpen), the browser carries it out:
+    // showModal() shows the modal on top of the page, close() closes it
     useEffect(() => {
         const dialog = dialogRef.current
         if (!dialog) return
@@ -34,24 +34,24 @@ export default function Modal({ title, isOpen, onClose, children }: ModalProps) 
         <dialog
             ref={dialogRef}
             aria-labelledby={titleId}
-            // onClose : le navigateur a fermé la modale (touche Échap) → on prévient React
+            // onClose: the browser closed the modal (Escape key) → we notify React
             onClose={onClose}
-            // Clic sur le fond gris : la cible est le <dialog> lui-même, pas son contenu
+            // Click on the grey backdrop: the target is the <dialog> itself, not its content
             onClick={(event) => {
                 if (event.target === event.currentTarget) onClose()
             }}
-            // m-auto : centre la modale (le reset de Tailwind enlève le centrage du navigateur)
-            // backdrop: : style du fond gris derrière la modale
+            // m-auto: centers the modal (Tailwind's reset removes the browser's centering)
+            // backdrop:: style of the grey backdrop behind the modal
             className="m-auto w-[600px] max-w-[calc(100%-2rem)] rounded-[10px] bg-white p-0 backdrop:bg-black/50"
         >
-            {/* Marges intérieures et tailles reprises de la maquette Figma */}
+            {/* Padding and sizes taken from the Figma mockup */}
             <div className="relative px-[73px] pt-[76px] pb-[74px]">
                 <h2 id={titleId} className="text-2xl font-semibold text-grey-800">
                     {title}
                 </h2>
 
-                {/* Croix fine de la maquette, dessinée en SVG :
-                    currentColor = elle prend la couleur du texte (et change au survol) */}
+                {/* Thin cross from the mockup, drawn in SVG:
+                    currentColor = it takes the text color (and changes on hover) */}
                 <button
                     type="button"
                     onClick={onClose}
@@ -63,8 +63,8 @@ export default function Modal({ title, isOpen, onClose, children }: ModalProps) 
                     </svg>
                 </button>
 
-                {/* Le contenu n'existe que quand la modale est ouverte :
-                    à chaque ouverture, le formulaire repart de zéro (champs vides, pas d'ancienne erreur) */}
+                {/* The content only exists while the modal is open:
+                    each time it opens, the form starts fresh (empty fields, no old error) */}
                 {isOpen && <div className="mt-9">{children}</div>}
             </div>
         </dialog>

@@ -13,19 +13,19 @@ type UpdateTaskButtonProps = {
     task: AssignedTask
 }
 
-// Le bouton "Voir" d'une tâche + sa modale "Modifier".
-// Même principe que CreateProjectButton : composant CLIENT qui retient si la modale est ouverte.
+// A task's "Voir" button + its "Modifier" modal.
+// Same idea as CreateProjectButton: CLIENT component that remembers whether the modal is open.
 export default function UpdateTaskButton({ task }: UpdateTaskButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
-    // Les membres du projet (les seules personnes qu'on peut assigner).
-    // null = pas encore chargés
+    // The project members (the only people who can be assigned).
+    // null = not loaded yet
     const [members, setMembers] = useState<UserSummary[] | null>(null)
     const [error, setError] = useState("")
 
     async function open() {
         setIsOpen(true)
-        // Les tâches du tableau de bord ne contiennent pas les membres du projet :
-        // on les demande à chaque ouverture (quelqu'un a pu rejoindre le projet entre-temps)
+        // Dashboard tasks don't include the project members:
+        // we fetch them each time it opens (someone may have joined the project in the meantime)
         setMembers(null)
         setError("")
         const result = await getProjectMembersAction(task.projectId)
@@ -35,15 +35,15 @@ export default function UpdateTaskButton({ task }: UpdateTaskButtonProps) {
 
     return (
         <>
-            {/* Le style de .button-primary, en plus étroit :
-                mx-0 : pas de marge sur les côtés (aligné sur le bord de la carte)
-                w-auto + px-[45px] : la largeur suit le texte (au lieu des 256px de .button-primary)
-                self-auto : se range comme le reste de la colonne (au lieu d'être centré) */}
+            {/* The .button-primary style, but narrower:
+                mx-0: no side margins (aligned with the card's edge)
+                w-auto + px-[45px]: the width follows the text (instead of .button-primary's 256px)
+                self-auto: lines up like the rest of the column (instead of being centered) */}
             <Button
                 label={
                     <>
                         Voir
-                        {/* Il y a un bouton "Voir" par tâche : le titre caché dit lequel au lecteur d'écran */}
+                        {/* There's one "Voir" button per task: the hidden title tells the screen reader which one */}
                         <span className="sr-only"> la tâche {task.title}</span>
                     </>
                 }

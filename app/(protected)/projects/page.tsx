@@ -17,9 +17,9 @@ export default async function Projects() {
 
     const {projects} =response.data
 
-    // getProjects() ne donne que le NOMBRE de tâches (_count.tasks), pas leur statut.
-    // Pour "x/y tâches terminées", on demande le détail de chaque projet,
-    // tous EN MÊME TEMPS (Promise.all), et on compte les tâches "DONE".
+    // getProjects() only gives the NUMBER of tasks (_count.tasks), not their status.
+    // For "x/y tâches terminées", we fetch the details of each project,
+    // all AT THE SAME TIME (Promise.all), and count the "DONE" tasks.
     const doneTasks = await Promise.all(
         projects.map(async (project) => {
             const detail = await getProject(project.id)
@@ -38,8 +38,8 @@ export default async function Projects() {
                 <CreateProjectButton currentUserEmail={responseUser.data.user.email} />
             </div>
 
-            {/* La grille des projets : 3 cartes par ligne, 14px entre les colonnes, 18px entre les lignes.
-                doneTasks[index] : le nombre de tâches terminées du projet qui a le même rang */}
+            {/* The project grid: 3 cards per row, 14px between columns, 18px between rows.
+                doneTasks[index]: the number of completed tasks of the project at the same index */}
             {projects.length === 0 ? (
                 <p className="mt-15 text-grey-600">Vous n&apos;avez encore aucun projet.</p>
             ) : (

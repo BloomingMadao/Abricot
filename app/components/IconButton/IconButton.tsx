@@ -9,19 +9,19 @@ type IconVariant = "back" | "more"
 
 type IconButtonProps = {
     variant: IconVariant
-    // Avec href → c'est un LIEN (ex : retour vers /projects)
-    // Sans href → c'est un BOUTON, et onClick dit ce qu'il fait (ex : ouvrir un menu)
+    // With href → it's a LINK (e.g. back to /projects)
+    // Without href → it's a BUTTON, and onClick says what it does (e.g. open a menu)
     href?: string
     onClick?: () => void
-    // Ce que lit un lecteur d'écran (le bouton n'a pas de texte visible).
-    // Si tu ne le donnes pas, on prend le texte par défaut de la variante.
+    // What a screen reader reads out (the button has no visible text).
+    // If you don't provide it, the variant's default text is used.
     label?: string
-    // Pour un bouton qui ouvre un menu : true = menu ouvert (aria-expanded)
+    // For a button that opens a menu: true = menu open (aria-expanded)
     expanded?: boolean
 }
 
-// Pour chaque variante : l'icône normale, l'icône au survol/focus, et le texte par défaut.
-// Grâce au Record, TypeScript signale une erreur si tu ajoutes une variante incomplète.
+// For each variant: the normal icon, the hover/focus icon, and the default text.
+// Thanks to the Record, TypeScript reports an error if you add an incomplete variant.
 const variants: Record<IconVariant, { icon: StaticImageData; iconFocus: StaticImageData; label: string }> = {
     back: { icon: ArrowBack, iconFocus: ArrowBackFocus, label: "Retour" },
     more: { icon: SeeMore, iconFocus: SeeMoreFocus, label: "Plus d'options" },
@@ -30,17 +30,17 @@ const variants: Record<IconVariant, { icon: StaticImageData; iconFocus: StaticIm
 export default function IconButton({ variant, href, onClick, label, expanded }: IconButtonProps) {
     const { icon, iconFocus, label: defaultLabel } = variants[variant]
 
-    // "group" : les icônes à l'intérieur réagissent au survol / focus du bouton
-    // border border-grey-200 : le contour gris clair de la maquette (visible aussi sur fond blanc)
-    // shrink-0 : le bouton garde ses 57px même quand la place manque
+    // "group": the icons inside react to the button's hover / focus
+    // border border-grey-200: the light grey outline from the mockup (visible on a white background too)
+    // shrink-0: the button keeps its 57px even when space is tight
     const className =
         "group flex size-[57px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-grey-200 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
 
-    // Les deux icônes empilées, comme dans MenuItems :
-    // la normale s'efface et l'icône "focus" apparaît au survol ou au clavier
+    // The two stacked icons, as in MenuItems:
+    // the normal one fades out and the "focus" icon appears on hover or with the keyboard
     const icons = (
         <span className="relative block">
-            {/* alt="" : l'image est décorative, c'est aria-label qui donne le nom */}
+            {/* alt="": the image is decorative, aria-label provides the name */}
             <Image
                 src={icon}
                 alt=""

@@ -9,24 +9,24 @@ import Alert from "@/app/components/Alert/Alert"
 import ContributorsSelect from "@/app/components/ContributorsSelect/ContributorsSelect"
 import TaskStatusPicker from "@/app/components/TaskStatusPicker/TaskStatusPicker"
 
-// Ce dont le formulaire a besoin d'une tâche.
-// Les tâches du tableau de bord (AssignedTask) ET celles de la page d'un projet (TaskDetail)
-// ont toutes ces infos : le même formulaire sert aux deux endroits.
+// What the form needs from a task.
+// Dashboard tasks (AssignedTask) AND those on a project page (TaskDetail)
+// all have this info: the same form is used in both places.
 export type EditableTask = Pick<Task, "id" | "projectId" | "title" | "description" | "dueDate" | "status"> & {
     assignees: { user: UserSummary }[]
 }
 
 type UpdateTaskFormProps = {
     task: EditableTask
-    // Les membres du projet (propriétaire compris) : les seules personnes assignables
+    // The project members (owner included): the only people who can be assigned
     members: UserSummary[]
-    // Appelée quand la tâche est bien enregistrée, pour fermer la modale
+    // Called when the task has been saved, to close the modal
     onSuccess: () => void
 }
 
 export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskFormProps) {
-    // On "enveloppe" la Server Action :
-    // si c'est un succès, on prévient le parent, qui ferme la modale
+    // We "wrap" the Server Action:
+    // on success, we notify the parent, which closes the modal
     async function submit(previousState: TaskFormState, formData: FormData) {
         const result = await updateTaskAction(previousState, formData)
         if (result?.success) onSuccess()
@@ -35,27 +35,27 @@ export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskF
 
     const [state, formAction, isPending] = useActionState(submit, undefined)
 
-    // Comme sur la maquette, "Enregistrer" est grisé à l'ouverture : rien n'a encore changé.
-    // À la 1re modification, on vérifie le formulaire (titre vide → reste grisé).
+    // As in the mockup, "Enregistrer" is greyed out on open: nothing has changed yet.
+    // On the 1st change, we check the form (empty title → stays greyed out).
     const [isValid, setIsValid] = useState(false)
 
-    // Valeurs des champs : ce qui a été envoyé (après une erreur), sinon la tâche actuelle
+    // Field values: what was submitted (after an error), otherwise the current task
     const values = state?.values
     const currentStatus = values?.status ?? task.status
 
     return (
-        // onInput : à chaque frappe, case cochée ou statut choisi, on revérifie le formulaire
+        // onInput: on every keystroke, checked box or chosen status, we re-check the form
         <form action={formAction} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
-            {/* Erreur renvoyée par l'API (titre trop court, date invalide...) */}
+            {/* Error returned by the API (title too short, invalid date...) */}
             {state && !state.success && (
                 <Alert message={state.message} errors={state.errors} variant="error" />
             )}
 
-            {/* Champs cachés : l'action doit savoir QUELLE tâche modifier */}
+            {/* Hidden fields: the action needs to know WHICH task to edit */}
             <input type="hidden" name="projectId" value={task.projectId} />
             <input type="hidden" name="taskId" value={task.id} />
 
-            {/* mt-0 mb-4 w-full : espacements et largeur de la maquette (au lieu de ceux de .input-default) */}
+            {/* mt-0 mb-4 w-full: spacing and width from the mockup (instead of .input-default's) */}
             <Input
                 label="Titre"
                 id="title"
@@ -74,10 +74,10 @@ export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskF
                 defaultValue={values?.description ?? task.description ?? ""}
                 className="mt-0 mb-4 w-full text-sm"
             />
-            {/* type="date" et pas variant="calendar" : une tâche peut déjà être en retard.
-                Avec min = aujourd'hui, son échéance passée rendrait le formulaire invalide.
-                Un <input type="date"> attend AAAA-MM-JJ : ce sont les 10 premiers caractères
-                de la date ISO de l'API ("2026-03-09T00:00:00.000Z" → "2026-03-09") */}
+            {/* type="date" and not variant="calendar": a task may already be overdue.
+                With min = today, its past due date would make the form invalid.
+                An <input type="date"> expects YYYY-MM-DD: these are the first 10 characters
+                of the API's ISO date ("2026-03-09T00:00:00.000Z" → "2026-03-09") */}
             <Input
                 label="Échéance"
                 id="dueDate"
@@ -86,8 +86,8 @@ export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskF
                 className="mt-0 mb-4 w-full text-sm"
             />
 
-            {/* options : seulement les membres du projet, sans recherche.
-                valueKey="id" : l'API attend des ids d'utilisateurs (assigneeIds) */}
+            {/* options: only the project members, without search.
+                valueKey="id": the API expects user ids (assigneeIds) */}
             <ContributorsSelect
                 label="Assigné à :"
                 name="assigneeIds"
@@ -96,10 +96,10 @@ export default function UpdateTaskForm({ task, members, onSuccess }: UpdateTaskF
                 valueKey="id"
             />
 
-            {/* Statut : le statut actuel de la tâche est coché */}
+            {/* Status: the task's current status is checked */}
             <TaskStatusPicker defaultStatus={currentStatus} />
 
-            {/* mx-0 : aligné à gauche comme les champs, w-61 : 244px de large comme sur la maquette */}
+            {/* mx-0: left-aligned like the fields, w-61: 244px wide as in the mockup */}
             <Button
                 label={isPending ? "Enregistrement..." : "Enregistrer"}
                 variant="primary"

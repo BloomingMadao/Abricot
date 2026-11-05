@@ -5,17 +5,17 @@ import { usePathname } from "next/navigation";
 import DeskConnection from "@/public/image/desk-img.jpg";
 import DeskRegister from "@/public/image/desk-register.jpg";
 
-// Quelle image pour quelle URL
+// Which image for which URL
 const images: Record<string, StaticImageData> = {
   "/connection": DeskConnection,
   "/register": DeskRegister,
 };
 
 export default function AuthImage() {
-  // L'URL actuelle, par exemple "/connection" ou "/register"
+  // The current URL, for example "/connection" or "/register"
   const pathname = usePathname();
 
-  // L'image qui correspond à l'URL (ou l'image de connexion par défaut)
+  // The image matching the URL (or the login image by default)
   const image = images[pathname] ?? DeskConnection;
 
   return (

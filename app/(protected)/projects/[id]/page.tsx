@@ -9,8 +9,8 @@ import UpdateProjectButton from "@/app/components/UpdateProjectButton/UpdateProj
 import CreateTaskButton from "@/app/components/CreateTaskButton/CreateTaskButton";
 import ProjectTasks from "@/app/components/ProjectTasks/ProjectTasks";
 
-// params : la partie variable de l'adresse (/projects/[id])
-// searchParams : ce qui suit le "?" dans l'adresse (ex : ?created=1 après une création)
+// params: the variable part of the URL (/projects/[id])
+// searchParams: what comes after the "?" in the URL (e.g. ?created=1 after a creation)
 type Props = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ created?: string }>;
@@ -19,10 +19,10 @@ type Props = {
 export default async function ProjectsDetails({ params, searchParams }: Props) {
   const { id} = await params;
   const { created } = await searchParams;
-  // getProject : le projet (nom, propriétaire, membres...)
-  // getProjectTasks : ses tâches AVEC les personnes assignées et les commentaires
-  // (les tâches de getProject n'en ont pas)
-  // getProfile : la personne connectée (sa pastille à côté de "Ajouter un commentaire")
+  // getProject: the project (name, owner, members...)
+  // getProjectTasks: its tasks WITH their assignees and comments
+  // (the tasks from getProject don't have them)
+  // getProfile: the logged-in user (their avatar next to "Ajouter un commentaire")
   const [responseProject, responseTasks, responseUser] = await Promise.all([
     getProject(id),
     getProjectTasks(id),
@@ -39,12 +39,12 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
 
   const {project} = responseProject.data
   const {tasks} = responseTasks.data
-  // console.log("tâches",tasks);
-  // console.log("Projet : ",project);
-  // console.log("Nombre de tâches : ",project._count.tasks);
-  // console.log("membres : ",project.members);
+  // console.log("tasks",tasks);
+  // console.log("Project: ",project);
+  // console.log("Number of tasks: ",project._count.tasks);
+  // console.log("members: ",project.members);
 
-  // Si le projet n'existe pas, afficher un message
+  // If the project doesn't exist, show a message
   if (!project) {
     return (
       <div>
@@ -54,34 +54,34 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
     );
   }
 
-  // La personne connectée, au format des autres personnes (UserSummary) :
-  // le profil n'a pas toujours de nom (name absent), UserSummary attend null dans ce cas
+  // The logged-in user, in the same format as other people (UserSummary):
+  // the profile doesn't always have a name (name missing), UserSummary expects null in that case
   const { user } = responseUser.data
   const currentUser = { id: user.id, email: user.email, name: user.name ?? null }
 
-  // Les personnes qu'on peut assigner à une tâche : le propriétaire + les membres
-  // (⚠️ l'API ne met pas le propriétaire dans members)
+  // People who can be assigned to a task: the owner + the members
+  // (⚠️ the API does not include the owner in members)
   const members = [project.owner, ...project.members.map((member) => member.user)]
 
-  // Seuls le propriétaire et les admins peuvent modifier le projet (l'API refuse les autres) :
-  // le lien "Modifier" n'est affiché que pour eux
+  // Only the owner and admins can edit the project (the API rejects everyone else):
+  // the "Modifier" link is only shown to them
   const canEdit = project.userRole === "ADMIN"
 
-  // "Par ordre de priorité" : Urgente, Haute, Moyenne, puis Basse (comme sur le tableau de bord).
-  // [...] fait une copie (sort() modifie le tableau d'origine).
+  // "Par ordre de priorité" (by priority): Urgent, High, Medium, then Low (same as on the dashboard).
+  // [...] makes a copy (sort() mutates the original array).
   const sortedTasks = [...tasks].sort(
     (a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]
   )
 
   return (
-    // px-11 : sur la maquette, le bouton retour est à 44px du bord ;
-    // le reste du contenu est 68px plus loin (mx-[68px] plus bas)
+    // px-11: in the mockup, the back button is 44px from the edge;
+    // the rest of the content is 68px further in (mx-[68px] below)
     <div className="px-11 pt-[78px] pb-[98px]">
-      {/* On arrive de "Créer un projet" : message de confirmation */}
+      {/* Coming from "Créer un projet": confirmation message */}
       {created && <ProjectCreatedAlert projectName={project.name} />}
 
-      {/* En-tête : retour + nom + description à gauche, boutons à droite.
-          items-end : les boutons sont alignés sur le bas de la description (comme sur la maquette) */}
+      {/* Header: back + name + description on the left, buttons on the right.
+          items-end: the buttons are aligned with the bottom of the description (as in the mockup) */}
       <div className="flex items-end justify-between gap-6 pr-[68px]">
         <div className="flex items-start gap-4">
           <IconButton
@@ -91,7 +91,7 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
           <div>
             <div className="flex flex-wrap items-baseline gap-x-4">
               <h5>{project.name}</h5>
-              {/* "Modifier" : ouvre la modale "Modifier un projet" (seulement pour le propriétaire / un admin) */}
+              {/* "Modifier": opens the "Modifier un projet" modal (only for the owner / an admin) */}
               {canEdit && (
                 <UpdateProjectButton
                   project={{ id: project.id, name: project.name, description: project.description }}
@@ -106,16 +106,16 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
           </div>
         </div>
 
-        {/* "Créer une tâche" (bouton + modale) et IA (affiché, on s'en occupera plus tard).
-            className : les classes Tailwind passent devant celles des boutons
-            (mx-0 : pas de marge, w-auto : largeur selon le texte, self-auto : pas centré) */}
+        {/* "Créer une tâche" (button + modal) and AI (displayed, to be handled later).
+            className: Tailwind classes take precedence over the buttons' own classes
+            (mx-0: no margin, w-auto: width fits the text, self-auto: not centered) */}
         <div className="flex shrink-0 gap-3">
           <CreateTaskButton projectId={project.id} members={members} />
           <Button
             label={
               <>
-                {/* L'étoile de la maquette, dessinée en SVG.
-                    currentColor : elle prend la couleur du texte (et change avec lui au survol) */}
+                {/* The star from the mockup, drawn in SVG.
+                    currentColor: it takes the text color (and changes with it on hover) */}
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
                   <path d="M9 0C9.6 4.8 13.2 8.4 18 9C13.2 9.6 9.6 13.2 9 18C8.4 13.2 4.8 9.6 0 9C4.8 8.4 8.4 4.8 9 0Z" />
                 </svg>
@@ -124,13 +124,13 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
             }
             type="button"
             variant="highlight"
-            // py-3 : .button-highlight a une bordure (2px de plus), py-3 garde 50px de haut
+            // py-3: .button-highlight has a border (2px more), py-3 keeps it 50px tall
             className="mx-0 flex w-auto items-center gap-[13px] self-auto px-6 py-3"
           />
         </div>
       </div>
 
-      {/* Contributeurs puis Tâches, 34px entre les deux */}
+      {/* Contributors then Tasks, 34px between them */}
       <div className="mx-[68px] mt-[50px] flex flex-col gap-[34px]">
         <ContributorsBar
           owner={project.owner}

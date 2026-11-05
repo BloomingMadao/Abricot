@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-// Pages accessibles sans être connecté (adapte à tes routes)
+// Pages accessible without being logged in (adapt to your routes)
 const publicRoutes = ["/connection", "/register", "/debug"]
 
 export function proxy(request: NextRequest) {
@@ -8,12 +8,12 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value
   const isPublic = publicRoutes.includes(pathname)
 
-  // Non connecté sur une page protégée → page de connexion
+  // Not logged in on a protected page → login page
   if (!token && !isPublic) {
     return NextResponse.redirect(new URL("/connection", request.url))
   }
 
-  // Déjà connecté sur connexion/inscription → accueil
+  // Already logged in on login/sign-up → home
   if (token && isPublic) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
@@ -22,6 +22,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Exclut les fichiers statiques (images, favicon…) et l'API
+  // Excludes static files (images, favicon…) and the API
   matcher: ["/((?!api|_next/static|_next/image|.*\\..*).*)"],
 }

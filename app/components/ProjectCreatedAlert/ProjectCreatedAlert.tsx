@@ -8,10 +8,10 @@ type ProjectCreatedAlertProps = {
     projectName: string
 }
 
-// Le message "Le projet ... a été créé", en bas à droite de l'écran.
-// La page du projet l'affiche quand l'adresse se termine par ?created=1
-// (c'est createProjectAction qui ajoute ce ?created=1 en redirigeant).
-// Composant CLIENT : il retient si le message est fermé (croix).
+// The "Le projet ... a été créé" message, at the bottom right of the screen.
+// The project page shows it when the URL ends with ?created=1
+// (createProjectAction is what adds this ?created=1 when redirecting).
+// CLIENT component: it remembers whether the message has been dismissed (cross).
 export default function ProjectCreatedAlert({ projectName }: ProjectCreatedAlertProps) {
     const [isVisible, setIsVisible] = useState(true)
     const pathname = usePathname()
@@ -20,16 +20,16 @@ export default function ProjectCreatedAlert({ projectName }: ProjectCreatedAlert
 
     function close() {
         setIsVisible(false)
-        // On enlève ?created=1 de l'adresse (sans recharger la page) : si on actualise
-        // la page ou qu'on copie le lien, le message ne revient pas.
-        // On le fait à la fermeture, et PAS dès l'arrivée sur la page : juste après la
-        // redirection, Next.js finit encore d'afficher la page, et changer l'adresse à ce
-        // moment-là peut perturber son routeur (erreur "called use() to suspend...").
+        // We remove ?created=1 from the URL (without reloading the page): if the page is
+        // refreshed or the link is copied, the message doesn't come back.
+        // We do it on close, and NOT as soon as we land on the page: right after the
+        // redirect, Next.js is still finishing rendering the page, and changing the URL at that
+        // moment can disrupt its router ("called use() to suspend..." error).
         window.history.replaceState(null, "", pathname)
     }
 
     return (
-        // fixed : posé par-dessus la page, en bas à droite (comme avant dans CreateProjectButton)
+        // fixed: placed on top of the page, at the bottom right (as before in CreateProjectButton)
         <div className="fixed right-6 bottom-6 z-50">
             <Alert
                 message={`Le projet « ${projectName} » a été créé`}

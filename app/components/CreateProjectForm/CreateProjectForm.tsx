@@ -8,25 +8,25 @@ import Alert from "@/app/components/Alert/Alert"
 import ContributorsSelect from "@/app/components/ContributorsSelect/ContributorsSelect"
 
 type CreateProjectFormProps = {
-    // Email de la personne connectée : on ne la propose pas comme contributeur
+    // Logged-in user's email: they are not suggested as a contributor
     currentUserEmail?: string
 }
 
 export default function CreateProjectForm({ currentUserEmail }: CreateProjectFormProps) {
-    // Si la création réussit, l'action redirige vers la page du nouveau projet
-    // (la modale disparaît avec la page). Sinon elle renvoie l'erreur, affichée ci-dessous.
-    // isPending reste vrai jusqu'à l'arrivée sur la nouvelle page : "Création..." pendant tout ce temps.
+    // If creation succeeds, the action redirects to the new project's page
+    // (the modal disappears with the page). Otherwise it returns the error, shown below.
+    // isPending stays true until we reach the new page: "Création..." the whole time.
     const [state, formAction, isPending] = useActionState(createProjectAction, undefined)
 
-    // Bouton grisé tant que les champs obligatoires (required) ne sont pas remplis.
-    // checkValidity() demande au navigateur si TOUS les champs du formulaire sont valides.
-    // Au départ les champs sont vides : le formulaire n'est pas valide.
+    // Button greyed out until the required fields are filled in.
+    // checkValidity() asks the browser whether ALL the form's fields are valid.
+    // At first the fields are empty: the form is not valid.
     const [isValid, setIsValid] = useState(false)
 
     return (
-        // onInput : à chaque frappe dans un champ, on revérifie le formulaire
+        // onInput: on every keystroke in a field, we re-check the form
         <form action={formAction} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
-            {/* Erreur renvoyée par l'API (nom trop court, trop long...) */}
+            {/* Error returned by the API (name too short, too long...) */}
             {state && !state.success && (
                 <Alert message={state.message} errors={state.errors} variant="error" />
             )}
@@ -51,9 +51,9 @@ export default function CreateProjectForm({ currentUserEmail }: CreateProjectFor
             />
             <ContributorsSelect label="Contributeurs" name="contributors" excludeEmail={currentUserEmail} />
 
-            {/* Champs : mt-0 mb-6 = espacements plus serrés de la maquette (au lieu de ceux de .input-default)
-                className : les classes Tailwind passent devant celles de .button-primary
-                (mx-0 : aligné à gauche comme les champs, w-auto + px-7 : largeur de la maquette) */}
+            {/* Fields: mt-0 mb-6 = the mockup's tighter spacing (instead of .input-default's)
+                className: Tailwind classes take precedence over those of .button-primary
+                (mx-0: left-aligned like the fields, w-auto + px-7: width from the mockup) */}
             <Button
                 label={isPending ? "Création..." : "Ajouter un projet"}
                 variant="primary"

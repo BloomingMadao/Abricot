@@ -1,15 +1,15 @@
 export default function Loader() {
     return (
-        // role="status" : annonce aux lecteurs d'écran que quelque chose se charge
+        // role="status": tells screen readers that something is loading
         <div role="status" className="flex justify-center">
-            {/* aria-hidden : le dessin est décoratif, c'est le texte caché qui est lu */}
+            {/* aria-hidden: the drawing is decorative, the hidden text is what gets read */}
             <svg
                 className="size-9 animate-spin text-brand"
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-hidden="true"
             >
-                {/* Le cercle complet, pâle : le "rail" */}
+                {/* The full, pale circle: the "track" */}
                 <circle
                     className="opacity-25"
                     cx="12"
@@ -18,7 +18,7 @@ export default function Loader() {
                     stroke="currentColor"
                     strokeWidth="4"
                 />
-                {/* Un quart de cercle, foncé : c'est lui qu'on voit tourner */}
+                {/* A dark quarter circle: this is the part you see spinning */}
                 <path
                     className="opacity-75"
                     fill="currentColor"
@@ -26,7 +26,7 @@ export default function Loader() {
                 />
             </svg>
 
-            {/* sr-only : invisible à l'écran, mais lu par les lecteurs d'écran */}
+            {/* sr-only: invisible on screen, but read by screen readers */}
             <span className="sr-only">Chargement…</span>
         </div>
     )

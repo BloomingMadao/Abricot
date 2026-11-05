@@ -1,17 +1,17 @@
 import type { ReactNode } from "react"
 
 type ButtonProps = {
-    // Le texte du bouton. ReactNode (et pas seulement string) : on peut y mettre
-    // du HTML, ex : un texte caché pour les lecteurs d'écran (<span className="sr-only">)
+    // The button's content. ReactNode (and not just string): it can contain
+    // HTML, e.g. hidden text for screen readers (<span className="sr-only">)
     label: ReactNode
     variant?: "primary" | "secondary" | "highlight" |"disabled"
-    // "submit" envoie le formulaire, "button" ne fait rien tout seul (pour un onClick)
+    // "submit" submits the form, "button" does nothing on its own (for an onClick)
     type?: "submit" | "button" | "reset"
     disabled?: boolean
-    // Ce qui se passe au clic (pour un bouton type="button", ex : ouvrir une modale)
+    // What happens on click (for a type="button" button, e.g. opening a modal)
     onClick?: () => void
-    // Classes en plus, ex : "mx-0 w-61" pour une autre largeur que celle de .button-primary
-    // (les classes Tailwind passent devant celles de .button-primary)
+    // Extra classes, e.g. "mx-0 w-61" for a different width than .button-primary's
+    // (Tailwind classes take precedence over those of .button-primary)
     className?: string
 }
 
@@ -28,7 +28,7 @@ export default function Button({
             type={type}
             onClick={onClick}
             className={`button-${variant} ${className}`}
-            // La variante "disabled" désactive aussi vraiment le bouton, pas seulement son style
+            // The "disabled" variant also actually disables the button, not just its style
             disabled={disabled || variant === "disabled"}
         >
             {label}

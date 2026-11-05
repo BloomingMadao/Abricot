@@ -21,27 +21,27 @@ export default function MenuItems({ label, icon, href }: MenuItemsProps) {
   const iconSrc = isDashboard ? DashboardIcon : FolderIcon
   const iconHoverSrc = isDashboard ? DashboardIconHover : FolderIconHover
 
-  // L'URL actuelle, par exemple "/projects/123"
+  // The current URL, for example "/projects/123"
   const pathname = usePathname()
 
-  // Le lien est actif si on est sur sa page OU sur une de ses sous-pages
-  // (sur /projects/123, "Projets" reste actif).
-  // href !== "" : évite que les liens de test de /debug soient toujours actifs.
+  // The link is active if we're on its page OR on one of its sub-pages
+  // (on /projects/123, "Projets" stays active).
+  // href !== "": prevents the test links in /debug from always being active.
   const isActive =
     href !== "" && (pathname === href || pathname.startsWith(`${href}/`))
 
   return (
-    // "group" : permet aux éléments à l'intérieur de réagir au lien (survol, page active)
-    // aria-current="page" : indique la page actuelle aux lecteurs d'écran,
-    // et sert AUSSI à Tailwind pour appliquer le style actif (aria-[current=page]:)
+    // "group": lets the elements inside react to the link (hover, active page)
+    // aria-current="page": tells screen readers which page is the current one,
+    // and is ALSO used by Tailwind to apply the active style (aria-[current=page]:)
     <Link
       href={href}
       aria-current={isActive ? "page" : undefined}
       className="group flex w-[248px] items-center justify-center gap-4 rounded-[10px] px-4 py-[27px] text-brand-dark transition-colors duration-300 ease-out hover:bg-grey-950 hover:text-white aria-[current=page]:bg-grey-950 aria-[current=page]:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
     >
-      {/* Cadre de 24x24 px dans lequel les deux icônes sont empilées */}
+      {/* 24x24 px frame in which the two icons are stacked */}
       <span className="relative size-6 shrink-0">
-        {/* Icône normale : s'efface au survol ou sur la page active */}
+        {/* Normal icon: fades out on hover or on the active page */}
         <Image
           src={iconSrc}
           alt=""
@@ -49,7 +49,7 @@ export default function MenuItems({ label, icon, href }: MenuItemsProps) {
           className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-0 group-aria-[current=page]:opacity-0"
         />
 
-        {/* Icône blanche : apparaît au survol ou sur la page active */}
+        {/* White icon: appears on hover or on the active page */}
         <Image
           src={iconHoverSrc}
           alt=""

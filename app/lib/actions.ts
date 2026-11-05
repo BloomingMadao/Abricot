@@ -2,12 +2,12 @@
 
 /**
  * ============================================================================
- *  SERVER ACTIONS (les fonctions appelées par les formulaires)
+ *  SERVER ACTIONS (the functions called by the forms)
  * ============================================================================
- *  "use server" en haut du fichier : toutes ces fonctions s'exécutent sur le
- *  SERVEUR, même quand elles sont appelées depuis un composant client.
- *  Elles font le lien entre un formulaire (qui envoie un FormData) et api.ts
- *  (qui attend un objet { email, password, ... }).
+ *  "use server" at the top of the file: all these functions run on the
+ *  SERVER, even when they are called from a client component.
+ *  They bridge a form (which sends FormData) and api.ts
+ *  (which expects an object { email, password, ... }).
  * ============================================================================
  */
 
@@ -33,28 +33,28 @@ import {
 } from "@/app/lib/api";
 import type { ApiError, TaskStatus, UserSummary } from "@/app/lib/types";
 
-/** Ce que l'action renvoie au formulaire quand il y a une erreur */
+/** What the action returns to the form when there's an error */
 export type AuthFormState =
   | {
-      message: string; // message général, ex : "Email ou mot de passe incorrect"
-      errors: string[]; // détails des erreurs de validation (mot de passe trop faible...)
-      values: Record<string, string>; // ce que l'utilisateur avait tapé, pour pré-remplir les champs
+      message: string; // general message, e.g. "Email ou mot de passe incorrect"
+      errors: string[]; // details of validation errors (password too weak...)
+      values: Record<string, string>; // what the user had typed, to pre-fill the fields
     }
   | undefined;
 
-/** Range le token JWT dans un cookie : api.ts le relira à chaque appel au backend */
+/** Stores the JWT token in a cookie: api.ts will read it back on every backend call */
 async function saveToken(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_COOKIE_NAME, token, {
-    httpOnly: true, // le JavaScript du navigateur ne peut pas lire le cookie (sécurité)
-    secure: process.env.NODE_ENV === "production", // HTTPS obligatoire en production
+    httpOnly: true, // the browser's JavaScript cannot read the cookie (security)
+    secure: process.env.NODE_ENV === "production", // HTTPS required in production
     sameSite: "lax",
-    path: "/", // valable sur tout le site
-    maxAge: 60 * 60 * 24 * 7, // 7 jours, comme le token du backend
+    path: "/", // valid across the whole site
+    maxAge: 60 * 60 * 24 * 7, // 7 days, like the backend token
   });
 }
 
-/** Transforme une erreur de l'API en état pour le formulaire */
+/** Turns an API error into a state for the form */
 function toFormState(response: ApiError, values: Record<string, string>): AuthFormState {
   return {
     message: response.message,
@@ -63,45 +63,45 @@ function toFormState(response: ApiError, values: Record<string, string>): AuthFo
   };
 }
 
-/** Formulaire de connexion */
+/** Login form */
 export async function loginAction(
   _previousState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
-  // 1. Lire les champs du formulaire (grâce à leur attribut "name")
+  // 1. Read the form fields (thanks to their "name" attribute)
   const email = String(formData.get("mail") ?? "");
   const password = String(formData.get("password") ?? "");
 
   
 
-  // 2. Appeler l'API (mock ou vrai backend, selon .env.local)
+  // 2. Call the API (mock or real backend, depending on .env.local)
   const response = await login({ email, password });
 
-  // 3. Erreur : on renvoie le message au formulaire, qui l'affichera
+  // 3. Error: send the message back to the form, which will display it
   if (!response.success) {
     return toFormState(response, { mail: email });
   }
 
-  // 4. Succès : on garde le token, puis on part sur le tableau de bord
+  // 4. Success: keep the token, then go to the dashboard
   await saveToken(response.data.token);
   redirect("/dashboard");
 }
 
-/** Formulaire d'inscription */
+/** Sign-up form */
 export async function registerAction(
   _previousState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
-  // 1. Lire les champs du formulaire
+  // 1. Read the form fields
   const firstname = String(formData.get("firstname") ?? "").trim();
   const lastname = String(formData.get("lastname") ?? "").trim();
   const email = String(formData.get("mail") ?? "");
   const password = String(formData.get("newPassword") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
-  // 2. Les deux mots de passe doivent être identiques.
-  //    On RENVOIE une erreur au formulaire (on ne fait pas "throw") :
-  //    elle s'affiche dans le bloc role="alert", comme les erreurs de l'API.
+  // 2. Both passwords must match.
+  //    We RETURN an error to the form (we don't "throw"):
+  //    it shows up in the role="alert" block, like the API errors.
   if (password !== confirmPassword) {
     return {
       message: "Les mots de passe ne correspondent pas",
@@ -110,44 +110,44 @@ export async function registerAction(
     };
   }
 
-  // 3. Appeler l'API — le backend n'a qu'un champ "name" : on y met "Prénom Nom"
+  // 3. Call the API — the backend only has a "name" field: we put "FirstName LastName" in it
   const response = await register({
     email,
     password,
     name: `${firstname} ${lastname}`.trim(),
   });
 
-  // 4. Erreur : on renvoie le message (et ce qui avait été tapé, sauf le mot de passe)
+  // 4. Error: send back the message (and what had been typed, except the password)
   if (!response.success) {
     return toFormState(response, { firstname, lastname, mail: email });
   }
 
-  // 5. Succès : l'utilisateur est inscrit ET connecté (le backend renvoie un token)
+  // 5. Success: the user is signed up AND logged in (the backend returns a token)
   await saveToken(response.data.token);
   redirect("/dashboard");
 }
 
-/** Ce que l'action du profil renvoie au formulaire (succès OU erreur) */
+/** What the profile action returns to the form (success OR error) */
 export type ProfileFormState =
   | {
-      success: boolean; // true = enregistré (alerte verte), false = erreur (alerte rouge)
+      success: boolean; // true = saved (green alert), false = error (red alert)
       message: string;
       errors: string[];
-      values: Record<string, string>; // ce que l'utilisateur a tapé, pour pré-remplir les champs
+      values: Record<string, string>; // what the user typed, to pre-fill the fields
     }
   | undefined;
 
-/** Liste des messages d'erreur détaillés d'une réponse de l'API */
+/** List of detailed error messages from an API response */
 function errorMessages(response: ApiError): string[] {
   return response.data?.errors.map((error) => error.message) ?? [];
 }
 
-/** Formulaire "Mon compte" */
+/** "Mon compte" form */
 export async function updateProfileAction(
   _previousState: ProfileFormState,
   formData: FormData
 ): Promise<ProfileFormState> {
-  // 1. Lire les champs du formulaire
+  // 1. Read the form fields
   const firstname = String(formData.get("firstname") ?? "").trim();
   const lastname = String(formData.get("lastname") ?? "").trim();
   const email = String(formData.get("mail") ?? "").trim();
@@ -155,8 +155,8 @@ export async function updateProfileAction(
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const values = { firstname, lastname, mail: email };
 
-  // 2. Pour changer de mot de passe, l'API exige aussi le mot de passe actuel.
-  //    On vérifie AVANT d'enregistrer quoi que ce soit.
+  // 2. To change the password, the API also requires the current password.
+  //    We check BEFORE saving anything.
   if (newPassword && !currentPassword) {
     return {
       success: false,
@@ -166,8 +166,8 @@ export async function updateProfileAction(
     };
   }
 
-  // 3. Mot de passe EN PREMIER, seulement si un nouveau a été tapé (vide = on n'y touche pas).
-  //    Si le mot de passe actuel est faux, on s'arrête là : rien n'est enregistré.
+  // 3. Password FIRST, only if a new one was typed (empty = left untouched).
+  //    If the current password is wrong, we stop there: nothing is saved.
   if (newPassword) {
     const passwordResponse = await updatePassword({ currentPassword, newPassword });
     if (!passwordResponse.success) {
@@ -180,7 +180,7 @@ export async function updateProfileAction(
     }
   }
 
-  // 4. Nom et email — le backend n'a qu'un champ "name" : on y met "Prénom Nom"
+  // 4. Name and email — the backend only has a "name" field: we put "FirstName LastName" in it
   const profileResponse = await updateProfile({
     name: `${firstname} ${lastname}`.trim(),
     email,
@@ -194,8 +194,8 @@ export async function updateProfileAction(
     };
   }
 
-  // 5. Le nom a pu changer : on demande à Next.js de recalculer les pages,
-  //    pour que le Header (les initiales) et cette page affichent les nouvelles infos
+  // 5. The name may have changed: we ask Next.js to re-render the pages,
+  //    so that the Header (the initials) and this page show the new info
   revalidatePath("/", "layout");
 
   return {
@@ -206,30 +206,30 @@ export async function updateProfileAction(
   };
 }
 
-/** Ce que l'action de création de projet renvoie au formulaire (même forme que ProfileFormState) */
+/** What the project creation action returns to the form (same shape as ProfileFormState) */
 export type ProjectFormState =
   | {
       success: boolean;
       message: string;
       errors: string[];
-      values: Record<string, string>; // ce qui a été tapé, pour pré-remplir les champs
+      values: Record<string, string>; // what was typed, to pre-fill the fields
     }
   | undefined;
 
-/** Formulaire "Créer un projet" (dans la modale) */
+/** "Créer un projet" form (in the modal) */
 export async function createProjectAction(
   _previousState: ProjectFormState,
   formData: FormData
 ): Promise<ProjectFormState> {
-  // 1. Lire les champs du formulaire.
-  //    getAll : il y a une case cochée "contributors" PAR personne choisie
+  // 1. Read the form fields.
+  //    getAll: there's one checked "contributors" box PER selected person
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const contributors = formData.getAll("contributors").map(String);
   const values = { name, description };
 
-  // 2. La maquette rend la description obligatoire (l'API, elle, l'accepte vide).
-  //    On le vérifie aussi ici : le "required" du navigateur peut être contourné.
+  // 2. The mockup makes the description required (the API, however, accepts it empty).
+  //    We also check it here: the browser's "required" can be bypassed.
   if (!description) {
     return {
       success: false,
@@ -239,10 +239,10 @@ export async function createProjectAction(
     };
   }
 
-  // 3. Appeler l'API
+  // 3. Call the API
   const response = await createProject({ name, description, contributors });
 
-  // 3. Erreur : on renvoie le message, la modale reste ouverte
+  // 3. Error: send back the message, the modal stays open
   if (!response.success) {
     return {
       success: false,
@@ -252,30 +252,30 @@ export async function createProjectAction(
     };
   }
 
-  // 4. Succès : les pages qui affichent des projets devront se recalculer
+  // 4. Success: the pages that display projects will need to re-render
   revalidatePath("/", "layout");
 
-  // 5. Puis on part sur la page du projet qui vient d'être créé.
-  //    L'API renvoie le projet créé, avec son id : c'est lui qui donne l'adresse.
-  //    ?created=1 : dit à la page du projet d'afficher "Le projet ... a été créé"
-  //    (Comme pour loginAction : redirect() arrête la fonction, rien n'est renvoyé au formulaire)
+  // 5. Then go to the page of the project that was just created.
+  //    The API returns the created project, with its id: that's what gives the URL.
+  //    ?created=1: tells the project page to show "Le projet ... a été créé"
+  //    (As with loginAction: redirect() stops the function, nothing is returned to the form)
   redirect(`/projects/${response.data.project.id}?created=1`);
 }
 
-/** Formulaire "Modifier le projet" (modale ouverte par le lien "Modifier" de la page du projet) */
+/** "Modifier le projet" form (modal opened by the "Modifier" link on the project page) */
 export async function updateProjectAction(
   _previousState: ProjectFormState,
   formData: FormData
 ): Promise<ProjectFormState> {
-  // 1. Lire les champs. projectId : champ caché (QUEL projet modifier).
-  //    getAll : une case cochée "contributors" PAR personne gardée ou ajoutée (son email)
+  // 1. Read the fields. projectId: hidden field (WHICH project to edit).
+  //    getAll: one checked "contributors" box PER person kept or added (their email)
   const projectId = String(formData.get("projectId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const contributors = formData.getAll("contributors").map(String);
   const values = { name, description };
 
-  // 2. Description obligatoire, comme à la création
+  // 2. Description required, as on creation
   if (!description) {
     return {
       success: false,
@@ -285,7 +285,7 @@ export async function updateProjectAction(
     };
   }
 
-  // 3. Le nom et la description
+  // 3. The name and the description
   const response = await updateProject(projectId, { name, description });
   if (!response.success) {
     return {
@@ -296,25 +296,25 @@ export async function updateProjectAction(
     };
   }
 
-  // 4. Les contributeurs. L'API ne sait pas "remplacer la liste" d'un coup :
-  //    on compare avec les membres actuels (renvoyés par updateProject),
-  //    puis on AJOUTE les nouveaux et on RETIRE ceux qui ont été décochés.
+  // 4. The contributors. The API can't "replace the list" in one go:
+  //    we compare with the current members (returned by updateProject),
+  //    then we ADD the new ones and REMOVE those that were unchecked.
   const currentMembers = response.data.project.members.map((member) => member.user);
   const toAdd = contributors.filter(
     (email) => !currentMembers.some((user) => user.email === email)
   );
   const toRemove = currentMembers.filter((user) => !contributors.includes(user.email));
 
-  // Tous les appels partent EN MÊME TEMPS (Promise.all)
+  // All the calls are sent AT THE SAME TIME (Promise.all)
   const results = await Promise.all([
     ...toAdd.map((email) => addContributor(projectId, { email })),
     ...toRemove.map((user) => removeContributor(projectId, user.id)),
   ]);
 
-  // 5. La page du projet (et la liste des projets) se recalculent
+  // 5. The project page (and the project list) re-render
   revalidatePath("/", "layout");
 
-  // 6. Un ajout ou un retrait a échoué : on le dit (le nom et la description, eux, sont enregistrés)
+  // 6. An addition or removal failed: we say so (the name and description, however, are saved)
   const failed = results.filter((result) => !result.success);
   if (failed.length > 0) {
     return {
@@ -328,8 +328,8 @@ export async function updateProjectAction(
   return { success: true, message: "Projet modifié", errors: [], values };
 }
 
-/** Recherche d'utilisateurs pour la liste "Contributeurs" (appelée pendant la frappe).
- *  Ce n'est pas un formulaire : la fonction reçoit directement le texte tapé. */
+/** Searches users for the "Contributeurs" list (called while typing).
+ *  It's not a form: the function receives the typed text directly. */
 export async function searchUsersAction(
   query: string
 ): Promise<{ users: UserSummary[]; error?: string }> {
@@ -338,8 +338,8 @@ export async function searchUsersAction(
   return { users: response.data.users };
 }
 
-/** Les membres d'un projet, propriétaire compris : les seules personnes qu'on peut
- *  assigner à une tâche (l'API refuse les autres). Appelée à l'ouverture de la modale "Modifier". */
+/** A project's members, owner included: the only people who can be
+ *  assigned to a task (the API rejects others). Called when the "Modifier" modal opens. */
 export async function getProjectMembersAction(
   projectId: string
 ): Promise<{ members: UserSummary[]; error?: string }> {
@@ -347,42 +347,42 @@ export async function getProjectMembersAction(
   if (!response.success) return { members: [], error: response.message };
 
   const { owner, members } = response.data.project;
-  // ⚠️ L'API ne met pas le propriétaire dans members : on l'ajoute en premier
+  // ⚠️ The API does not include the owner in members: we add them first
   return { members: [owner, ...members.map((member) => member.user)] };
 }
 
-/** Même forme que pour un projet : success, message, errors, values */
+/** Same shape as for a project: success, message, errors, values */
 export type TaskFormState = ProjectFormState;
 
-/** Formulaire "Modifier" une tâche (dans la modale du tableau de bord) */
+/** Task "Modifier" form (in the dashboard modal) */
 export async function updateTaskAction(
   _previousState: TaskFormState,
   formData: FormData
 ): Promise<TaskFormState> {
-  // 1. Quelle tâche ? (champs cachés du formulaire)
+  // 1. Which task? (hidden form fields)
   const projectId = String(formData.get("projectId") ?? "");
   const taskId = String(formData.get("taskId") ?? "");
 
-  // 2. Les champs. getAll : une case cochée "assigneeIds" PAR personne assignée
-  //    (aucune case cochée = tableau vide = plus personne d'assigné)
+  // 2. The fields. getAll: one checked "assigneeIds" box PER assigned person
+  //    (no box checked = empty array = nobody assigned anymore)
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const dueDate = String(formData.get("dueDate") ?? ""); // "" = échéance effacée
+  const dueDate = String(formData.get("dueDate") ?? ""); // "" = due date cleared
   const status = String(formData.get("status") ?? "");
   const assigneeIds = formData.getAll("assigneeIds").map(String);
   const values = { title, description, dueDate, status };
 
-  // 3. Appeler l'API (elle vérifie elle-même le titre, la date, le statut...)
+  // 3. Call the API (it checks the title, date, status... itself)
   const response = await updateTask(projectId, taskId, {
     title,
     description,
     dueDate,
-    // Aucun statut choisi (tâche "Annulée", absente des choix) : on n'envoie rien, il ne change pas
+    // No status chosen ("Annulée" task, not among the choices): send nothing, it doesn't change
     status: status ? (status as TaskStatus) : undefined,
     assigneeIds,
   });
 
-  // 4. Erreur : on renvoie le message, la modale reste ouverte
+  // 4. Error: send back the message, the modal stays open
   if (!response.success) {
     return {
       success: false,
@@ -392,19 +392,19 @@ export async function updateTaskAction(
     };
   }
 
-  // 5. Succès : le tableau de bord se recalcule avec la tâche modifiée
+  // 5. Success: the dashboard re-renders with the updated task
   revalidatePath("/", "layout");
 
   return { success: true, message: "Tâche modifiée", errors: [], values };
 }
 
-/** Formulaire "Créer une tâche" (modale du bouton "Créer une tâche" de la page d'un projet) */
+/** "Créer une tâche" form (modal of the "Créer une tâche" button on a project page) */
 export async function createTaskAction(
   _previousState: TaskFormState,
   formData: FormData
 ): Promise<TaskFormState> {
-  // 1. Lire les champs. projectId : champ caché (dans QUEL projet créer la tâche).
-  //    getAll : une case cochée "assigneeIds" PAR personne assignée (son id)
+  // 1. Read the fields. projectId: hidden field (in WHICH project to create the task).
+  //    getAll: one checked "assigneeIds" box PER assigned person (their id)
   const projectId = String(formData.get("projectId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -413,8 +413,8 @@ export async function createTaskAction(
   const assigneeIds = formData.getAll("assigneeIds").map(String);
   const values = { title, description, dueDate, status };
 
-  // 2. Description et échéance obligatoires sur la maquette (l'API, elle, les accepte vides).
-  //    On le vérifie aussi ici : le "required" du navigateur peut être contourné.
+  // 2. Description and due date required in the mockup (the API, however, accepts them empty).
+  //    We also check it here: the browser's "required" can be bypassed.
   if (!description || !dueDate) {
     return {
       success: false,
@@ -424,7 +424,7 @@ export async function createTaskAction(
     };
   }
 
-  // 3. Créer la tâche
+  // 3. Create the task
   const response = await createTask(projectId, { title, description, dueDate, assigneeIds });
   if (!response.success) {
     return {
@@ -435,8 +435,8 @@ export async function createTaskAction(
     };
   }
 
-  // 4. Le statut : l'API crée TOUJOURS une tâche "À faire" (pas de statut à la création).
-  //    Si un autre statut a été choisi, on le change juste après, avec l'id de la nouvelle tâche.
+  // 4. The status: the API ALWAYS creates a "À faire" (to do) task (no status on creation).
+  //    If another status was chosen, we change it right after, using the new task's id.
   if (status && status !== "TODO") {
     const statusResponse = await updateTask(projectId, response.data.task.id, {
       status: status as TaskStatus,
@@ -452,13 +452,13 @@ export async function createTaskAction(
     }
   }
 
-  // 5. Succès : la page du projet se recalcule avec la nouvelle tâche
+  // 5. Success: the project page re-renders with the new task
   revalidatePath("/", "layout");
   return { success: true, message: "Tâche créée", errors: [], values };
 }
 
-/** Supprimer une tâche (bouton "Supprimer" du menu "…", après confirmation).
- *  Ce n'est pas un formulaire : la fonction reçoit directement le projet et la tâche. */
+/** Deletes a task ("Supprimer" button in the "…" menu, after confirmation).
+ *  It's not a form: the function receives the project and the task directly. */
 export async function deleteTaskAction(
   projectId: string,
   taskId: string
@@ -466,28 +466,28 @@ export async function deleteTaskAction(
   const response = await deleteTask(projectId, taskId);
   if (!response.success) return { error: response.message };
 
-  // La page du projet (et le tableau de bord) se recalculent sans la tâche
+  // The project page (and the dashboard) re-render without the task
   revalidatePath("/", "layout");
   return {};
 }
 
-/** Même forme que pour un projet : success, message, errors, values */
+/** Same shape as for a project: success, message, errors, values */
 export type CommentFormState = ProjectFormState;
 
-/** Formulaire "Ajouter un commentaire" (sous les commentaires d'une tâche) */
+/** "Ajouter un commentaire" form (below a task's comments) */
 export async function createCommentAction(
   _previousState: CommentFormState,
   formData: FormData
 ): Promise<CommentFormState> {
-  // 1. Sur quelle tâche ? (champs cachés du formulaire) + le texte du commentaire
+  // 1. On which task? (hidden form fields) + the comment text
   const projectId = String(formData.get("projectId") ?? "");
   const taskId = String(formData.get("taskId") ?? "");
   const content = String(formData.get("content") ?? "").trim();
 
-  // 2. Appeler l'API (elle vérifie elle-même le texte : vide, trop long...)
+  // 2. Call the API (it checks the text itself: empty, too long...)
   const response = await createComment(projectId, taskId, { content });
 
-  // 3. Erreur : on renvoie le message, et le texte tapé pour ne pas le perdre
+  // 3. Error: send back the message, and the typed text so it isn't lost
   if (!response.success) {
     return {
       success: false,
@@ -497,7 +497,7 @@ export async function createCommentAction(
     };
   }
 
-  // 4. Succès : la page se recalcule avec le nouveau commentaire
+  // 4. Success: the page re-renders with the new comment
   revalidatePath("/", "layout");
   return { success: true, message: "Commentaire ajouté", errors: [], values: { content: "" } };
 }

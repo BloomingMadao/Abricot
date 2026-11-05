@@ -9,21 +9,21 @@ import CalendarIconGrey from "@/public/image/calendarIconGrey.svg"
 
 type ProjectTaskCardProps = {
     task: TaskDetail
-    // Les membres du projet (propriétaire compris) : pour la modale "Modifier" du menu "…"
+    // The project members (owner included): for the "Modifier" modal in the "…" menu
     members: UserSummary[]
-    // La personne connectée : pour le formulaire "Ajouter un commentaire"
+    // The logged-in user: for the "Ajouter un commentaire" form
     currentUser: UserSummary
 }
 
-// Une tâche dans la page d'un projet : titre + statut, description, échéance,
-// personnes assignées, menu "…" et commentaires.
-// Plus besoin de "use client" : ce qui bouge est dans TaskMenu et TaskComments (composants clients).
+// A task on a project page: title + status, description, due date,
+// assignees, "…" menu and comments.
+// No need for "use client" anymore: what changes lives in TaskMenu and TaskComments (client components).
 export default function ProjectTaskCard({ task, members, currentUser }: ProjectTaskCardProps) {
     return (
         <article className="rounded-[10px] border border-grey-200 bg-white pt-6 pr-[34px] pb-[23px] pl-10">
             <div className="flex items-start justify-between gap-6">
                 <div className="min-w-0">
-                    {/* Titre + statut sur la même ligne */}
+                    {/* Title + status on the same line */}
                     <div className="flex flex-wrap items-center gap-2">
                         <h5>{task.title}</h5>
                         <Tag
@@ -37,12 +37,12 @@ export default function ProjectTaskCard({ task, members, currentUser }: ProjectT
                         <p className="mt-1 text-sm text-grey-600">{task.description}</p>
                     )}
 
-                    {/* Échéance : libellé gris, date foncée */}
+                    {/* Due date: grey label, dark date */}
                     <p className="mt-[27px] flex items-center gap-2 text-xs text-grey-600">
                         Échéance :
                         <Image src={CalendarIconGrey} alt="" width={15} />
                         {task.dueDate ? (
-                            // <time> : une date lisible par les machines (dateTime) et par les humains
+                            // <time>: a date readable by machines (dateTime) and by humans
                             <time dateTime={task.dueDate} className="text-grey-800">
                                 {formatShortDate(task.dueDate)}
                             </time>
@@ -51,17 +51,17 @@ export default function ProjectTaskCard({ task, members, currentUser }: ProjectT
                         )}
                     </p>
 
-                    {/* Assigné à : pastille + nom pour chaque personne */}
+                    {/* Assigned to: avatar + name for each person */}
                     <div className="mt-6 flex items-center gap-2.5 text-xs text-grey-600">
                         Assigné à :
                         {task.assignees.length === 0 ? (
                             <span className="text-grey-800">personne</span>
                         ) : (
-                            // text-sm : la même taille de police pour les initiales et les noms
+                            // text-sm: the same font size for the initials and the names
                             <ul className="flex flex-wrap items-center gap-[9px] text-sm">
                                 {task.assignees.map(({ user }) => (
                                     <li key={user.id} className="flex items-center gap-[5px]">
-                                        {/* decorative : le nom est déjà écrit dans l'étiquette */}
+                                        {/* decorative: the name is already written in the label */}
                                         <UserAvatar user={user} decorative />
                                         <Tag label={user.name || user.email} variant="grey" />
                                     </li>
@@ -71,11 +71,11 @@ export default function ProjectTaskCard({ task, members, currentUser }: ProjectT
                     </div>
                 </div>
 
-                {/* "…" : le menu Supprimer | Modifier */}
+                {/* "…": the Supprimer | Modifier menu */}
                 <TaskMenu task={task} members={members} />
             </div>
 
-            {/* Séparateur, puis les commentaires (repliés au départ) */}
+            {/* Separator, then the comments (collapsed at first) */}
             <div className="mt-[18px] border-t border-grey-100 pt-[22px]">
                 <TaskComments task={task} currentUser={currentUser} />
             </div>

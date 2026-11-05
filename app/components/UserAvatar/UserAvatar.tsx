@@ -4,34 +4,34 @@ import type { UserSummary } from "@/app/lib/types"
 
 type UserAvatarProps = {
     user: UserSummary
-    // "brand" (orange) pour le propriétaire, "grey" pour les autres
+    // "brand" (orange) for the owner, "grey" for the others
     variant?: TagVariant
-    // true quand le nom complet est DÉJÀ écrit à côté (ex : étiquette "Bertrand Dupont") :
-    // la pastille est alors juste décorative, le lecteur d'écran ne lit pas le nom deux fois
+    // true when the full name is ALREADY written next to it (e.g. a "Bertrand Dupont" label):
+    // the avatar is then purely decorative, so the screen reader doesn't read the name twice
     decorative?: boolean
 }
 
-// Une pastille ronde avec les initiales d'une personne.
-// C'est un Tag transformé en rond de 27px (comme dans ProjectCard) :
-// p-0 retire les marges intérieures de .tag, size-[27px] le rend carré,
-// et ses coins arrondis (rounded-[50px] dans .tag) en font un rond.
-// Pas de taille de police : elle vient du parent (même taille que les étiquettes à côté).
+// A round avatar with a person's initials.
+// It's a Tag turned into a 27px circle (as in ProjectCard):
+// p-0 removes .tag's padding, size-[27px] makes it square,
+// and its rounded corners (rounded-[50px] in .tag) make it a circle.
+// No font size: it comes from the parent (same size as the labels next to it).
 export default function UserAvatar({ user, variant = "grey", decorative = false }: UserAvatarProps) {
-    // Initiales, ou 1re lettre de l'email si la personne n'a pas de nom
+    // Initials, or the 1st letter of the email if the person has no name
     const initials = getInitials(user.name) || user.email.charAt(0).toUpperCase()
 
     return (
         <Tag
             label={
                 <>
-                    {/* aria-hidden : les initiales seules ne veulent rien dire à l'oreille */}
+                    {/* aria-hidden: initials alone mean nothing when read aloud */}
                     <span aria-hidden="true">{initials}</span>
                     {!decorative && <span className="sr-only">{user.name || user.email}</span>}
                 </>
             }
             variant={variant}
-            // text-grey-800! : initiales foncées comme sur les maquettes
-            // (le "!" passe devant la couleur de texte du variant)
+            // text-grey-800!: dark initials as in the mockups
+            // (the "!" takes precedence over the variant's text color)
             className="flex size-[27px] shrink-0 items-center justify-center border border-white p-0 text-grey-800!"
         />
     )

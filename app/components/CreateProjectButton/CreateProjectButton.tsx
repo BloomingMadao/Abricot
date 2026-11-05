@@ -6,13 +6,13 @@ import Modal from "@/app/components/Modal/Modal"
 import CreateProjectForm from "@/app/components/CreateProjectForm/CreateProjectForm"
 
 type CreateProjectButtonProps = {
-    // Email de la personne connectée (pour ne pas se proposer soi-même comme contributeur)
+    // Logged-in user's email (so they aren't suggested as their own contributor)
     currentUserEmail: string
 }
 
-// Le bouton "+ Créer un projet" + sa modale.
-// Composant CLIENT : il retient si la modale est ouverte.
-// Une fois le projet créé, on arrive directement sur sa page (voir createProjectAction).
+// The "+ Créer un projet" button + its modal.
+// CLIENT component: it remembers whether the modal is open.
+// Once the project is created, we land directly on its page (see createProjectAction).
 export default function CreateProjectButton({ currentUserEmail }: CreateProjectButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
 

@@ -3,19 +3,19 @@ import type { AssignedTask } from "@/app/lib/types"
 import Tag from "../Tag/Tag"
 
 type KanbanColumnProps = {
-    title: string // ex : "À faire"
-    tasks: AssignedTask[] // uniquement les tâches de cette colonne
+    title: string // e.g. "À faire"
+    tasks: AssignedTask[] // only the tasks for this column
 }
 
 export default function KanbanColumn({ title, tasks }: KanbanColumnProps) {
     return (
         <section className="rounded-[10px] border border-brand-light bg-white px-6 py-10">
-            {/* Titre de la colonne + pastille avec le nombre de tâches */}
+            {/* Column title + badge with the number of tasks */}
             <div className="flex items-center gap-2">
                 <h5>{title}</h5>
                 <Tag label={tasks.length.toString()} variant="grey"/>
                     {/* {tasks.length}
-                    {/* Pour un lecteur d'écran : "À faire, 4 tâche(s)" plutôt que "À faire 4" */}
+                    {/* For a screen reader: "À faire, 4 tâche(s)" rather than "À faire 4" */}
                     <span className="sr-only"> tâche(s)</span>
                 
             </div>

@@ -8,23 +8,23 @@ import Button from "@/app/components/Button/Button";
 import Alert from "@/app/components/Alert/Alert";
 
 export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
-  // useActionState relie le formulaire à la Server Action :
-  // - state      : ce que l'action a renvoyé (undefined au départ, puis l'erreur éventuelle)
-  // - formAction : la fonction à donner au formulaire
-  // - isPending  : true pendant que l'action tourne (pour désactiver le bouton)
+  // useActionState connects the form to the Server Action:
+  // - state      : what the action returned (undefined at first, then the error if any)
+  // - formAction : the function to pass to the form
+  // - isPending  : true while the action is running (to disable the button)
   const [state, formAction, isPending] = useActionState(
     isLogin ? loginAction : registerAction,
     undefined
   );
 
-  // L'erreur que l'utilisateur a fermée avec la croix.
-  // Chaque envoi du formulaire renvoie un NOUVEL objet state :
-  // une nouvelle erreur est donc différente de celle fermée, et réapparaît.
+  // The error the user dismissed with the cross.
+  // Each form submission returns a NEW state object:
+  // so a new error is different from the dismissed one, and shows up again.
   const [dismissedState, setDismissedState] = useState<AuthFormState>(undefined);
 
   return (
     <Form className="flex flex-col" action={formAction}>
-      {/* Message d'erreur renvoyé par l'API ou par la Server Action */}
+      {/* Error message returned by the API or by the Server Action */}
       {state && state !== dismissedState && (
         <Alert
           message={state.message}
@@ -36,7 +36,7 @@ export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
 
       {isLogin && (
         <>
-          {/* id "mail" => name "mail" : c'est ce que loginAction lit avec formData.get("mail") */}
+          {/* id "mail" => name "mail": this is what loginAction reads with formData.get("mail") */}
           <Input
             label="Email"
             id="mail"
@@ -94,7 +94,7 @@ export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
             defaultValue={state?.values.mail}
           />
 
-          {/* id "newPassword" : c'est ce que registerAction lit avec formData.get("newPassword") */}
+          {/* id "newPassword": this is what registerAction reads with formData.get("newPassword") */}
           <Input
             label="Mot de passe"
             id="newPassword"
@@ -104,7 +104,7 @@ export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
             required
           />
 
-          {/* id DIFFÉRENT du champ précédent, lu avec formData.get("confirmPassword") */}
+          {/* DIFFERENT id from the previous field, read with formData.get("confirmPassword") */}
           <Input
             label="Confirmation du mot de passe"
             id="confirmPassword"
