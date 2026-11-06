@@ -4,10 +4,15 @@ import { useEffect, useId, useRef, type ReactNode } from "react"
 
 type ModalProps = {
     title: string
+    // Optional icon displayed before the title (e.g. the star of the AI modal)
+    icon?: ReactNode
     isOpen: boolean
     // Called to close: cross, Escape key or click on the grey backdrop
     onClose: () => void
     children: ReactNode
+    // Replaces the default padding of the content (the one of the form modals),
+    // e.g. "px-[52px] pt-20" for the AI modal, which has its own spacing
+    className?: string
 }
 
 // "Generic" modal: it knows nothing about the form it contains.
@@ -16,7 +21,7 @@ type ModalProps = {
 // - focus staying INSIDE the modal when navigating with Tab,
 // - the rest of the page becoming unusable while it's open,
 // - focus returning to the opening button when it closes.
-export default function Modal({ title, isOpen, onClose, children }: ModalProps) {
+export default function Modal({ title, icon, isOpen, onClose, children, className }: ModalProps) {
     const dialogRef = useRef<HTMLDialogElement>(null)
     // Unique id to link the modal to its title (aria-labelledby)
     const titleId = useId()
@@ -44,9 +49,11 @@ export default function Modal({ title, isOpen, onClose, children }: ModalProps) 
             // backdrop:: style of the grey backdrop behind the modal
             className="m-auto w-[600px] max-w-[calc(100%-2rem)] rounded-[10px] bg-white p-0 backdrop:bg-black/50"
         >
-            {/* Padding and sizes taken from the Figma mockup */}
-            <div className="relative px-[73px] pt-[76px] pb-[74px]">
-                <h2 id={titleId} className="text-2xl font-semibold text-grey-800">
+            {/* Padding and sizes taken from the Figma mockup (unless className gives others) */}
+            <div className={`relative ${className ?? "px-[73px] pt-[76px] pb-[74px]"}`}>
+                {/* flex items-center: the icon (if any) and the title on the same line */}
+                <h2 id={titleId} className="flex items-center gap-2.5 text-2xl font-semibold text-grey-800">
+                    {icon}
                     {title}
                 </h2>
 

@@ -12,7 +12,7 @@ import DropdownIcon from "@/public/image/dropdown.svg"
 // The "Statut" filter options. value "" = no filter (all tasks)
 const STATUS_OPTIONS = [
     { value: "", label: "Statut" },
-    ...(["TODO", "IN_PROGRESS", "DONE", "CANCELLED"] as TaskStatus[]).map((status) => ({
+    ...(["TODO", "IN_PROGRESS", "DONE"] as TaskStatus[]).map((status) => ({
         value: status,
         label: TASK_STATUS_LABELS[status],
     })),

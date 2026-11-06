@@ -457,6 +457,116 @@ export async function createTaskAction(
   return { success: true, message: "Tâche créée", errors: [], values };
 }
 
+/** A task suggested in the AI modal: nothing is saved yet, the user can still
+ *  edit or delete it before clicking "+ Ajouter les tâches" */
+export type SuggestedTask = { title: string; description: string };
+
+/** What the AI chat returns: the suggested tasks, or an error */
+export type AITaskFormState =
+  | {
+      success: boolean;
+      message: string;
+      tasks: SuggestedTask[];
+      values: { prompt: string }; // the typed message, to put it back after an error
+    }
+  | undefined;
+
+/** Maximum number of tasks suggested at once */
+const MAX_SUGGESTED_TASKS = 10;
+
+/** AI chat "Décrivez les tâches que vous souhaitez ajouter..." (IA button of a project page).
+ *
+ *  STEP 1, without AI: we look for a number in the message ("3", "crée 5 tâches"...)
+ *  and return that many tasks with default values.
+ *
+ *  Later, THIS is where the AI will be called (openai-node): the call must stay on the
+ *  server, so that the API key (TOKEN_IA in .env.local) never reaches the browser.
+ *  The modal won't need any change: it only expects { title, description } tasks. */
+export async function suggestTasksAction(
+  _previousState: AITaskFormState,
+  formData: FormData
+): Promise<AITaskFormState> {
+  const prompt = String(formData.get("prompt") ?? "").trim();
+  const values = { prompt };
+
+  // The first number of the message (\d+ = one or more digits)
+  const match = prompt.match(/\d+/);
+  const count = match ? Number(match[0]) : 0;
+
+  if (!match) {
+    return {
+      success: false,
+      message: "Indiquez le nombre de tâches à créer, par exemple : 3",
+      tasks: [],
+      values,
+    };
+  }
+  if (count < 1 || count > MAX_SUGGESTED_TASKS) {
+    return {
+      success: false,
+      message: `Choisissez entre 1 et ${MAX_SUGGESTED_TASKS} tâches à la fois`,
+      tasks: [],
+      values,
+    };
+  }
+
+  // Array.from({ length: 3 }, ...): an array of 3 elements, built by the function
+  const tasks = Array.from({ length: count }, () => ({
+    title: "Nom de la tâche",
+    description: "Description de la tâche",
+  }));
+
+  return {
+    success: true,
+    message: `${count} tâche${count > 1 ? "s" : ""} proposée${count > 1 ? "s" : ""}`,
+    tasks,
+    // Success: the chat field is emptied, ready for the next message
+    values: { prompt: "" },
+  };
+}
+
+/** "+ Ajouter les tâches" button of the AI modal: creates the suggested tasks in the project.
+ *  It's not a form: the function directly receives the project and the tasks.
+ *  failedIndexes: the position of the tasks that could NOT be created,
+ *  so the modal only keeps those (the others must not be created twice). */
+export async function createTasksAction(
+  projectId: string,
+  tasks: SuggestedTask[]
+): Promise<{ error?: string; errors?: string[]; failedIndexes?: number[] }> {
+  if (tasks.length === 0) return { error: "Aucune tâche à ajouter" };
+
+  // All the creations start AT THE SAME TIME (Promise.all).
+  // The API checks each title itself (2 to 200 characters).
+  const results = await Promise.all(
+    tasks.map((task) =>
+      createTask(projectId, { title: task.title.trim(), description: task.description.trim() })
+    )
+  );
+
+  // The project page is recomputed with the new tasks
+  revalidatePath("/", "layout");
+
+  const failedIndexes = results.flatMap((result, index) => (result.success ? [] : [index]));
+  if (failedIndexes.length > 0) {
+    // The reasons given by the API (detailed errors, otherwise the general message),
+    // without repeating the same reason for each task (new Set removes the duplicates)
+    const reasons = results.flatMap((result) => {
+      if (result.success) return [];
+      const details = errorMessages(result);
+      return details.length > 0 ? details : [result.message];
+    });
+    return {
+      error:
+        failedIndexes.length === tasks.length
+          ? "Les tâches n'ont pas pu être créées"
+          : `${failedIndexes.length} tâche(s) sur ${tasks.length} n'ont pas pu être créées`,
+      errors: [...new Set(reasons)],
+      failedIndexes,
+    };
+  }
+  return {};
+}
+
 /** Deletes a task ("Supprimer" button in the "…" menu, after confirmation).
  *  It's not a form: the function receives the project and the task directly. */
 export async function deleteTaskAction(

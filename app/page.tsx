@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Logo from "@/public/image/logo.svg"
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -10,6 +11,8 @@ export default function Home() {
         alt=""
       />
       <p>Site en cours de construction</p>
+      <Link href="/connection">Page de connexion </Link>
+      <Link href="/register">Page d&apo;inscription</Link>
     </div>
   );
 }
