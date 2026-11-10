@@ -11,6 +11,7 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "next": "16.4.5",
+    "openai": "^7.55.0",
     "postcss": "^8.5.30",
     "react": "19.3.0",
     "react-dom": "19.3.0",

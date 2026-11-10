@@ -12,7 +12,7 @@ export default function Home() {
       />
       <p>Site en cours de construction</p>
       <Link href="/connection">Page de connexion </Link>
-      <Link href="/register">Page d&apo;inscription</Link>
+      <Link href="/register">Page d&apos;inscription</Link>
     </div>
   );
 }

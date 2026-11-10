@@ -1,5 +1,6 @@
 import { getProfile, getProject, getProjectTasks } from "@/app/lib/api";
 import { PRIORITY_RANK } from "@/app/lib/utils";
+import { isAIEnabled } from "@/app/lib/ai";
 import Alert from "@/app/components/Alert/Alert"
 import IconButton from "@/app/components/IconButton/IconButton";
 import ProjectCreatedAlert from "@/app/components/ProjectCreatedAlert/ProjectCreatedAlert";
@@ -109,8 +110,9 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
         {/* "Créer une tâche" and "IA": each button opens its own modal */}
         <div className="flex shrink-0 gap-3">
           <CreateTaskButton projectId={project.id} members={members} />
-          {/* "IA": opens the AI modal (describe the tasks, then add them) */}
-          <CreateTaskAIButton projectId={project.id} />
+          {/* "IA": opens the AI modal (describe the tasks, then add them).
+              aiEnabled: read on the server (.env.local), the modal adapts its text */}
+          <CreateTaskAIButton projectId={project.id} aiEnabled={isAIEnabled()} />
         </div>
       </div>
 

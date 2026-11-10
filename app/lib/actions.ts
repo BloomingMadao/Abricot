@@ -32,6 +32,7 @@ import {
   TOKEN_COOKIE_NAME,
 } from "@/app/lib/api";
 import type { ApiError, TaskStatus, UserSummary } from "@/app/lib/types";
+import { defaultTasks, isAIEnabled, suggestTasks, type SuggestedTask } from "@/app/lib/ai";
 
 /** What the action returns to the form when there's an error */
 export type AuthFormState =
@@ -457,9 +458,9 @@ export async function createTaskAction(
   return { success: true, message: "Tâche créée", errors: [], values };
 }
 
-/** A task suggested in the AI modal: nothing is saved yet, the user can still
- *  edit or delete it before clicking "+ Ajouter les tâches" */
-export type SuggestedTask = { title: string; description: string };
+// The type of a suggested task lives in ai.ts; we re-export it so the components
+// can keep importing it from here ("export type" is erased at build time)
+export type { SuggestedTask };
 
 /** What the AI chat returns: the suggested tasks, or an error */
 export type AITaskFormState =
@@ -471,53 +472,70 @@ export type AITaskFormState =
     }
   | undefined;
 
-/** Maximum number of tasks suggested at once */
-const MAX_SUGGESTED_TASKS = 10;
+/** Maximum length of the message sent to the AI (also limited by the field's maxLength) */
+const MAX_PROMPT_LENGTH = 1000;
 
 /** AI chat "Décrivez les tâches que vous souhaitez ajouter..." (IA button of a project page).
- *
- *  STEP 1, without AI: we look for a number in the message ("3", "crée 5 tâches"...)
- *  and return that many tasks with default values.
- *
- *  Later, THIS is where the AI will be called (openai-node): the call must stay on the
- *  server, so that the API key (TOKEN_IA in .env.local) never reaches the browser.
- *  The modal won't need any change: it only expects { title, description } tasks. */
+ *  - AI mode ON: the AI (see ai.ts) reads the message and chooses the right number of tasks:
+ *    the one asked ("3 tâches pour..."), otherwise the one that fits the request.
+ *  - AI mode OFF (USE_IA=false or no TOKEN_IA): the message gives the number of tasks,
+ *    created with default values ("Nom de la tâche", "Description de la tâche").
+ *  The call stays on the server: the API key (TOKEN_IA) never reaches the browser. */
 export async function suggestTasksAction(
   _previousState: AITaskFormState,
   formData: FormData
 ): Promise<AITaskFormState> {
+  // 1. Read the fields. projectId: hidden field (the project the tasks are for)
+  const projectId = String(formData.get("projectId") ?? "");
   const prompt = String(formData.get("prompt") ?? "").trim();
   const values = { prompt };
 
-  // The first number of the message (\d+ = one or more digits)
-  const match = prompt.match(/\d+/);
-  const count = match ? Number(match[0]) : 0;
-
-  if (!match) {
-    return {
-      success: false,
-      message: "Indiquez le nombre de tâches à créer, par exemple : 3",
-      tasks: [],
-      values,
-    };
+  // 2. The message is checked here too: the browser's "required" and "maxLength" can be bypassed
+  if (!prompt) {
+    return { success: false, message: "Décrivez les tâches que vous souhaitez ajouter", tasks: [], values };
   }
-  if (count < 1 || count > MAX_SUGGESTED_TASKS) {
+  if (prompt.length > MAX_PROMPT_LENGTH) {
     return {
       success: false,
-      message: `Choisissez entre 1 et ${MAX_SUGGESTED_TASKS} tâches à la fois`,
+      message: `Votre demande est trop longue (${MAX_PROMPT_LENGTH} caractères maximum)`,
       tasks: [],
       values,
     };
   }
 
-  // Array.from({ length: 3 }, ...): an array of 3 elements, built by the function
-  const tasks = Array.from({ length: count }, () => ({
-    title: "Nom de la tâche",
-    description: "Description de la tâche",
-  }));
+  // 3. AI mode OFF: the number of tasks written in the message
+  if (!isAIEnabled()) {
+    const result = defaultTasks(prompt);
+    if (!result.success) return { success: false, message: result.message, tasks: [], values };
+    return successState(result.tasks);
+  }
 
+  // 4. The project gives the AI its context (name, description, existing tasks).
+  //    It also checks that the user is a member: the API refuses the others.
+  const projectResponse = await getProject(projectId);
+  if (!projectResponse.success) {
+    return { success: false, message: projectResponse.message, tasks: [], values };
+  }
+  const { project } = projectResponse.data;
+
+  // 5. Ask the AI
+  const result = await suggestTasks(prompt, {
+    name: project.name,
+    description: project.description,
+    taskTitles: project.tasks.map((task) => task.title),
+  });
+  if (!result.success) {
+    return { success: false, message: result.message, tasks: [], values };
+  }
+  return successState(result.tasks);
+}
+
+/** The state returned when tasks are suggested (with or without AI) */
+function successState(tasks: SuggestedTask[]): AITaskFormState {
+  const count = tasks.length;
   return {
     success: true,
+    // Read by screen readers: "3 tâches proposées"
     message: `${count} tâche${count > 1 ? "s" : ""} proposée${count > 1 ? "s" : ""}`,
     tasks,
     // Success: the chat field is emptied, ready for the next message

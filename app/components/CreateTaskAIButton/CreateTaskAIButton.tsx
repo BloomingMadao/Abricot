@@ -11,11 +11,13 @@ import AIIconHover from "@/public/image/AIIconHover.svg"
 type CreateTaskAIButtonProps = {
     // The project in which the tasks will be created
     projectId: string
+    // false = AI mode off (USE_IA=false or no TOKEN_IA): the modal asks for a number of tasks
+    aiEnabled: boolean
 }
 
 // The "IA" button of a project page + the AI modal ("Créer une tâche" then "Vos tâches...").
 // Same principle as CreateTaskButton: CLIENT component that remembers whether the modal is open.
-export default function CreateTaskAIButton({ projectId }: CreateTaskAIButtonProps) {
+export default function CreateTaskAIButton({ projectId, aiEnabled }: CreateTaskAIButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
     // Are there suggested tasks in the modal? It changes the modal's title
     const [hasTasks, setHasTasks] = useState(false)
@@ -74,7 +76,12 @@ export default function CreateTaskAIButton({ projectId }: CreateTaskAIButtonProp
                 onClose={close}
                 className="px-[52px] pt-20"
             >
-                <CreateTaskAIForm projectId={projectId} onHasTasksChange={setHasTasks} onSuccess={close} />
+                <CreateTaskAIForm
+                    projectId={projectId}
+                    aiEnabled={aiEnabled}
+                    onHasTasksChange={setHasTasks}
+                    onSuccess={close}
+                />
             </Modal>
         </>
     )

@@ -12,11 +12,14 @@ import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
 import SuggestedTaskCard from "@/app/components/SuggestedTaskCard/SuggestedTaskCard"
+import { variantClasses } from "@/app/components/Tag/Tag"
 import AIIcon from "@/public/image/AIIcon.svg"
 
 type CreateTaskAIFormProps = {
     // The project in which the tasks will be created
     projectId: string
+    // false = AI mode off: we ask for a NUMBER of tasks, created with default values
+    aiEnabled: boolean
     // Tells the parent whether there are suggested tasks (title "Créer une tâche" / "Vos tâches...")
     onHasTasksChange: (hasTasks: boolean) => void
     // Called when the tasks have been created, to close the modal
@@ -27,8 +30,10 @@ type CreateTaskAIFormProps = {
 // - at the bottom, the chat "Décrivez les tâches que vous souhaitez ajouter..."
 // - above, the suggested tasks ("Vos tâches..."), which can be edited or deleted
 // - "+ Ajouter les tâches" creates them in the project.
-// Step 1 (no AI yet): the message gives the NUMBER of tasks, see suggestTasksAction.
-export default function CreateTaskAIForm({ projectId, onHasTasksChange, onSuccess }: CreateTaskAIFormProps) {
+// AI mode on: the AI (see suggestTasksAction and lib/ai.ts) chooses the number of tasks,
+// the one written in the message, otherwise the one that fits the request.
+// AI mode off: the message gives the number of tasks (an info message says so).
+export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChange, onSuccess }: CreateTaskAIFormProps) {
     // The suggested tasks. id: a key for React (the titles can all be the same)
     const [tasks, setTasks] = useState<(SuggestedTask & { id: string })[]>([])
     // The card being edited (null = none)
@@ -90,6 +95,14 @@ export default function CreateTaskAIForm({ projectId, onHasTasksChange, onSucces
 
     const hasTasks = tasks.length > 0
 
+    // The text of the chat field depends on the mode
+    const promptLabel = aiEnabled
+        ? "Décrivez les tâches que vous souhaitez ajouter"
+        : "Nombre de tâches à créer"
+    const promptPlaceholder = aiEnabled
+        ? "Décrivez les tâches que vous souhaitez ajouter..."
+        : "Combien de tâches voulez-vous créer ? Par exemple : 3"
+
     return (
         <>
             {/* The suggested tasks. Without tasks, this empty area keeps the modal
@@ -149,22 +162,36 @@ export default function CreateTaskAIForm({ projectId, onHasTasksChange, onSucces
                     hasTasks ? "border-grey-200 pb-9" : "border-transparent pb-[82px]"
                 }`}
             >
-                {/* Error of the chat (no number in the message...) */}
+                {/* AI mode off: we say it, and what to type instead.
+                    id: the field below points to this text (aria-describedby),
+                    so a screen reader reads it when arriving on the field */}
+                {!aiEnabled && (
+                    <p id="ai-disabled-info" className={`mb-4 rounded-[10px] px-4 py-3 text-sm ${variantClasses.info}`}>
+                        Le mode IA est désactivé : indiquez le nombre de tâches à créer (de 1 à 10),
+                        puis modifiez-les avant de les ajouter.
+                    </p>
+                )}
+
+                {/* Error of the chat (AI unavailable, no number, no task suggested...) */}
                 {state && !state.success && <Alert message={state.message} variant="error" />}
 
                 {/* relative: the send button ("absolute") is placed inside the field, on the right */}
                 <form action={askAction} className="relative">
+                    {/* Hidden field: the AI needs the project (name, description, existing tasks) */}
+                    <input type="hidden" name="projectId" value={projectId} />
                     {/* The field takes the mockup's "pill" look: rounded-full, light grey, no border.
                         defaultValue: after an error, React resets the form, we put the message back */}
                     <Input
-                        label="Décrivez les tâches que vous souhaitez ajouter"
+                        label={promptLabel}
                         hideLabel
                         id="ai-prompt"
                         name="prompt"
                         type="text"
                         required
+                        maxLength={1000}
                         autoComplete="off"
-                        placeholder="Décrivez les tâches que vous souhaitez ajouter..."
+                        placeholder={promptPlaceholder}
+                        aria-describedby={aiEnabled ? undefined : "ai-disabled-info"}
                         defaultValue={state?.values.prompt}
                         className="my-0 h-[60px] w-full rounded-full border-0 bg-grey-50 pr-16 pl-8 text-xs placeholder:text-grey-800"
                     />
