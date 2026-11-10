@@ -21,6 +21,7 @@ import {
   updatePassword,
   createProject,
   updateProject,
+  deleteProject,
   addContributor,
   removeContributor,
   searchUsers,
@@ -333,6 +334,28 @@ export async function updateProjectAction(
   }
 
   return { success: true, message: "Projet modifié", errors: [], values };
+}
+
+/** Deletes a project ("Supprimer" link of the project page, after confirmation).
+ *  Only the owner can do it (the API refuses everyone else, even the admins).
+ *  It's not a form: the function receives the project directly. */
+export async function deleteProjectAction(projectId: string): Promise<{ error?: string }> {
+  // 1. The project name, for the confirmation message on the projects page
+  //    (read BEFORE deleting: afterwards the project no longer exists)
+  const project = await getProject(projectId);
+  const name = project.success ? project.data.project.name : "";
+
+  // 2. Delete it (its tasks, comments and members go with it)
+  const response = await deleteProject(projectId);
+  if (!response.success) return { error: response.message };
+
+  // 3. The projects list and the dashboard are recomputed without it
+  revalidatePath("/", "layout");
+
+  // 4. Its page no longer exists: we go to the projects list.
+  //    ?deleted=...: tells the page to show "Le projet ... a été supprimé"
+  //    (encodeURIComponent: the name can contain spaces, accents, "&"...)
+  redirect(`/projects?deleted=${encodeURIComponent(name)}`);
 }
 
 /** Searches users for the "Contributeurs" list (called while typing).

@@ -2,9 +2,16 @@ import { getProfile, getProject, getProjects } from "@/app/lib/api"
 import Alert from "@/app/components/Alert/Alert"
 import CreateProjectButton from "@/app/components/CreateProjectButton/CreateProjectButton"
 import ProjectCard from "@/app/components/ProjectCard/ProjectCard"
+import ProjectDeletedAlert from "@/app/components/ProjectDeletedAlert/ProjectDeletedAlert"
 
+// searchParams: what comes after the "?" in the URL
+// (?deleted=<name> after deleting a project, see deleteProjectAction)
+type Props = {
+    searchParams: Promise<{ deleted?: string }>
+}
 
-export default async function Projects() {
+export default async function Projects({ searchParams }: Props) {
+    const { deleted } = await searchParams
     const [response, responseUser] = await Promise.all([getProjects(), getProfile()])
 
     if (!response.success || !responseUser.success){
@@ -30,6 +37,9 @@ export default async function Projects() {
 
     return(
         <div className="px-25 pt-22 pb-12">
+            {/* Coming from "Supprimer le projet": confirmation message */}
+            {deleted && <ProjectDeletedAlert projectName={deleted} />}
+
             <div className="flex items-center justify-between">
                 <div>
                     <h5>Mes projets</h5>

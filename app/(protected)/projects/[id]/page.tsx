@@ -6,6 +6,7 @@ import IconButton from "@/app/components/IconButton/IconButton";
 import ProjectCreatedAlert from "@/app/components/ProjectCreatedAlert/ProjectCreatedAlert";
 import ContributorsBar from "@/app/components/ContributorsBar/ContributorsBar";
 import UpdateProjectButton from "@/app/components/UpdateProjectButton/UpdateProjectButton";
+import DeleteProjectButton from "@/app/components/DeleteProjectButton/DeleteProjectButton";
 import CreateTaskButton from "@/app/components/CreateTaskButton/CreateTaskButton";
 import CreateTaskAIButton from "@/app/components/CreateTaskAIButton/CreateTaskAIButton";
 import ProjectTasks from "@/app/components/ProjectTasks/ProjectTasks";
@@ -69,6 +70,9 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
   // the "Modifier" link is only shown to them
   const canEdit = project.userRole === "ADMIN"
 
+  // Only the owner can delete the project (not the admins): the "Supprimer" link is only shown to them
+  const isOwner = project.owner.id === currentUser.id
+
   // The "back" button returns to the page the project was created from:
   // the dashboard if the URL says so (?from=dashboard), otherwise the projects list.
   // We only accept these two pages: the URL can be modified by anyone,
@@ -111,6 +115,10 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
                   members={project.members.map((member) => member.user)}
                   ownerEmail={project.owner.email}
                 />
+              )}
+              {/* "Supprimer": opens a confirmation modal (only for the owner) */}
+              {isOwner && (
+                <DeleteProjectButton project={{ id: project.id, name: project.name }} />
               )}
             </div>
             {project.description && (

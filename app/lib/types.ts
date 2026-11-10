@@ -17,7 +17,7 @@
 // Possible values (identical to the backend)
 // ----------------------------------------------------------------------------
 export type Role = "ADMIN" | "CONTRIBUTOR";
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 // ----------------------------------------------------------------------------

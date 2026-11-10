@@ -123,7 +123,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-const STATUSES = ["TODO", "IN_PROGRESS", "DONE", "CANCELLED"];
+const STATUSES = ["TODO", "IN_PROGRESS", "DONE"];
 const isValidDate = (value: string) => !isNaN(new Date(value).getTime());
 
 // ----------------------------------------------------------------------------

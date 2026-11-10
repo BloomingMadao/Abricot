@@ -15,7 +15,6 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   TODO: "À faire",
   IN_PROGRESS: "En cours",
   DONE: "Terminée",
-  CANCELLED: "Annulée",
 };
 
 /** Color of a status label (TaskCard, "Modifier" modal).
@@ -24,7 +23,6 @@ export const TASK_STATUS_VARIANTS: Record<TaskStatus, TagVariant> = {
   TODO: "error",
   IN_PROGRESS: "warning",
   DONE: "success",
-  CANCELLED: "grey",
 };
 
 /** Example: PRIORITY_LABELS["HIGH"] → "Haute" */
@@ -114,4 +112,12 @@ export function formatDateTime(isoDate: string): string {
     timeZone: "Europe/Paris",
   });
   return `${day}, ${time}`;
+}
+
+/** Can the logged-in user delete a task?
+ *  When SEVERAL people are assigned to it, only the project owner can.
+ *  Otherwise, any project member can (like in the API).
+ *  Used by the "…" menu (to show "Supprimer" or not) AND by deleteTaskAction (the real check). */
+export function canDeleteTask(assigneeCount: number, isProjectOwner: boolean): boolean {
+  return isProjectOwner || assigneeCount <= 1;
 }

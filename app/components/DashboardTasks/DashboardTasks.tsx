@@ -8,8 +8,7 @@ import KanbanColumn from "@/app/components/KanbanColumn/KanbanColumn"
 import SearchIcon from "@/public/image/searchIcon.svg"
 import type { AssignedTask, TaskStatus } from "@/app/lib/types"
 
-// The Kanban columns, in the mockup's order.
-// (Cancelled tasks have no column: they don't appear in the Kanban.)
+// The Kanban columns (one per status), in the mockup's order
 const KANBAN_COLUMNS: { status: TaskStatus; title: string }[] = [
     { status: "TODO", title: "À faire" },
     { status: "IN_PROGRESS", title: "En cours" },
