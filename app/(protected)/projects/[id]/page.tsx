@@ -11,15 +11,16 @@ import CreateTaskAIButton from "@/app/components/CreateTaskAIButton/CreateTaskAI
 import ProjectTasks from "@/app/components/ProjectTasks/ProjectTasks";
 
 // params: the variable part of the URL (/projects/[id])
-// searchParams: what comes after the "?" in the URL (e.g. ?created=1 after a creation)
+// searchParams: what comes after the "?" in the URL
+// (?created=1 after a creation, &from=dashboard if it was created from the dashboard)
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ created?: string }>;
+  searchParams: Promise<{ created?: string; from?: string }>;
 };
 
 export default async function ProjectsDetails({ params, searchParams }: Props) {
   const { id} = await params;
-  const { created } = await searchParams;
+  const { created, from } = await searchParams;
   // getProject: the project (name, owner, members...)
   // getProjectTasks: its tasks WITH their assignees and comments
   // (the tasks from getProject don't have them)
@@ -68,6 +69,15 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
   // the "Modifier" link is only shown to them
   const canEdit = project.userRole === "ADMIN"
 
+  // The "back" button returns to the page the project was created from:
+  // the dashboard if the URL says so (?from=dashboard), otherwise the projects list.
+  // We only accept these two pages: the URL can be modified by anyone,
+  // its value is never used directly as an address.
+  const back =
+    from === "dashboard"
+      ? { href: "/dashboard", label: "Retour au tableau de bord" }
+      : { href: "/projects", label: "Retour à mes projets" }
+
   // "Par ordre de priorité" (by priority): Urgent, High, Medium, then Low (same as on the dashboard).
   // [...] makes a copy (sort() mutates the original array).
   const sortedTasks = [...tasks].sort(
@@ -85,9 +95,11 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
           items-end: the buttons are aligned with the bottom of the description (as in the mockup) */}
       <div className="flex items-end justify-between gap-6 pr-[68px]">
         <div className="flex items-start gap-4">
+          {/* label: what a screen reader announces ("Retour au tableau de bord"...) */}
           <IconButton
             variant="back"
-            href="/projects"
+            href={back.href}
+            label={back.label}
           />
           <div>
             <div className="flex flex-wrap items-baseline gap-x-4">
@@ -109,7 +121,8 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
 
         {/* "Créer une tâche" and "IA": each button opens its own modal */}
         <div className="flex shrink-0 gap-3">
-          <CreateTaskButton projectId={project.id} members={members} />
+          {/* currentUser: already selected in "Assigné à" (the user can change it) */}
+          <CreateTaskButton projectId={project.id} members={members} currentUser={currentUser} />
           {/* "IA": opens the AI modal (describe the tasks, then add them).
               aiEnabled: read on the server (.env.local), the modal adapts its text */}
           <CreateTaskAIButton projectId={project.id} aiEnabled={isAIEnabled()} />

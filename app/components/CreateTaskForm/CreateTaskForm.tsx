@@ -14,12 +14,14 @@ type CreateTaskFormProps = {
     projectId: string
     // The project members (owner included): the only people who can be assigned
     members: UserSummary[]
+    // The logged-in user: already selected in "Assigné à" when the modal opens
+    currentUser: UserSummary
     // Called when the task has been created, to close the modal
     onSuccess: () => void
 }
 
 // The "Créer une tâche" form: the same layout as "Modifier" (UpdateTaskForm), but empty
-export default function CreateTaskForm({ projectId, members, onSuccess }: CreateTaskFormProps) {
+export default function CreateTaskForm({ projectId, members, currentUser, onSuccess }: CreateTaskFormProps) {
     // We "wrap" the Server Action (like UpdateTaskForm):
     // on success, we notify the parent, which closes the modal
     async function submit(previousState: TaskFormState, formData: FormData) {
@@ -79,8 +81,16 @@ export default function CreateTaskForm({ projectId, members, onSuccess }: Create
             />
 
             {/* options: only the project members, without search.
+                defaultSelected: the logged-in user is assigned by default
+                (they can uncheck themselves or add other people).
                 valueKey="id": the API expects user ids (assigneeIds) */}
-            <ContributorsSelect label="Assigné à :" name="assigneeIds" options={members} valueKey="id" />
+            <ContributorsSelect
+                label="Assigné à :"
+                name="assigneeIds"
+                options={members}
+                defaultSelected={[currentUser]}
+                valueKey="id"
+            />
 
             {/* No status checked at first: without a choice, the task is "À faire" (to do) */}
             <TaskStatusPicker defaultStatus={values?.status} />

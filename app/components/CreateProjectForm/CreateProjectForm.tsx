@@ -1,6 +1,7 @@
 "use client"
 
 import { useActionState, useState } from "react"
+import { usePathname } from "next/navigation"
 import { createProjectAction } from "@/app/lib/actions"
 import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
@@ -23,6 +24,11 @@ export default function CreateProjectForm({ currentUserEmail }: CreateProjectFor
     // At first the fields are empty: the form is not valid.
     const [isValid, setIsValid] = useState(false)
 
+    // The page the modal was opened from (/dashboard or /projects): sent with the form,
+    // so that the "back" button of the new project's page returns to it
+    const pathname = usePathname()
+    const from = pathname.startsWith("/dashboard") ? "dashboard" : "projects"
+
     return (
         // onInput: on every keystroke in a field, we re-check the form
         <form action={formAction} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
@@ -30,6 +36,9 @@ export default function CreateProjectForm({ currentUserEmail }: CreateProjectFor
             {state && !state.success && (
                 <Alert message={state.message} errors={state.errors} variant="error" />
             )}
+
+            {/* Hidden field: the page the project is created from ("dashboard" or "projects") */}
+            <input type="hidden" name="from" value={from} />
 
             <Input
                 label="Titre*"

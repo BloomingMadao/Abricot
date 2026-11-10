@@ -64,25 +64,37 @@ export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
                 {/* The comments, from oldest to newest (the API's order) */}
                 {task.comments.length > 0 && (
                     <ul className="mb-4 flex flex-col gap-4">
-                        {task.comments.map((comment) => (
-                            // text-xs: the size of the initials in the avatar
-                            <li key={comment.id} className="flex gap-4 text-xs">
-                                {/* decorative: the name is written in the bubble */}
-                                <UserAvatar user={comment.author} decorative />
-                                {/* The grey bubble: name + date at the top, text below */}
-                                <div className="flex-1 rounded-[10px] bg-grey-100 p-4">
-                                    <div className="flex items-baseline justify-between gap-4">
-                                        <p className="text-sm text-grey-800">
-                                            {comment.author.name || comment.author.email}
-                                        </p>
-                                        <time dateTime={comment.createdAt} className="shrink-0 text-grey-600">
-                                            {formatDateTime(comment.createdAt)}
-                                        </time>
+                        {task.comments.map((comment) => {
+                            // The logged-in user's comments are highlighted (light orange background)
+                            const isMine = comment.author.id === currentUser.id
+                            return (
+                                // text-xs: the size of the initials in the avatar
+                                <li key={comment.id} className="flex gap-4 text-xs">
+                                    {/* decorative: the name is written in the bubble.
+                                        "brand" (orange) for the logged-in user, like their bubble
+                                        and their avatar next to "Ajouter un commentaire" */}
+                                    <UserAvatar user={comment.author} variant={isMine ? "brand" : "grey"} decorative />
+                                    {/* The bubble: name + date at the top, text below.
+                                        Grey, or light orange (brand-light) for the logged-in user's comments */}
+                                    <div className={`flex-1 rounded-[10px] p-4 ${isMine ? "bg-brand-light" : "bg-grey-100"}`}>
+                                        <div className="flex items-baseline justify-between gap-4">
+                                            <p className="text-sm text-grey-800">
+                                                {comment.author.name || comment.author.email}
+                                            </p>
+                                            {/* On the orange background, grey-600 is not contrasted enough for
+                                                small text (WCAG: 4.5:1 minimum): the date is darker there */}
+                                            <time
+                                                dateTime={comment.createdAt}
+                                                className={`shrink-0 ${isMine ? "text-grey-800" : "text-grey-600"}`}
+                                            >
+                                                {formatDateTime(comment.createdAt)}
+                                            </time>
+                                        </div>
+                                        <p className="mt-4 text-grey-800">{comment.content}</p>
                                     </div>
-                                    <p className="mt-4 text-grey-800">{comment.content}</p>
-                                </div>
-                            </li>
-                        ))}
+                                </li>
+                            )
+                        })}
                     </ul>
                 )}
 

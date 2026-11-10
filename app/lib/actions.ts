@@ -25,6 +25,7 @@ import {
   removeContributor,
   searchUsers,
   getProject,
+  getProfile,
   createTask,
   updateTask,
   deleteTask,
@@ -227,6 +228,8 @@ export async function createProjectAction(
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const contributors = formData.getAll("contributors").map(String);
+  // from: hidden field, the page the modal was opened from ("dashboard" or "projects")
+  const from = String(formData.get("from") ?? "");
   const values = { name, description };
 
   // 2. The mockup makes the description required (the API, however, accepts it empty).
@@ -259,8 +262,11 @@ export async function createProjectAction(
   // 5. Then go to the page of the project that was just created.
   //    The API returns the created project, with its id: that's what gives the URL.
   //    ?created=1: tells the project page to show "Le projet ... a été créé"
+  //    &from=dashboard: created from the dashboard, its "back" button returns there
+  //    (without it, the "back" button returns to the projects list)
   //    (As with loginAction: redirect() stops the function, nothing is returned to the form)
-  redirect(`/projects/${response.data.project.id}?created=1`);
+  const fromParam = from === "dashboard" ? "&from=dashboard" : "";
+  redirect(`/projects/${response.data.project.id}?created=1${fromParam}`);
 }
 
 /** "Modifier le projet" form (modal opened by the "Modifier" link on the project page) */
@@ -543,7 +549,8 @@ function successState(tasks: SuggestedTask[]): AITaskFormState {
   };
 }
 
-/** "+ Ajouter les tâches" button of the AI modal: creates the suggested tasks in the project.
+/** "+ Ajouter les tâches" button of the AI modal: creates the suggested tasks in the project,
+ *  assigned to the logged-in user.
  *  It's not a form: the function directly receives the project and the tasks.
  *  failedIndexes: the position of the tasks that could NOT be created,
  *  so the modal only keeps those (the others must not be created twice). */
@@ -553,11 +560,21 @@ export async function createTasksAction(
 ): Promise<{ error?: string; errors?: string[]; failedIndexes?: number[] }> {
   if (tasks.length === 0) return { error: "Aucune tâche à ajouter" };
 
+  // The logged-in user, read HERE on the server (from the cookie): the browser
+  // doesn't choose who is assigned, it can't put someone else's id
+  const profile = await getProfile();
+  if (!profile.success) return { error: "Impossible de récupérer votre profil" };
+  const assigneeIds = [profile.data.user.id];
+
   // All the creations start AT THE SAME TIME (Promise.all).
   // The API checks each title itself (2 to 200 characters).
   const results = await Promise.all(
     tasks.map((task) =>
-      createTask(projectId, { title: task.title.trim(), description: task.description.trim() })
+      createTask(projectId, {
+        title: task.title.trim(),
+        description: task.description.trim(),
+        assigneeIds,
+      })
     )
   );
 

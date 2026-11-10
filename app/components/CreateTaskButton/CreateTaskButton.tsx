@@ -10,12 +10,14 @@ type CreateTaskButtonProps = {
     projectId: string
     // The project members (owner included): the people who can be assigned
     members: UserSummary[]
+    // The logged-in user: assigned by default to the new task
+    currentUser: UserSummary
 }
 
 // The "Créer une tâche" button on a project page + its modal.
 // Same idea as CreateProjectButton: CLIENT component that remembers whether the modal is open.
 // Once the task is created, the modal closes and the task appears in the list.
-export default function CreateTaskButton({ projectId, members }: CreateTaskButtonProps) {
+export default function CreateTaskButton({ projectId, members, currentUser }: CreateTaskButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
@@ -31,7 +33,12 @@ export default function CreateTaskButton({ projectId, members }: CreateTaskButto
             />
 
             <Modal title="Créer une tâche" isOpen={isOpen} onClose={() => setIsOpen(false)}>
-                <CreateTaskForm projectId={projectId} members={members} onSuccess={() => setIsOpen(false)} />
+                <CreateTaskForm
+                    projectId={projectId}
+                    members={members}
+                    currentUser={currentUser}
+                    onSuccess={() => setIsOpen(false)}
+                />
             </Modal>
         </>
     )
