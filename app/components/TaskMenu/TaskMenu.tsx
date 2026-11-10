@@ -13,11 +13,21 @@ type TaskMenuProps = {
     task: EditableTask
     // The project members (owner included): the people who can be assigned
     members: UserSummary[]
+    // Why the user can't edit / delete the task (see utils.ts), null = allowed.
+    // "Modifier" / "Supprimer" then show this message in a red alert
+    // instead of the form / the confirmation
+    editForbiddenMessage?: string | null
+    deleteForbiddenMessage?: string | null
 }
 
 // A task's "…" button, its submenu (Modifier / Supprimer) and the two modals.
 // Same open / close logic as UserMenu.
-export default function TaskMenu({ task, members }: TaskMenuProps) {
+export default function TaskMenu({
+    task,
+    members,
+    editForbiddenMessage = null,
+    deleteForbiddenMessage = null,
+}: TaskMenuProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -54,7 +64,8 @@ export default function TaskMenu({ task, members }: TaskMenuProps) {
 
     function openDelete() {
         setIsMenuOpen(false)
-        setDeleteError("")
+        // Not allowed: the modal opens directly on the red message (nothing to confirm)
+        setDeleteError(deleteForbiddenMessage ?? "")
         setIsDeleteOpen(true)
     }
 
@@ -111,33 +122,54 @@ export default function TaskMenu({ task, members }: TaskMenuProps) {
                 </ul>
             )}
 
-            {/* "Modifier" modal: the same form as on the dashboard */}
+            {/* "Modifier" modal: the same form as on the dashboard.
+                Not allowed (editForbiddenMessage): only the red alert and "Fermer" */}
             <Modal title="Modifier" isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
-                <UpdateTaskForm task={task} members={members} onSuccess={() => setIsEditOpen(false)} />
+                {editForbiddenMessage ? (
+                    <>
+                        <Alert message={editForbiddenMessage} variant="error" />
+                        <div className="mt-8 flex gap-3">
+                            <Button
+                                label="Fermer"
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setIsEditOpen(false)}
+                                className="mx-0 w-auto px-7"
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <UpdateTaskForm task={task} members={members} onSuccess={() => setIsEditOpen(false)} />
+                )}
             </Modal>
 
-            {/* Confirmation modal before deleting (no mockup: same style as the others) */}
+            {/* Confirmation modal before deleting (no mockup: same style as the others).
+                Not allowed (deleteForbiddenMessage): only the red alert and "Fermer" */}
             <Modal title="Supprimer la tâche" isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)}>
                 {deleteError && <Alert message={deleteError} variant="error" />}
-                <p className="text-grey-600">
-                    La tâche « {task.title} » et ses commentaires seront supprimés définitivement.
-                </p>
+                {!deleteForbiddenMessage && (
+                    <p className="text-grey-600">
+                        La tâche « {task.title} » et ses commentaires seront supprimés définitivement.
+                    </p>
+                )}
                 <div className="mt-8 flex gap-3">
                     <Button
-                        label="Annuler"
+                        label={deleteForbiddenMessage ? "Fermer" : "Annuler"}
                         type="button"
                         variant="secondary"
                         onClick={() => setIsDeleteOpen(false)}
                         className="mx-0 w-auto px-7"
                     />
-                    <Button
-                        label={isDeleting ? "Suppression..." : "Supprimer"}
-                        type="button"
-                        variant="primary"
-                        disabled={isDeleting}
-                        onClick={confirmDelete}
-                        className="mx-0 w-auto px-7"
-                    />
+                    {!deleteForbiddenMessage && (
+                        <Button
+                            label={isDeleting ? "Suppression..." : "Supprimer"}
+                            type="button"
+                            variant="primary"
+                            disabled={isDeleting}
+                            onClick={confirmDelete}
+                            className="mx-0 w-auto px-7"
+                        />
+                    )}
                 </div>
             </Modal>
         </div>

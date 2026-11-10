@@ -27,6 +27,7 @@ import {
   searchUsers,
   getProject,
   getProfile,
+  getTask,
   createTask,
   updateTask,
   deleteTask,
@@ -34,6 +35,7 @@ import {
   TOKEN_COOKIE_NAME,
 } from "@/app/lib/api";
 import type { ApiError, TaskStatus, UserSummary } from "@/app/lib/types";
+import { deleteTaskError, editTaskError } from "@/app/lib/utils";
 import { defaultTasks, isAIEnabled, suggestTasks, type SuggestedTask } from "@/app/lib/ai";
 
 /** What the action returns to the form when there's an error */
@@ -384,6 +386,34 @@ export async function getProjectMembersAction(
 /** Same shape as for a project: success, message, errors, values */
 export type TaskFormState = ProjectFormState;
 
+/** The rights of the logged-in user on a task (Abricot's rules, see utils.ts).
+ *  Checked HERE, on the server: hiding "Modifier" / "Supprimer" isn't enough,
+ *  a request can be sent without the buttons.
+ *  The project (its owner), the task (its assignees) and the logged-in user, all at the same time.
+ *  Not exported: only the actions of this file use it. */
+async function getTaskRights(
+  projectId: string,
+  taskId: string
+): Promise<{ error: string } | { editError: string | null; deleteError: string | null }> {
+  const [projectResponse, taskResponse, profile] = await Promise.all([
+    getProject(projectId),
+    getTask(projectId, taskId),
+    getProfile(),
+  ]);
+  if (!projectResponse.success) return { error: projectResponse.message };
+  if (!taskResponse.success) return { error: taskResponse.message };
+  if (!profile.success) return { error: "Impossible de récupérer votre profil" };
+
+  const userId = profile.data.user.id;
+  const isOwner = projectResponse.data.project.owner.id === userId;
+  const assigneeIds = taskResponse.data.task.assignees.map(({ user }) => user.id);
+  // null = allowed, otherwise the reason (the same messages as in the "…" menu)
+  return {
+    editError: editTaskError(assigneeIds, userId, isOwner),
+    deleteError: deleteTaskError(assigneeIds, userId, isOwner),
+  };
+}
+
 /** Task "Modifier" form (in the dashboard modal) */
 export async function updateTaskAction(
   _previousState: TaskFormState,
@@ -402,17 +432,26 @@ export async function updateTaskAction(
   const assigneeIds = formData.getAll("assigneeIds").map(String);
   const values = { title, description, dueDate, status };
 
-  // 3. Call the API (it checks the title, date, status... itself)
+  // 3. Only the project owner or a person assigned to the task can edit it
+  const rights = await getTaskRights(projectId, taskId);
+  if ("error" in rights) {
+    return { success: false, message: rights.error, errors: [], values };
+  }
+  if (rights.editError) {
+    return { success: false, message: rights.editError, errors: [], values };
+  }
+
+  // 4. Call the API (it checks the title, date, status... itself)
   const response = await updateTask(projectId, taskId, {
     title,
     description,
     dueDate,
-    // No status chosen ("Annulée" task, not among the choices): send nothing, it doesn't change
+    // No status chosen: send nothing, the status doesn't change
     status: status ? (status as TaskStatus) : undefined,
     assigneeIds,
   });
 
-  // 4. Error: send back the message, the modal stays open
+  // 5. Error: send back the message, the modal stays open
   if (!response.success) {
     return {
       success: false,
@@ -422,7 +461,7 @@ export async function updateTaskAction(
     };
   }
 
-  // 5. Success: the dashboard re-renders with the updated task
+  // 6. Success: the dashboard re-renders with the updated task
   revalidatePath("/", "layout");
 
   return { success: true, message: "Tâche modifiée", errors: [], values };
@@ -631,6 +670,13 @@ export async function deleteTaskAction(
   projectId: string,
   taskId: string
 ): Promise<{ error?: string }> {
+  // 1. Only the project owner or THE person assigned to the task can delete it
+  //    (several people assigned: only the owner)
+  const rights = await getTaskRights(projectId, taskId);
+  if ("error" in rights) return { error: rights.error };
+  if (rights.deleteError) return { error: rights.deleteError };
+
+  // 2. Delete it (its comments go with it)
   const response = await deleteTask(projectId, taskId);
   if (!response.success) return { error: response.message };
 

@@ -114,10 +114,29 @@ export function formatDateTime(isoDate: string): string {
   return `${day}, ${time}`;
 }
 
-/** Can the logged-in user delete a task?
- *  When SEVERAL people are assigned to it, only the project owner can.
- *  Otherwise, any project member can (like in the API).
- *  Used by the "…" menu (to show "Supprimer" or not) AND by deleteTaskAction (the real check). */
-export function canDeleteTask(assigneeCount: number, isProjectOwner: boolean): boolean {
-  return isProjectOwner || assigneeCount <= 1;
+// ----------------------------------------------------------------------------
+// Abricot's rules on tasks (the API doesn't know them: any project member could do it).
+// Each function returns null when the action is allowed, otherwise the error message.
+// Used by the "…" menu (the red alert of "Modifier" / "Supprimer")
+// AND by updateTaskAction / deleteTaskAction (the real check, on the server).
+// assigneeIds: the ids of the people assigned to the task
+// ----------------------------------------------------------------------------
+
+/** Can the logged-in user edit a task? The project owner, or a person assigned to it */
+export function editTaskError(assigneeIds: string[], userId: string, isProjectOwner: boolean): string | null {
+  if (isProjectOwner || assigneeIds.includes(userId)) return null;
+  return "Seuls le propriétaire du projet et les personnes assignées peuvent modifier cette tâche";
+}
+
+/** Can the logged-in user delete a task? The project owner, or THE person assigned to it.
+ *  When SEVERAL people are assigned, only the project owner can. */
+export function deleteTaskError(assigneeIds: string[], userId: string, isProjectOwner: boolean): string | null {
+  if (isProjectOwner) return null;
+  if (assigneeIds.length > 1) {
+    return "Seul le propriétaire du projet peut supprimer une tâche assignée à plusieurs personnes";
+  }
+  if (assigneeIds[0] !== userId) {
+    return "Seuls le propriétaire du projet et la personne assignée peuvent supprimer cette tâche";
+  }
+  return null;
 }

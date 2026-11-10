@@ -3,7 +3,7 @@ import Tag from "@/app/components/Tag/Tag"
 import UserAvatar from "@/app/components/UserAvatar/UserAvatar"
 import TaskMenu from "@/app/components/TaskMenu/TaskMenu"
 import TaskComments from "@/app/components/TaskComments/TaskComments"
-import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS, formatShortDate } from "@/app/lib/utils"
+import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS, deleteTaskError, editTaskError, formatShortDate } from "@/app/lib/utils"
 import type { TaskDetail, UserSummary } from "@/app/lib/types"
 import CalendarIconGrey from "@/public/image/calendarIconGrey.svg"
 
@@ -13,14 +13,26 @@ type ProjectTaskCardProps = {
     members: UserSummary[]
     // The logged-in user: for the "Ajouter un commentaire" form
     currentUser: UserSummary
+    // Is the logged-in user the project owner? (they can edit and delete every task)
+    isOwner: boolean
 }
 
 // A task on a project page: title + status, description, due date,
 // assignees, "…" menu and comments.
 // No need for "use client" anymore: what changes lives in TaskMenu and TaskComments (client components).
-export default function ProjectTaskCard({ task, members, currentUser }: ProjectTaskCardProps) {
+export default function ProjectTaskCard({ task, members, currentUser, isOwner }: ProjectTaskCardProps) {
+    // The ids of the people assigned to the task: for the "Modifier" / "Supprimer" rights
+    const assigneeIds = task.assignees.map(({ user }) => user.id)
+
+    // A task assigned to the logged-in user is highlighted with a brand-dark (orange) border
+    const isMine = assigneeIds.includes(currentUser.id)
+
     return (
-        <article className="rounded-[10px] border border-grey-200 bg-white pt-6 pr-[34px] pb-[23px] pl-10">
+        <article
+            className={`rounded-[10px] border bg-white pt-6 pr-[34px] pb-[23px] pl-10 ${
+                isMine ? "border-brand-dark" : "border-grey-200"
+            }`}
+        >
             <div className="flex items-start justify-between gap-6">
                 <div className="min-w-0">
                     {/* Title + status on the same line */}
@@ -61,8 +73,13 @@ export default function ProjectTaskCard({ task, members, currentUser }: ProjectT
                             <ul className="flex flex-wrap items-center gap-[9px] text-sm">
                                 {task.assignees.map(({ user }) => (
                                     <li key={user.id} className="flex items-center gap-[5px]">
-                                        {/* decorative: the name is already written in the label */}
-                                        <UserAvatar user={user} decorative />
+                                        {/* decorative: the name is already written in the label.
+                                            "brand" (orange) for the logged-in user, as in the comments */}
+                                        <UserAvatar
+                                            user={user}
+                                            variant={user.id === currentUser.id ? "brand" : "grey"}
+                                            decorative
+                                        />
                                         <Tag label={user.name || user.email} variant="grey" />
                                     </li>
                                 ))}
@@ -71,8 +88,16 @@ export default function ProjectTaskCard({ task, members, currentUser }: ProjectT
                     </div>
                 </div>
 
-                {/* "…": the Supprimer | Modifier menu */}
-                <TaskMenu task={task} members={members} />
+                {/* "…": the Modifier | Supprimer menu, for everyone.
+                    Only the project owner and the people assigned to the task can use them
+                    (see utils.ts): for the others, "Modifier" / "Supprimer" show these
+                    messages in a red alert (null = allowed) */}
+                <TaskMenu
+                    task={task}
+                    members={members}
+                    editForbiddenMessage={editTaskError(assigneeIds, currentUser.id, isOwner)}
+                    deleteForbiddenMessage={deleteTaskError(assigneeIds, currentUser.id, isOwner)}
+                />
             </div>
 
             {/* Separator, then the comments (collapsed at first) */}
