@@ -51,32 +51,19 @@ export function formatDate(isoDate: string | null): string {
 }
 
 
+/** Example: getInitials("Alice Martin") → "AM" (the first 2 words) */
 export function getInitials(name: string | null | undefined): string {
     if (!name) return "";
-    
-    const intials = name
+
+    const initials = name
     .split(" ")
     .filter((word) => word !== "")
     .slice(0,2)
     .map((word) => word.charAt(0).toUpperCase())
     .join("")
 
-    return intials
-    
+    return initials
 }
-
-// export function getFirstname (name: string | null | undefined) : string {
-//   if(!name) return "";
-//   const firstname = name
-//   .split(" ")
-//   .filter((word) => word !== "")
-//   .slice(0,2)
-//   .map((word) => word.charAt(0).toUpperCase())
-//   .at(0)
-//   ?.toString()
-
-//   return firstname
-// }
 
 
 /** Priority importance: the smaller the number, the more important it is.
@@ -115,28 +102,16 @@ export function formatDateTime(isoDate: string): string {
 }
 
 // ----------------------------------------------------------------------------
-// Abricot's rules on tasks (the API doesn't know them: any project member could do it).
-// Each function returns null when the action is allowed, otherwise the error message.
-// Used by the "…" menu (the red alert of "Modifier" / "Supprimer")
-// AND by updateTaskAction / deleteTaskAction (the real check, on the server).
-// assigneeIds: the ids of the people assigned to the task
+// Abricot's rule on tasks (the API doesn't know it: any project member could do it).
+// Creating and deleting a task: any project member (as in the specifications).
+// Editing: only the project owner and the people assigned to the task.
 // ----------------------------------------------------------------------------
 
-/** Can the logged-in user edit a task? The project owner, or a person assigned to it */
+/** Can the logged-in user edit a task? The project owner, or a person assigned to it.
+ *  Returns null when allowed, otherwise the error message (shown in a red alert).
+ *  Used by the "Modifier" modal (TaskMenu, TaskCalendar) AND by updateTaskAction (the real check).
+ *  assigneeIds: the ids of the people assigned to the task */
 export function editTaskError(assigneeIds: string[], userId: string, isProjectOwner: boolean): string | null {
   if (isProjectOwner || assigneeIds.includes(userId)) return null;
   return "Seuls le propriétaire du projet et les personnes assignées peuvent modifier cette tâche";
-}
-
-/** Can the logged-in user delete a task? The project owner, or THE person assigned to it.
- *  When SEVERAL people are assigned, only the project owner can. */
-export function deleteTaskError(assigneeIds: string[], userId: string, isProjectOwner: boolean): string | null {
-  if (isProjectOwner) return null;
-  if (assigneeIds.length > 1) {
-    return "Seul le propriétaire du projet peut supprimer une tâche assignée à plusieurs personnes";
-  }
-  if (assigneeIds[0] !== userId) {
-    return "Seuls le propriétaire du projet et la personne assignée peuvent supprimer cette tâche";
-  }
-  return null;
 }

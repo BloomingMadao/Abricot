@@ -32,8 +32,9 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
 
     return (
         <>
-            {/* View selection */}
-            <div className="mt-14 flex gap-2.5">
+            {/* View selection. Responsive: centered on a phone (justify-center), 40px above;
+                from md (768px), on the left with the mockup's 56px above */}
+            <div className="mt-10 flex justify-center gap-2.5 md:mt-14 md:justify-start">
                 <Chips
                     label="Liste"
                     type="tasks"
@@ -49,17 +50,21 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
             </div>
 
             {view === "list" && (
-                <section className="mt-7.5 rounded-[10px] border border-grey-200 bg-white px-[59px] py-10">
-                    {/* Card header: title on the left, search on the right */}
-                    <div className="flex items-center justify-between">
+                // .panel (globals.css): the white frame shared by the sections, responsive padding
+                <section className="panel mt-7.5">
+                    {/* Card header: title on the left, search on the right.
+                        Phone / tablet: the search goes below the title (flex-col) */}
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            {/* h2: the page's subtitle (the h1 is "Tableau de bord") */}
-                            <h5>Mes tâches assignées</h5>
+                            {/* h2: the page's subtitle (the h1 is "Tableau de bord").
+                                Class h5: the same look as before */}
+                            <h2 className="h5">Mes tâches assignées</h2>
                             <p className="mt-1 text-grey-600">Par ordre de priorité</p>
                         </div>
                         {/* value + onChange: React knows the text on every keystroke.
                             className: Tailwind classes take precedence over those
-                            of .input-default (margins, height, width) */}
+                            of .input-default (margins, height, width).
+                            Full width on a phone, the mockup's width (357px) from sm (640px) */}
                         <Input
                             label="Rechercher une tâche"
                             hideLabel
@@ -69,7 +74,8 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             icon={SearchIcon}
-                            className="my-0 h-[63px] w-[357px] rounded-[10px] pl-8 text-sm placeholder:text-grey-600"
+                            wrapperClassName="w-full sm:w-auto"
+                            className="my-0 h-[63px] w-full rounded-[10px] pl-8 text-sm placeholder:text-grey-600 sm:w-[357px]"
                         />
                     </div>
 
@@ -93,10 +99,11 @@ export default function DashboardTasks({ tasks }: { tasks: AssignedTask[] }) {
             )}
 
             {/* Kanban view: one column per status.
-                grid-cols-3: 3 columns of equal width.
-                -mx-7.5: in the mockup, the columns overflow by 30px on each side. */}
+                Responsive: the columns are stacked on a phone / tablet (grid-cols-1),
+                3 columns of equal width from lg (1024px), as in the mockup.
+                lg:-mx-7.5: in the mockup, the columns overflow by 30px on each side. */}
             {view === "kanban" && (
-                <div className="-mx-7.5 mt-12.5 grid grid-cols-3 items-start gap-[23px]">
+                <div className="mt-8 grid grid-cols-1 items-start gap-[23px] lg:-mx-7.5 lg:mt-12.5 lg:grid-cols-3">
                     {KANBAN_COLUMNS.map((column) => (
                         <KanbanColumn
                             key={column.status}

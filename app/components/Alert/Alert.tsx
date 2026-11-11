@@ -18,7 +18,7 @@ export default function Alert({
   return (
     <div
       role="alert"
-      className={`mb-5 flex w-70 items-start gap-3 rounded-[10px] px-4 py-3 ${variantClasses[variant]}`}
+      className={`mb-5 flex w-70 items-start gap-3 rounded-[10px] px-4 py-3 border ${variantClasses[variant]}`}
     >
       <div className="flex-1">
         <p className="font-semibold">{message}</p>

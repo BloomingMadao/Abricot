@@ -35,17 +35,22 @@ export default function DeleteProjectButton({ project }: DeleteProjectButtonProp
 
     return (
         <>
-            {/* A <button> that looks like a link, like "Modifier" next to it.
-                text-error: in red, like any action that destroys something */}
-            <button
+            {/* The Button component, "link" variant, like "Modifier" next to it.
+                text-error: in red, like any action that destroys something
+                (a utility class: it takes precedence over the orange of .button-link) */}
+            <Button
+                label={
+                    <>
+                        Supprimer
+                        {/* For a screen reader: "Supprimer le projet" rather than just "Supprimer" */}
+                        <span className="sr-only"> le projet</span>
+                    </>
+                }
                 type="button"
+                variant="link"
                 onClick={open}
-                className="cursor-pointer text-sm text-error underline underline-offset-2 hover:text-grey-950"
-            >
-                Supprimer
-                {/* For a screen reader: "Supprimer le projet" rather than just "Supprimer" */}
-                <span className="sr-only"> le projet</span>
-            </button>
+                className="text-sm text-error"
+            />
 
             {/* Confirmation modal (no mockup: same style as "Supprimer la tâche") */}
             <Modal title="Supprimer le projet" isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -54,7 +59,8 @@ export default function DeleteProjectButton({ project }: DeleteProjectButtonProp
                     Le projet « {project.name} », ses tâches et leurs commentaires seront supprimés
                     définitivement.
                 </p>
-                <div className="mt-8 flex gap-3">
+                {/* flex-wrap: on a narrow phone, the 2nd button goes below the 1st */}
+                <div className="mt-8 flex flex-wrap gap-3">
                     <Button
                         label="Annuler"
                         type="button"

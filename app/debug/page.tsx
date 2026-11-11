@@ -1,12 +1,17 @@
+import { notFound } from "next/navigation"
 import Button from "@/app/components/Button/Button"
 import Input from "@/app/components/Input/Input"
 import Tag from "@/app/components/Tag/Tag"
 import MenuItems from "@/app/components/MenuItems/MenuItems"
-import Loader from "../components/Loader/Loader"
-import Chips from "../components/Chips/Chips"
-import IconButton from "../components/IconButton/IconButton"
+import Loader from "@/app/components/Loader/Loader"
+import Chips from "@/app/components/Chips/Chips"
+import IconButton from "@/app/components/IconButton/IconButton"
 
+// Showcase of the components, for development only:
+// in production (npm run build + npm start), this page doesn't exist (404)
 export default function Debug(){
+    if (process.env.NODE_ENV === "production") notFound()
+
     return(
     <div>
         <div>

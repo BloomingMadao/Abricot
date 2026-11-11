@@ -35,7 +35,7 @@ import {
   TOKEN_COOKIE_NAME,
 } from "@/app/lib/api";
 import type { ApiError, TaskStatus, UserSummary } from "@/app/lib/types";
-import { deleteTaskError, editTaskError } from "@/app/lib/utils";
+import { editTaskError } from "@/app/lib/utils";
 import { defaultTasks, isAIEnabled, suggestTasks, type SuggestedTask } from "@/app/lib/ai";
 
 /** What the action returns to the form when there's an error */
@@ -386,15 +386,15 @@ export async function getProjectMembersAction(
 /** Same shape as for a project: success, message, errors, values */
 export type TaskFormState = ProjectFormState;
 
-/** The rights of the logged-in user on a task (Abricot's rules, see utils.ts).
- *  Checked HERE, on the server: hiding "Modifier" / "Supprimer" isn't enough,
- *  a request can be sent without the buttons.
+/** Can the logged-in user edit this task? (Abricot's rule, see editTaskError in utils.ts).
+ *  Checked HERE, on the server: showing a red alert in the modal isn't enough,
+ *  a request can be sent without the form.
  *  The project (its owner), the task (its assignees) and the logged-in user, all at the same time.
- *  Not exported: only the actions of this file use it. */
+ *  Not exported: only updateTaskAction uses it. */
 async function getTaskRights(
   projectId: string,
   taskId: string
-): Promise<{ error: string } | { editError: string | null; deleteError: string | null }> {
+): Promise<{ error: string } | { editError: string | null }> {
   const [projectResponse, taskResponse, profile] = await Promise.all([
     getProject(projectId),
     getTask(projectId, taskId),
@@ -407,11 +407,8 @@ async function getTaskRights(
   const userId = profile.data.user.id;
   const isOwner = projectResponse.data.project.owner.id === userId;
   const assigneeIds = taskResponse.data.task.assignees.map(({ user }) => user.id);
-  // null = allowed, otherwise the reason (the same messages as in the "…" menu)
-  return {
-    editError: editTaskError(assigneeIds, userId, isOwner),
-    deleteError: deleteTaskError(assigneeIds, userId, isOwner),
-  };
+  // null = allowed, otherwise the reason (the same message as in the "Modifier" modal)
+  return { editError: editTaskError(assigneeIds, userId, isOwner) };
 }
 
 /** Task "Modifier" form (in the dashboard modal) */
@@ -665,18 +662,14 @@ export async function createTasksAction(
 }
 
 /** Deletes a task ("Supprimer" button in the "…" menu, after confirmation).
+ *  Any project member can do it, as in the specifications
+ *  (the API refuses the people who are not members of the project).
  *  It's not a form: the function receives the project and the task directly. */
 export async function deleteTaskAction(
   projectId: string,
   taskId: string
 ): Promise<{ error?: string }> {
-  // 1. Only the project owner or THE person assigned to the task can delete it
-  //    (several people assigned: only the owner)
-  const rights = await getTaskRights(projectId, taskId);
-  if ("error" in rights) return { error: rights.error };
-  if (rights.deleteError) return { error: rights.deleteError };
-
-  // 2. Delete it (its comments go with it)
+  // Delete it (its comments go with it)
   const response = await deleteTask(projectId, taskId);
   if (!response.success) return { error: response.message };
 
@@ -716,7 +709,8 @@ export async function createCommentAction(
   return { success: true, message: "Commentaire ajouté", errors: [], values: { content: "" } };
 }
 
+/** "Déconnexion" (user menu): deletes the cookie with the token, then back to the login page */
 export async function logout() {
-  (await cookies()).delete("token")
+  (await cookies()).delete(TOKEN_COOKIE_NAME)
   redirect("/connection")
 }

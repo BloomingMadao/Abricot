@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-// Pages accessible without being logged in (adapt to your routes)
-const publicRoutes = ["/connection", "/register", "/debug"]
+// Pages accessible without being logged in.
+// (/debug is no longer here: it only exists in development, see app/debug/page.tsx)
+const publicRoutes = ["/connection", "/register"]
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl

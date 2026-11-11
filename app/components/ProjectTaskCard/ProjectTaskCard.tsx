@@ -3,7 +3,7 @@ import Tag from "@/app/components/Tag/Tag"
 import UserAvatar from "@/app/components/UserAvatar/UserAvatar"
 import TaskMenu from "@/app/components/TaskMenu/TaskMenu"
 import TaskComments from "@/app/components/TaskComments/TaskComments"
-import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS, deleteTaskError, editTaskError, formatShortDate } from "@/app/lib/utils"
+import { TASK_STATUS_LABELS, TASK_STATUS_VARIANTS, editTaskError, formatShortDate } from "@/app/lib/utils"
 import type { TaskDetail, UserSummary } from "@/app/lib/types"
 import CalendarIconGrey from "@/public/image/calendarIconGrey.svg"
 
@@ -13,7 +13,7 @@ type ProjectTaskCardProps = {
     members: UserSummary[]
     // The logged-in user: for the "Ajouter un commentaire" form
     currentUser: UserSummary
-    // Is the logged-in user the project owner? (they can edit and delete every task)
+    // Is the logged-in user the project owner? (they can edit every task)
     isOwner: boolean
 }
 
@@ -21,15 +21,16 @@ type ProjectTaskCardProps = {
 // assignees, "…" menu and comments.
 // No need for "use client" anymore: what changes lives in TaskMenu and TaskComments (client components).
 export default function ProjectTaskCard({ task, members, currentUser, isOwner }: ProjectTaskCardProps) {
-    // The ids of the people assigned to the task: for the "Modifier" / "Supprimer" rights
+    // The ids of the people assigned to the task: for the "Modifier" right
     const assigneeIds = task.assignees.map(({ user }) => user.id)
 
     // A task assigned to the logged-in user is highlighted with a brand-dark (orange) border
     const isMine = assigneeIds.includes(currentUser.id)
 
     return (
+        // Responsive: 20px on the sides on a phone, the mockup's padding from md (768px)
         <article
-            className={`rounded-[10px] border bg-white pt-6 pr-[34px] pb-[23px] pl-10 ${
+            className={`rounded-[10px] border bg-white px-5 pt-6 pb-[23px] md:pr-[34px] md:pl-10 ${
                 isMine ? "border-brand-dark" : "border-grey-200"
             }`}
         >
@@ -37,7 +38,8 @@ export default function ProjectTaskCard({ task, members, currentUser, isOwner }:
                 <div className="min-w-0">
                     {/* Title + status on the same line */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <h5>{task.title}</h5>
+                        {/* h3: under the "Tâches" h2 of the section. Class h5: the same look as before */}
+                        <h3 className="h5">{task.title}</h3>
                         <Tag
                             label={TASK_STATUS_LABELS[task.status]}
                             variant={TASK_STATUS_VARIANTS[task.status]}
@@ -49,8 +51,9 @@ export default function ProjectTaskCard({ task, members, currentUser, isOwner }:
                         <p className="mt-1 text-sm text-grey-600">{task.description}</p>
                     )}
 
-                    {/* Due date: grey label, dark date */}
-                    <p className="mt-[27px] flex items-center gap-2 text-xs text-grey-600">
+                    {/* Due date: grey label, dark date.
+                        whitespace-nowrap: "Échéance :" and the date stay on one line on a narrow phone */}
+                    <p className="mt-[27px] flex items-center gap-2 text-xs whitespace-nowrap text-grey-600">
                         Échéance :
                         <Image src={CalendarIconGrey} alt="" width={15} />
                         {task.dueDate ? (
@@ -63,8 +66,9 @@ export default function ProjectTaskCard({ task, members, currentUser, isOwner }:
                         )}
                     </p>
 
-                    {/* Assigned to: avatar + name for each person */}
-                    <div className="mt-6 flex items-center gap-2.5 text-xs text-grey-600">
+                    {/* Assigned to: avatar + name for each person.
+                        flex-wrap: on a phone, the names go below "Assigné à :" when there's no room */}
+                    <div className="mt-6 flex flex-wrap items-center gap-2.5 text-xs text-grey-600">
                         Assigné à :
                         {task.assignees.length === 0 ? (
                             <span className="text-grey-800">personne</span>
@@ -89,14 +93,13 @@ export default function ProjectTaskCard({ task, members, currentUser, isOwner }:
                 </div>
 
                 {/* "…": the Modifier | Supprimer menu, for everyone.
-                    Only the project owner and the people assigned to the task can use them
-                    (see utils.ts): for the others, "Modifier" / "Supprimer" show these
-                    messages in a red alert (null = allowed) */}
+                    "Modifier": only the project owner and the people assigned to the task
+                    (see editTaskError in utils.ts), the others get this message in a red alert
+                    (null = allowed). "Supprimer": any project member (specifications) */}
                 <TaskMenu
                     task={task}
                     members={members}
                     editForbiddenMessage={editTaskError(assigneeIds, currentUser.id, isOwner)}
-                    deleteForbiddenMessage={deleteTaskError(assigneeIds, currentUser.id, isOwner)}
                 />
             </div>
 

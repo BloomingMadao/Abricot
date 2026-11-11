@@ -68,6 +68,9 @@ export default function CreateProjectForm({ currentUserEmail }: CreateProjectFor
                 variant="primary"
                 type="submit"
                 disabled={!isValid || isPending}
+                // The classes described in the comment above were missing:
+                // without them the button was 256px wide + 12px of margin (wider than the modal at 320px)
+                className="mx-0 w-auto px-7"
             />
         </form>
     )

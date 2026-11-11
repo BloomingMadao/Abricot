@@ -2,6 +2,7 @@ import type { FormEvent } from "react"
 import type { SuggestedTask } from "@/app/lib/actions"
 import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
+import ActionIcon from "@/app/components/ActionIcon/ActionIcon"
 
 type SuggestedTaskCardProps = {
     // A task suggested by the AI (not saved yet). id: only used by React (key, field ids)
@@ -44,8 +45,8 @@ export default function SuggestedTaskCard({
         "flex cursor-pointer items-center gap-[7px] transition-colors hover:text-grey-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
 
     return (
-        // Padding taken from the mockup (40px on the sides)
-        <article className="rounded-[10px] border border-grey-200 bg-white px-10 py-6">
+        // Padding taken from the mockup (40px on the sides), 20px on a phone
+        <article className="rounded-[10px] border border-grey-200 bg-white px-5 py-6 md:px-10">
             {isEditing ? (
                 <form onSubmit={save}>
                     {/* Same rules as the API: title from 2 to 200 characters, description up to 1000 */}
@@ -86,26 +87,23 @@ export default function SuggestedTaskCard({
                 </form>
             ) : (
                 <>
-                    <h5>{task.title}</h5>
+                    {/* h3: under the modal's title (h2). Class h5: the same look as before */}
+                    <h3 className="h5">{task.title}</h3>
                     {task.description && <p className="mt-1 text-sm text-grey-600">{task.description}</p>}
 
                     {/* Supprimer | Modifier (the mockup's order) */}
                     <div className="mt-[30px] flex items-center gap-4 text-xs text-grey-600">
                         <button type="button" onClick={onDelete} className={actionClass}>
-                            {/* Trash can, drawn in SVG like in TaskMenu (currentColor: the text color) */}
-                            <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0h4l.5 1H12v1.5H0V1h3.5L4 0ZM1 3.5h10l-.7 9.6A1 1 0 0 1 9.3 14H2.7a1 1 0 0 1-1-.9L1 3.5Z" />
-                            </svg>
+                            {/* Trash can, the same as in TaskMenu (see ActionIcon) */}
+                            <ActionIcon variant="delete" />
                             Supprimer
                             {/* For a screen reader: "Supprimer la tâche 2" rather than just "Supprimer" */}
                             <span className="sr-only"> la tâche {position}</span>
                         </button>
                         <span aria-hidden="true">|</span>
                         <button type="button" onClick={onEdit} className={actionClass}>
-                            {/* Pencil, drawn in SVG like in TaskMenu */}
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
-                                <path d="M10.3.7a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L5 12 1 13l1-4L10.3.7Z" />
-                            </svg>
+                            {/* Pencil, the same as in TaskMenu (see ActionIcon) */}
+                            <ActionIcon variant="edit" />
                             Modifier
                             <span className="sr-only"> la tâche {position}</span>
                         </button>

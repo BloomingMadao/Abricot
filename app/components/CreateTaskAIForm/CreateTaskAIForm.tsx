@@ -107,7 +107,8 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
         <>
             {/* The suggested tasks. Without tasks, this empty area keeps the modal
                 at the mockup's height (800px), with the chat at the bottom */}
-            <div className={hasTasks ? "mt-1.5" : "min-h-[462px]"}>
+            {/* min-h: the empty modal keeps the mockup's height (smaller on a phone) */}
+            <div className={hasTasks ? "mt-1.5" : "min-h-60 md:min-h-[462px]"}>
                 {hasTasks && (
                     <>
                         <ul className="flex flex-col gap-[25px]">
@@ -154,11 +155,11 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
                 {state?.success ? state.message : ""}
             </p>
 
-            {/* The chat, at the bottom. -mx-[52px] + px-[52px]: the separator line (border-t)
-                goes from one edge of the modal to the other, like on the mockup.
+            {/* The chat, at the bottom. -mx + px (the modal's padding: 24px on a phone, 52px from md):
+                the separator line (border-t) goes from one edge of the modal to the other, like on the mockup.
                 It only appears when there are tasks above (transparent otherwise) */}
             <div
-                className={`-mx-[52px] mt-[23px] border-t px-[52px] pt-[25px] ${
+                className={`-mx-6 mt-[23px] border-t px-6 pt-[25px] md:-mx-[52px] md:px-[52px] ${
                     hasTasks ? "border-grey-200 pb-9" : "border-transparent pb-[82px]"
                 }`}
             >
@@ -166,7 +167,7 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
                     id: the field below points to this text (aria-describedby),
                     so a screen reader reads it when arriving on the field */}
                 {!aiEnabled && (
-                    <p id="ai-disabled-info" className={`mb-4 rounded-[10px] px-4 py-3 text-sm ${variantClasses.info}`}>
+                    <p id="ai-disabled-info" className={`mb-4 rounded-[10px] border px-4 py-3 text-sm ${variantClasses.info}`}>
                         Le mode IA est désactivé : indiquez le nombre de tâches à créer (de 1 à 10),
                         puis modifiez-les avant de les ajouter.
                     </p>

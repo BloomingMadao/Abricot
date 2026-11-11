@@ -1,8 +1,13 @@
-
+import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import AuthForm from "@/app/components/AuthForm/AuthForm"
 import Logo from "@/public/image/logo.svg"
+
+// The browser tab: "Inscription | Abricot"
+export const metadata: Metadata = {
+    title: "Inscription",
+}
 
 export default function Register() {
     return(
@@ -17,8 +22,9 @@ export default function Register() {
                 />
                 <h1>Inscription</h1>
                 <AuthForm />
-                <Link href="#" className="mb-[20px] mt-[10px] text-(--brand-color-dark) underline underline-offset-4 hover:text-black">Mot de passe oublié ?</Link>
-                <p>Déjà inscrit ? <Link href="/connection" className="text-(--brand-color-dark) underline underline-offset-4 hover:text-black">Connectez-vous</Link></p>
+                {/* .link (globals.css): the shared link style (orange, underlined, focus outline) */}
+                <Link href="#" className="link mb-[20px] mt-[10px]">Mot de passe oublié ?</Link>
+                <p>Déjà inscrit ? <Link href="/connection" className="link">Connectez-vous</Link></p>
             </div>
     )
 }

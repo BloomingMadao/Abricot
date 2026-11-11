@@ -133,14 +133,15 @@ export default function TaskComments({ task, currentUser }: TaskCommentsProps) {
                     </div>
 
                     {/* justify-end: "Envoyer" on the right.
-                        mx-0 w-[206px]: its width in the mockup (instead of .button-primary's 256px) */}
+                        mx-0 sm:w-[206px]: its width in the mockup (instead of .button-primary's 256px),
+                        full width on a phone */}
                     <div className="mt-4 flex justify-end">
                         <Button
                             label={isPending ? "Envoi..." : "Envoyer"}
                             variant="primary"
                             type="submit"
                             disabled={!isValid || isPending}
-                            className="mx-0 w-[206px]"
+                            className="mx-0 w-full sm:w-[206px]"
                         />
                     </div>
                 </form>

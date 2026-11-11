@@ -31,8 +31,10 @@ export default function UserAvatar({ user, variant = "grey", decorative = false 
             }
             variant={variant}
             // text-grey-800!: dark initials as in the mockups
-            // (the "!" takes precedence over the variant's text color)
-            className="flex size-[27px] shrink-0 items-center justify-center border border-white p-0 text-grey-800!"
+            // (the "!" takes precedence over the variant's text color).
+            // border-white!: the thin white outline of the mockup (the "!" takes precedence
+            // over the Tag's border-transparent)
+            className="flex size-[27px] shrink-0 items-center justify-center border p-0 border-white! text-grey-800!"
         />
     )
 }

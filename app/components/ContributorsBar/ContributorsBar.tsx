@@ -15,17 +15,20 @@ export default function ContributorsBar({ owner, members }: ContributorsBarProps
     const count = members.length + 1
 
     return (
-        <section className="flex items-center justify-between gap-6 rounded-[10px] bg-grey-100 px-[50px] py-[18px]">
-            {/* Like your other section titles: an h5 */}
-            <h5 className="flex items-baseline gap-2.5">
+        // Responsive: the people go below the title on a phone (flex-col),
+        // on the same line from md (768px), with the mockup's padding (50px)
+        <section className="flex flex-col items-start gap-4 rounded-[10px] bg-grey-100 px-5 py-[18px] md:flex-row md:items-center md:justify-between md:gap-6 md:px-[50px]">
+            {/* h2: a section of the project page (the h1 is the project's name).
+                Class h5: the same look as before */}
+            <h2 className="h5 flex items-baseline gap-2.5">
                 Contributeurs
                 <span className="text-base font-normal text-grey-600">
                     {count} {count > 1 ? "personnes" : "personne"}
                 </span>
-            </h5>
+            </h2>
 
             {/* text-sm: the same font size for the initials and the labels */}
-            <ul className="flex flex-wrap items-center justify-end gap-2 text-sm">
+            <ul className="flex flex-wrap items-center gap-2 text-sm md:justify-end">
                 {/* The owner: orange avatar + "Propriétaire".
                     Their name isn't written: the avatar gives it to screen readers */}
                 <li className="flex items-center gap-[5px]">

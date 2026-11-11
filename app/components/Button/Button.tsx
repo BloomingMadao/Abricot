@@ -4,7 +4,8 @@ type ButtonProps = {
     // The button's content. ReactNode (and not just string): it can contain
     // HTML, e.g. hidden text for screen readers (<span className="sr-only">)
     label: ReactNode
-    variant?: "primary" | "secondary" | "highlight" |"disabled"
+    // "link": looks like a link (orange underlined text), for a button that doesn't change page
+    variant?: "primary" | "secondary" | "highlight" | "disabled" | "link"
     // "submit" submits the form, "button" does nothing on its own (for an onClick)
     type?: "submit" | "button" | "reset"
     disabled?: boolean

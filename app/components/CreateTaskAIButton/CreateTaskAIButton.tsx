@@ -67,14 +67,14 @@ export default function CreateTaskAIButton({ projectId, aiEnabled }: CreateTaskA
             />
 
             {/* icon: the orange star before the title.
-                className: the AI modal's own spacing (52px on the sides, no bottom padding:
-                the chat at the bottom handles it) */}
+                className: the AI modal's own spacing (52px on the sides from md, 24px on a phone,
+                no bottom padding: the chat at the bottom handles it) */}
             <Modal
                 title={hasTasks ? "Vos tâches..." : "Créer une tâche"}
                 icon={<Image src={AIIconHover} alt="" width={20} />}
                 isOpen={isOpen}
                 onClose={close}
-                className="px-[52px] pt-20"
+                className="px-6 pt-14 md:px-[52px] md:pt-20"
             >
                 <CreateTaskAIForm
                     projectId={projectId}

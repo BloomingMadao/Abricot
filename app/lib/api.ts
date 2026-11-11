@@ -16,6 +16,7 @@
  * ============================================================================
  */
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import * as mock from "./mock-api";
 import type {
@@ -98,11 +99,13 @@ export async function login(body: LoginBody): Promise<ApiResponse<AuthData>> {
   return request("/auth/login", "POST", body);
 }
 
-/** Logged-in user's profile — GET /auth/profile */
-export async function getProfile(): Promise<ApiResponse<{ user: ProfileUser }>> {
+/** Logged-in user's profile — GET /auth/profile
+ *  cache (React): during the display of ONE page, the Header (UserIcon) and the page
+ *  both ask for the profile: the request is only sent once, the 2nd call reuses the result. */
+export const getProfile = cache(async (): Promise<ApiResponse<{ user: ProfileUser }>> => {
   if (USE_MOCK) return mock.getProfile();
   return request("/auth/profile");
-}
+});
 
 /** Update your name / email — PUT /auth/profile */
 export async function updateProfile(
@@ -128,13 +131,15 @@ export async function getProjects(): Promise<ApiResponse<{ projects: ProjectWith
   return request("/projects");
 }
 
-/** A project with its members and tasks (without assignees) — GET /projects/:id */
-export async function getProject(
+/** A project with its members and tasks (without assignees) — GET /projects/:id
+ *  cache (React): the project page asks for it twice (tab title in generateMetadata,
+ *  then the page itself): the request is only sent once per display. */
+export const getProject = cache(async (
   projectId: string
-): Promise<ApiResponse<{ project: ProjectDetail }>> {
+): Promise<ApiResponse<{ project: ProjectDetail }>> => {
   if (USE_MOCK) return mock.getProject(projectId);
   return request(`/projects/${projectId}`);
-}
+});
 
 /** Create a project — POST /projects */
 export async function createProject(

@@ -26,7 +26,7 @@ type ProjectTasksProps = {
     members: UserSummary[]
     // The logged-in user: to add a comment
     currentUser: UserSummary
-    // Is the logged-in user the project owner? (they can edit and delete every task)
+    // Is the logged-in user the project owner? (they can edit every task)
     isOwner: boolean
 }
 
@@ -50,19 +50,25 @@ export default function ProjectTasks({ tasks, members, currentUser, isOwner }: P
     )
 
     return (
-        <section className="rounded-[10px] border border-grey-200 bg-white px-[59px] py-10">
-            {/* Header: title on the left, views + filter + search on the right */}
-            <div className="flex items-center justify-between gap-6">
+        // .panel (globals.css): the white frame shared by the sections, responsive padding
+        <section className="panel">
+            {/* Header: title on the left, views + filter + search on the right.
+                Below xl (1280px) there isn't enough room: the controls go below the title */}
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
                 <div>
-                    <h5>Tâches</h5>
+                    {/* h2: a section of the project page. Class h5: the same look as before */}
+                    <h2 className="h5">Tâches</h2>
                     <p className="mt-1 text-grey-600">
                         {view === "list" ? "Par ordre de priorité" : "Par date d'échéance"}
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    {/* Views: "Liste" (by default) or "Calendrier" */}
-                    <div className="flex gap-2.5">
+                {/* flex-wrap: on a phone, the filter and the search go below the views */}
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Views: "Liste" (by default) or "Calendrier".
+                        Responsive: on a phone, a full-width row with the chips centered;
+                        from md (768px), on the left, next to the filter and the search */}
+                    <div className="flex w-full justify-center gap-2.5 md:w-auto md:justify-start">
                         <Chips label="Liste" type="tasks" isActive={view === "list"} onClick={() => setView("list")} />
                         <Chips
                             label="Calendrier"
@@ -83,7 +89,9 @@ export default function ProjectTasks({ tasks, members, currentUser, isOwner }: P
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                         icon={DropdownIcon}
-                        className="my-0 h-[63px] w-[152px] cursor-pointer appearance-none rounded-[10px] bg-white pl-8 text-sm"
+                        // Full width on a phone, the mockup's width (152px) from md (768px)
+                        wrapperClassName="w-full md:w-auto"
+                        className="my-0 h-[63px] w-full cursor-pointer appearance-none rounded-[10px] bg-white pl-8 text-sm md:w-[152px]"
                     />
 
                     <Input
@@ -95,22 +103,25 @@ export default function ProjectTasks({ tasks, members, currentUser, isOwner }: P
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         icon={SearchIcon}
-                        className="my-0 h-[63px] w-[283px] rounded-[10px] pl-8 text-sm placeholder:text-grey-600"
+                        // Full width on a phone, the mockup's width (283px) from md
+                        wrapperClassName="w-full md:w-auto"
+                        className="my-0 h-[63px] w-full rounded-[10px] pl-8 text-sm placeholder:text-grey-600 md:w-[283px]"
                     />
                 </div>
             </div>
 
             {/* "Calendrier" view: the tasks on a month grid (see TaskCalendar).
                 Otherwise the task list (or a message if there are none).
-                mx-10: in the mockup, the tasks are indented 40px relative to the title */}
+                md:mx-10: in the mockup, the tasks are indented 40px relative to the title
+                (not on a phone: the room is needed for the cards) */}
             {view === "calendar" ? (
                 <TaskCalendar tasks={filteredTasks} members={members} currentUser={currentUser} isOwner={isOwner} />
             ) : tasks.length === 0 ? (
-                <p className="mx-10 mt-10 text-grey-600">Aucune tâche dans ce projet pour l&apos;instant.</p>
+                <p className="mt-10 text-grey-600 md:mx-10">Aucune tâche dans ce projet pour l&apos;instant.</p>
             ) : filteredTasks.length === 0 ? (
-                <p className="mx-10 mt-10 text-grey-600">Aucune tâche ne correspond à votre recherche.</p>
+                <p className="mt-10 text-grey-600 md:mx-10">Aucune tâche ne correspond à votre recherche.</p>
             ) : (
-                <ul className="mx-10 mt-[41px] flex flex-col gap-[18px]">
+                <ul className="mt-8 flex flex-col gap-[18px] md:mx-10 md:mt-[41px]">
                     {filteredTasks.map((task) => (
                         <li key={task.id}>
                             <ProjectTaskCard task={task} members={members} currentUser={currentUser} isOwner={isOwner} />

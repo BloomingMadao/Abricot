@@ -1,6 +1,12 @@
+import type { Metadata } from "next"
 import { getProfile } from "@/app/lib/api"
 import Alert from "@/app/components/Alert/Alert"
 import ProfileForm from "@/app/components/ProfileForm/ProfileForm"
+
+// The browser tab: "Mon compte | Abricot"
+export const metadata: Metadata = {
+    title: "Mon compte",
+}
 
 export default async function Profile() {
     // getProfile() INSIDE the function: it is called on every visit,
@@ -10,7 +16,7 @@ export default async function Profile() {
     // Profile not found: message instead of a blank page (same as on the dashboard)
     if (!responseUser.success) {
         return (
-            <div className="px-25 pt-14">
+            <div className="page-container lg:pt-14">
                 <Alert message="Impossible de charger votre profil." />
             </div>
         )
@@ -26,8 +32,10 @@ export default async function Profile() {
     const lastname = otherWords.join(" ")
 
     return (
-        <div className="px-25 pt-14 pb-20">
-            <div className="rounded-[10px] border border-grey-200 bg-white px-[59px] py-10">
+        // .page-container and .panel (globals.css): the shared, responsive margins and white frame.
+        // lg:pt-14 lg:pb-20: the mockup's spacing for this page (a utility class: it takes precedence)
+        <div className="page-container lg:pt-14 lg:pb-20">
+            <div className="panel">
                 {/* h1: the page's main heading, styled as in the mockup */}
                 <h1 className="mb-0 text-lg font-semibold text-grey-800">Mon compte</h1>
                 <p className="mt-1 text-grey-600">{user.name || user.email}</p>

@@ -185,13 +185,10 @@ export default function TaskCalendar({ tasks, members, currentUser, isOwner }: T
         tasksByDay.set(key, [...(tasksByDay.get(key) ?? []), task])
     }
 
-    // No task in the month shown: we offer to jump to the closest month that has some
-    // (the next one, otherwise the last one before), so the user doesn't search month by month
+    // No task in the month shown: a short sentence says so (the grid alone would look broken).
+    // The user moves with the arrows or "Aujourd'hui", like in any calendar
     const shownKey = `${shown.year}-${String(shown.month + 1).padStart(2, "0")}`
-    const monthsWithTasks = [...new Set([...tasksByDay.keys()].map((key) => key.slice(0, 7)))].sort()
-    const hasTasksThisMonth = monthsWithTasks.includes(shownKey)
-    const closestMonth =
-        monthsWithTasks.find((key) => key > shownKey) ?? monthsWithTasks.findLast((key) => key < shownKey)
+    const hasTasksThisMonth = [...tasksByDay.keys()].some((key) => key.startsWith(shownKey))
 
     const shownLabel = monthLabel(shown)
     const selectedTask = tasks.find((task) => task.id === selectedTaskId)
@@ -220,24 +217,22 @@ export default function TaskCalendar({ tasks, members, currentUser, isOwner }: T
             </div>
 
             {!hasTasksThisMonth && (
-                <p className="mt-4 flex flex-wrap items-center gap-3 text-sm text-grey-600">
+                <p className="mt-4 text-sm text-grey-600">
                     Aucune tâche avec une échéance en {shownLabel}.
-                    {/* Button "secondary", smaller: w-auto px-4 py-1 text-sm */}
-                    {closestMonth && (
-                        <Button
-                            label={`Voir ${monthLabel(monthOf(closestMonth))}`}
-                            type="button"
-                            variant="secondary"
-                            onClick={() => showMonth(monthOf(closestMonth))}
-                            className="mx-0 w-auto px-4 py-1 text-sm"
-                        />
-                    )}
                 </p>
             )}
 
+            {/* Responsive: below 560px of width (phone), the grid keeps its 7 readable columns
+                and scrolls sideways inside this block, instead of widening the whole page.
+                role="region" + aria-label + tabIndex: the block can be reached with the keyboard
+                and scrolled with the arrow keys (WCAG 2.1.1).
+                relative: the hidden texts (sr-only, in "absolute") are placed inside this block,
+                otherwise they would stick out of it and widen the page */}
+            <div role="region" aria-label={`Calendrier de ${shownLabel}`} tabIndex={0} className="relative mt-6 overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
             {/* The month grid: a real <table> (screen readers announce the day of the week
-                of each cell). table-fixed: 7 columns of the same width */}
-            <table className="mt-6 w-full table-fixed border-collapse">
+                of each cell). table-fixed: 7 columns of the same width.
+                min-w-[560px]: 80px per day at least */}
+            <table className="w-full min-w-[560px] table-fixed border-collapse">
                 <caption className="sr-only">Tâches de {shownLabel}, par date d&apos;échéance</caption>
                 <thead>
                     <tr>
@@ -328,6 +323,7 @@ export default function TaskCalendar({ tasks, members, currentUser, isOwner }: T
                     ))}
                 </tbody>
             </table>
+            </div>
 
             {/* The tasks without a due date have no day: they are listed under the calendar */}
             {withoutDueDate.length > 0 && (
@@ -335,7 +331,8 @@ export default function TaskCalendar({ tasks, members, currentUser, isOwner }: T
                     <p className="text-sm text-grey-800">Sans échéance ({withoutDueDate.length})</p>
                     <ul className="mt-3 flex flex-wrap gap-2">
                         {withoutDueDate.map((task) => (
-                            <li key={task.id} className="w-[220px]">
+                            // Full width on a phone, 220px from sm (640px)
+                            <li key={task.id} className="w-full sm:w-[220px]">
                                 <TaskChip task={task} isMine={isMine(task)} onOpen={() => setSelectedTaskId(task.id)} />
                             </li>
                         ))}

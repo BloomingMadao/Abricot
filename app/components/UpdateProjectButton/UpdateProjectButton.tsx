@@ -3,6 +3,7 @@
 import { useState } from "react"
 import type { UserSummary } from "@/app/lib/types"
 import Modal from "@/app/components/Modal/Modal"
+import Button from "@/app/components/Button/Button"
 import UpdateProjectForm from "@/app/components/UpdateProjectForm/UpdateProjectForm"
 
 type UpdateProjectButtonProps = {
@@ -20,16 +21,21 @@ export default function UpdateProjectButton({ project, members, ownerEmail }: Up
 
     return (
         <>
-            {/* A <button> that looks like a link: it opens a modal, it doesn't change page */}
-            <button
+            {/* The Button component, "link" variant: a <button> that looks like a link
+                (it opens a modal, it doesn't change page). text-sm: the mockup's size */}
+            <Button
+                label={
+                    <>
+                        Modifier
+                        {/* For a screen reader: "Modifier le projet" rather than just "Modifier" */}
+                        <span className="sr-only"> le projet</span>
+                    </>
+                }
                 type="button"
+                variant="link"
                 onClick={() => setIsOpen(true)}
-                className="cursor-pointer text-sm text-brand-dark underline underline-offset-2 hover:text-grey-950"
-            >
-                Modifier
-                {/* For a screen reader: "Modifier le projet" rather than just "Modifier" */}
-                <span className="sr-only"> le projet</span>
-            </button>
+                className="text-sm"
+            />
 
             <Modal title="Modifier un projet" isOpen={isOpen} onClose={() => setIsOpen(false)}>
                 <UpdateProjectForm

@@ -1,18 +1,7 @@
-import Image from "next/image";
-import Logo from "@/public/image/logo.svg"
-import Link from "next/link";
+import { redirect } from "next/navigation"
 
+// "/" has no page of its own: we go to the dashboard.
+// (Not logged in: proxy.ts has already sent the user to /connection)
 export default function Home() {
-  return (
-    <div className="flex flex-col justify-center items-center min-h-screen">
-      <Image
-        src={Logo}
-        loading="eager"
-        alt=""
-      />
-      <p>Site en cours de construction</p>
-      <Link href="/connection">Page de connexion </Link>
-      <Link href="/register">Page d&apos;inscription</Link>
-    </div>
-  );
+  redirect("/dashboard")
 }

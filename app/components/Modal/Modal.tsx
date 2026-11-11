@@ -11,7 +11,7 @@ type ModalProps = {
     onClose: () => void
     children: ReactNode
     // Replaces the default padding of the content (the one of the form modals),
-    // e.g. "px-[52px] pt-20" for the AI modal, which has its own spacing
+    // e.g. "px-6 pt-14 md:px-[52px] md:pt-20" for the AI modal, which has its own spacing
     className?: string
 }
 
@@ -49,8 +49,9 @@ export default function Modal({ title, icon, isOpen, onClose, children, classNam
             // backdrop:: style of the grey backdrop behind the modal
             className="m-auto w-[600px] max-w-[calc(100%-2rem)] rounded-[10px] bg-white p-0 backdrop:bg-black/50"
         >
-            {/* Padding and sizes taken from the Figma mockup (unless className gives others) */}
-            <div className={`relative ${className ?? "px-[73px] pt-[76px] pb-[74px]"}`}>
+            {/* Padding and sizes taken from the Figma mockup from md (768px), unless className gives others.
+                On a phone: 24px on the sides (73px would leave about 200px for the form) */}
+            <div className={`relative ${className ?? "px-6 pt-14 pb-10 md:px-[73px] md:pt-[76px] md:pb-[74px]"}`}>
                 {/* flex items-center: the icon (if any) and the title on the same line */}
                 <h2 id={titleId} className="flex items-center gap-2.5 text-2xl font-semibold text-grey-800">
                     {icon}
@@ -63,7 +64,9 @@ export default function Modal({ title, icon, isOpen, onClose, children, classNam
                     type="button"
                     onClick={onClose}
                     aria-label="Fermer"
-                    className="absolute top-9 right-10 cursor-pointer text-grey-600 transition-colors hover:text-grey-950"
+                    // focus-visible: the outline of the app's other buttons, when reached with the keyboard.
+                    // Closer to the corner on a phone
+                    className="absolute top-5 right-5 cursor-pointer text-grey-600 transition-colors hover:text-grey-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark md:top-9 md:right-10"
                 >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                         <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

@@ -85,6 +85,8 @@ export default function ProfileForm({ firstname, lastname, email }: ProfileFormP
         variant="primary"
         type="submit"
         disabled={isPending}
+        // mx-0: aligned with the fields, as in the mockup. Full width on a phone
+        className="mx-0 w-full sm:w-64"
       />
     </form>
   );

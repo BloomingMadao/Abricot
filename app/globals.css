@@ -35,8 +35,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-manrope);
+  /* After the font loaded by next/font: fallback fonts, if it can't be loaded */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --success: var(--system-success-green); /* old name, kept */
 
   /* Brand */
@@ -137,6 +138,33 @@
 
   .tag{
     @apply py-[4px] px-[16px] rounded-[50px]
+  }
+
+  /* The look of an h5, for a heading of ANOTHER level (h1, h2, h3):
+     the right tag for screen readers, the same look on screen.
+     mb-0 + text-inherit: cancel the h1 style (40px, orange, with a margin) */
+  .h5 {
+    @apply mb-0 font-heading text-[18px] font-bold text-inherit;
+  }
+
+  /* "Link" look: orange underlined text.
+     .link for real links (<Link>), .button-link for a Button that doesn't change page
+     (e.g. "Modifier" next to the project name, see Button variant="link") */
+  .link,
+  .button-link {
+    @apply cursor-pointer text-brand-dark underline underline-offset-4 transition-colors duration-300 ease-out hover:text-grey-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark;
+  }
+
+  /* The margins of a page, between the header and the footer.
+     Responsive: small on a phone, the mockup's margins from lg (1024px) */
+  .page-container {
+    @apply px-4 pt-8 pb-12 md:px-10 md:pt-14 lg:px-25 lg:pt-22;
+  }
+
+  /* The white frame of a section (task list, profile...).
+     Responsive: smaller padding on a phone, the mockup's padding from lg */
+  .panel {
+    @apply rounded-[10px] border border-grey-200 bg-white px-4 py-6 md:px-10 lg:px-[59px] lg:py-10;
   }
 
 

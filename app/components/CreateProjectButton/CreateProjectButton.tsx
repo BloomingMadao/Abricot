@@ -18,11 +18,14 @@ export default function CreateProjectButton({ currentUserEmail }: CreateProjectB
 
     return (
         <>
+            {/* mx-0: aligned with the page's edge. Full width on a phone,
+                the mockup's width (181px, like the forms' buttons) from sm (640px) */}
             <Button
                 label="+ Créer un projet"
                 type="button"
                 variant="primary"
                 onClick={() => setIsOpen(true)}
+                className="mx-0 w-full sm:w-[181px]"
             />
 
             <Modal title="Créer un projet" isOpen={isOpen} onClose={() => setIsOpen(false)}>

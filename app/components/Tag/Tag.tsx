@@ -14,15 +14,19 @@ type TagProps = {
 
 // Class names are written IN FULL: that's what lets
 // Tailwind find and generate them.
+// Only the COLORS here: they are also used by Alert, the AI modal's info box
+// and TaskStatusPicker, which each choose their own border.
 export const variantClasses: Record<TagVariant, string> = {
-    success: "bg-success-light text-success border-1",
-    error: "bg-error-light text-error border-1",
-    warning: "bg-warning-light text-warning border-1",
-    info: "bg-info-light text-info border-1",
-    brand: "bg-brand-light text-brand-dark border-1",
-    grey: "bg-grey-200 text-grey-600 border-1"
+    success: "bg-success-light text-success",
+    error: "bg-error-light text-error",
+    warning: "bg-warning-light text-warning",
+    info: "bg-info-light text-info",
+    brand: "bg-brand-light text-brand-dark",
+    grey: "bg-grey-200 text-grey-600"
 }
 
 export default function Tag({ label, variant = "success", className = "" }: TagProps) {
-  return <span className={`tag ${variantClasses[variant]} ${className}`}>{label}</span>
+  // border border-transparent: the tags have no visible outline in the mockup
+  // (before, border-1 drew a line in the text color). The 1px stays, invisible: same size as before
+  return <span className={`tag border border-transparent ${variantClasses[variant]} ${className}`}>{label}</span>
 }

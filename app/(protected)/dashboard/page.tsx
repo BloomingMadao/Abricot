@@ -1,8 +1,15 @@
+import type { Metadata } from "next"
 import { getProfile, getAssignedTasks } from "@/app/lib/api"
 import { PRIORITY_RANK } from "@/app/lib/utils"
 import Alert from "@/app/components/Alert/Alert"
+import PageHeader from "@/app/components/PageHeader/PageHeader"
 import DashboardTasks from "@/app/components/DashboardTasks/DashboardTasks"
 import CreateProjectButton from "@/app/components/CreateProjectButton/CreateProjectButton"
+
+// The browser tab: "Tableau de bord | Abricot" (see the title template in app/layout.tsx)
+export const metadata: Metadata = {
+    title: "Tableau de bord",
+}
 
 export default async function Dashboard() {
     // Promise.all: both calls are sent AT THE SAME TIME instead of one after the other
@@ -16,7 +23,7 @@ export default async function Dashboard() {
     //  proxy.ts would immediately send back to /dashboard → infinite loop.)
     if (!responseUser.success) {
         return (
-            <div className="px-25 pt-22">
+            <div className="page-container">
                 <Alert message="Impossible de charger votre profil." />
             </div>
         )
@@ -24,7 +31,7 @@ export default async function Dashboard() {
 
     if (!responseAssignedTasks.success) {
         return (
-            <div className="px-25 pt-22">
+            <div className="page-container">
                 <Alert message="Impossible de charger vos tâches." />
             </div>
         )
@@ -42,24 +49,16 @@ export default async function Dashboard() {
     )
 
     return (
-        // A single container with px-25: everything is aligned on the same margin
-        <div className="px-25 pt-22 pb-12">
-            {/* Header: title + sentence on the left, button on the right */}
-            <div className="flex items-center justify-between">
-                <div>
-                    {/* h1: the page's main heading (only one per page).
-                        The classes override the global h1 style (40px orange). */}
-                    <h5>Tableau de bord</h5>
-                    <p className="mt-4 text-sans">
-                        Bonjour {name}, voici un aperçu de vos projets et tâches
-                    </p>
-                </div>
-
-                {/* type="button": we are not inside a form.
-                    Later on, this button will open project creation. */}
-                                {/* The button opens the creation modal (client component) */}
-                <CreateProjectButton currentUserEmail={user.email} />
-            </div>
+        // .page-container (globals.css): the page's margins, responsive
+        // (16px on a phone, the mockup's 100px from lg)
+        <div className="page-container">
+            {/* Header: title + sentence on the left, button on the right (shared with "Mes projets").
+                The button opens the creation modal (client component) */}
+            <PageHeader
+                title="Tableau de bord"
+                subtitle={`Bonjour ${name}, voici un aperçu de vos projets et tâches`}
+                action={<CreateProjectButton currentUserEmail={user.email} />}
+            />
 
             {/* Chips, search and list: everything that reacts to clicks → client component */}
             <DashboardTasks tasks={tasks} />

@@ -5,7 +5,8 @@ export default function Footer(){
     const year : string = new Date().getFullYear().toString()
 
     return(
-        <footer className="flex items-center justify-between h-[68px] pl-[30px] pr-[55px] bg-white">
+        // Responsive: 16px on each side on a phone, the mockup's margins from md
+        <footer className="flex h-[68px] items-center justify-between bg-white px-4 md:pr-[55px] md:pl-[30px]">
             <Image
                 src={Logo_black}
                 alt="Logo Abricot noir"

@@ -134,7 +134,7 @@ export async function suggestTasks(
 
   // 2. The client. timeout: we don't make the user wait more than 30 seconds
   //    (10 minutes by default); maxRetries: 1 new attempt if the network fails (2 by default)
-  const client = new OpenAI({ apiKey, baseURL, timeout: 30 * 1000, maxRetries: 1 });
+  const client = new OpenAI({ apiKey, baseURL, timeout: 60 * 1000, maxRetries: 1 });
 
   // 3. The messages: the instructions ("system"), then the project and the request ("user").
   //    The existing tasks avoid duplicates (at most 50 titles, to keep the request small).

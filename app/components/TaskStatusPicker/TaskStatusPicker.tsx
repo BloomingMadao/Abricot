@@ -20,7 +20,8 @@ export default function TaskStatusPicker({ defaultStatus }: TaskStatusPickerProp
     return (
         <fieldset>
             <legend>Statut :</legend>
-            <div className="mt-2 flex gap-2">
+            {/* flex-wrap: on a narrow phone, the 3rd status goes to the next line */}
+            <div className="mt-2 flex flex-wrap gap-2">
                 {STATUS_CHOICES.map((status) => (
                     <Input
                         key={status}
@@ -37,7 +38,7 @@ export default function TaskStatusPicker({ defaultStatus }: TaskStatusPickerProp
                         // border-transparent, then has-[:checked]:border-current: a border
                         // in the text color appears on the chosen status.
                         // has-[:focus-visible]: outline when reached with the keyboard
-                        wrapperClassName={`tag py-0.5 text-sm ${variantClasses[TASK_STATUS_VARIANTS[status]]} border-transparent has-[:checked]:border-current has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-grey-800`}
+                        wrapperClassName={`tag border py-0.5 text-sm ${variantClasses[TASK_STATUS_VARIANTS[status]]} border-transparent has-[:checked]:border-current has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-grey-800`}
                     />
                 ))}
             </div>

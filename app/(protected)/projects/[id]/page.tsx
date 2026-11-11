@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getProfile, getProject, getProjectTasks } from "@/app/lib/api";
+import type { ApiError } from "@/app/lib/types";
 import { PRIORITY_RANK } from "@/app/lib/utils";
 import { isAIEnabled } from "@/app/lib/ai";
 import Alert from "@/app/components/Alert/Alert"
@@ -19,6 +22,22 @@ type Props = {
   searchParams: Promise<{ created?: string; from?: string }>;
 };
 
+// The API answers FORBIDDEN (not a member) or PROJECT_NOT_FOUND (doesn't exist / deleted).
+// In both cases the page "doesn't exist" for this user: Next.js shows not-found.tsx (404).
+// The specifications: a person who is not in the project can't access it.
+function isMissingProject(response: ApiError) {
+  return response.error === "FORBIDDEN" || response.error === "PROJECT_NOT_FOUND";
+}
+
+// The browser tab shows the project's name: "Application E-commerce | Abricot".
+// getProject is wrapped in React's cache() (api.ts): the page below calls it again
+// with the same id, but only ONE request is sent to the API.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const response = await getProject(id);
+  return { title: response.success ? response.data.project.name : "Projet" };
+}
+
 export default async function ProjectsDetails({ params, searchParams }: Props) {
   const { id} = await params;
   const { created, from } = await searchParams;
@@ -31,31 +50,23 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
     getProjectTasks(id),
     getProfile(),
   ])
+
+  // Project that doesn't exist or that the user is not a member of: 404 page
+  if (!responseProject.success && isMissingProject(responseProject)) {
+    notFound()
+  }
+
+  // Any other problem (API unreachable...): a message instead of a blank page
   if (!responseProject.success || !responseTasks.success || !responseUser.success) {
     return(
-
-        <div className="px-25 pt-22">
-          <Alert message="Impossible de charger vos projets...."/>
+        <div className="page-container">
+          <Alert message="Impossible de charger ce projet."/>
       </div>
     )
   }
 
   const {project} = responseProject.data
   const {tasks} = responseTasks.data
-  // console.log("tasks",tasks);
-  // console.log("Project: ",project);
-  // console.log("Number of tasks: ",project._count.tasks);
-  // console.log("members: ",project.members);
-
-  // If the project doesn't exist, show a message
-  if (!project) {
-    return (
-      <div>
-        <h1>Projet non trouvé</h1>
-        <p>Ce projet n&apos;existe pas ou a été supprimé.</p>
-      </div>
-    );
-  }
 
   // The logged-in user, in the same format as other people (UserSummary):
   // the profile doesn't always have a name (name missing), UserSummary expects null in that case
@@ -70,7 +81,8 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
   // the "Modifier" link is only shown to them
   const canEdit = project.userRole === "ADMIN"
 
-  // Only the owner can delete the project (not the admins): the "Supprimer" link is only shown to them
+  // Only the owner can delete the project (not the admins): the "Supprimer" link is only shown to them.
+  // Also passed to the tasks: the owner can edit every task (see editTaskError in utils.ts)
   const isOwner = project.owner.id === currentUser.id
 
   // The "back" button returns to the page the project was created from:
@@ -89,15 +101,17 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
   )
 
   return (
-    // px-11: in the mockup, the back button is 44px from the edge;
-    // the rest of the content is 68px further in (mx-[68px] below)
-    <div className="px-11 pt-[78px] pb-[98px]">
+    // Responsive: 16px on the sides on a phone.
+    // From lg (1024px), the mockup: the back button is 44px from the edge (px-11),
+    // the rest of the content is 68px further in (lg:mx-[68px] below)
+    <div className="px-4 pt-8 pb-12 md:px-11 md:pt-14 lg:pt-[78px] lg:pb-[98px]">
       {/* Coming from "Créer un projet": confirmation message */}
       {created && <ProjectCreatedAlert projectName={project.name} />}
 
       {/* Header: back + name + description on the left, buttons on the right.
-          items-end: the buttons are aligned with the bottom of the description (as in the mockup) */}
-      <div className="flex items-end justify-between gap-6 pr-[68px]">
+          Phone / tablet: the buttons go below (flex-col).
+          From lg: on the same line, aligned with the bottom of the description (as in the mockup) */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:pr-[68px]">
         <div className="flex items-start gap-4">
           {/* label: what a screen reader announces ("Retour au tableau de bord"...) */}
           <IconButton
@@ -105,9 +119,12 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
             href={back.href}
             label={back.label}
           />
-          <div>
-            <div className="flex flex-wrap items-baseline gap-x-4">
-              <h5>{project.name}</h5>
+          {/* min-w-0: a long name or description wraps instead of pushing the page wider */}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              {/* h1: the page's main heading (the project's name).
+                  Class h5: the same look as before (18px, bold) */}
+              <h1 className="h5 break-words">{project.name}</h1>
               {/* "Modifier": opens the "Modifier un projet" modal (only for the owner / an admin) */}
               {canEdit && (
                 <UpdateProjectButton
@@ -122,13 +139,14 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
               )}
             </div>
             {project.description && (
-              <p className="mt-2 text-grey-600">{project.description}</p>
+              <p className="mt-2 break-words text-grey-600">{project.description}</p>
             )}
           </div>
         </div>
 
-        {/* "Créer une tâche" and "IA": each button opens its own modal */}
-        <div className="flex shrink-0 gap-3">
+        {/* "Créer une tâche" and "IA": each button opens its own modal.
+            Responsive: centered on a phone (justify-center), on the left from md (768px) */}
+        <div className="flex shrink-0 flex-wrap justify-center gap-3 md:justify-start">
           {/* currentUser: already selected in "Assigné à" (the user can change it) */}
           <CreateTaskButton projectId={project.id} members={members} currentUser={currentUser} />
           {/* "IA": opens the AI modal (describe the tasks, then add them).
@@ -137,13 +155,14 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
         </div>
       </div>
 
-      {/* Contributors then Tasks, 34px between them */}
-      <div className="mx-[68px] mt-[50px] flex flex-col gap-[34px]">
+      {/* Contributors then Tasks, 34px between them (24px on a phone) */}
+      <div className="mt-8 flex flex-col gap-6 md:mt-[50px] md:gap-[34px] lg:mx-[68px]">
         <ContributorsBar
           owner={project.owner}
           members={project.members.map((member) => member.user)}
         />
-        <ProjectTasks tasks={sortedTasks} members={members} currentUser={currentUser} />
+        {/* isOwner: the owner can edit every task (the others: only theirs) */}
+        <ProjectTasks tasks={sortedTasks} members={members} currentUser={currentUser} isOwner={isOwner} />
       </div>
     </div>
   );

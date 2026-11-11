@@ -17,11 +17,18 @@ type TaskCardProps = {
 export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
     // The pieces shared by both layouts, stored in variables
     // so we don't write them twice
+    // whitespace-nowrap: "En cours" stays on one line, even on a 320px phone
     const statusTag = (
-        <Tag label={TASK_STATUS_LABELS[task.status]} variant={TASK_STATUS_VARIANTS[task.status]} />
+        <Tag
+            label={TASK_STATUS_LABELS[task.status]}
+            variant={TASK_STATUS_VARIANTS[task.status]}
+            className="whitespace-nowrap"
+        />
     )
 
-    const title = <h5 >{task.title}</h5>
+    // h3: under the "Mes tâches assignées" h2 (or the Kanban column's h2).
+    // Class h5: the same look as before
+    const title = <h3 className="h5">{task.title}</h3>
 
     const description = task.description && (
         <p className="mt-1 text-sm text-grey-600">{task.description}</p>
@@ -62,7 +69,9 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
     // Kanban view: title + status on the same line, then the rest stacked
     if (layout === "kanban") {
         return (
-            <article className="rounded-[10px] border border-grey-200 bg-white px-10 py-6">
+            // Responsive: 20px on the sides on a phone and in a narrow column (lg),
+            // the mockup's 40px on a tablet and from xl (1280px)
+            <article className="rounded-[10px] border border-grey-200 bg-white px-5 py-6 md:px-10 lg:px-5 xl:px-10">
                 <div className="flex items-start justify-between gap-4">
                     {title}
                     {/* shrink-0: the status never gets squashed by a long title */}
@@ -70,7 +79,9 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
                 </div>
                 {description}
                 {infos}
-                <div className="mt-8 flex">{seeButton}</div>
+                {/* "Voir" centered while the columns are stacked (phone / tablet),
+                    on the left from lg (1024px), as in the mockup */}
+                <div className="mt-8 flex justify-center lg:justify-start">{seeButton}</div>
             </article>
         )
     }
@@ -78,18 +89,22 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
     // List view: two columns
     return (
         // <article>: a block that makes sense on its own (a task)
-        <article className="flex justify-between gap-6 rounded-[10px] border border-grey-200 bg-white px-10 py-6">
-            {/* Left column: title, description, info */}
-            <div className="pt-2.5">
+        // Responsive: on a phone everything is stacked (flex-col), two columns from md (768px)
+        <article className="flex flex-col gap-6 rounded-[10px] border border-grey-200 bg-white px-5 py-6 md:flex-row md:justify-between md:px-10">
+            {/* Left column: title, description, info.
+                min-w-0: lets the project's name be cut with "…" instead of widening the card */}
+            <div className="min-w-0 md:pt-2.5">
                 {title}
                 {description}
                 {infos}
             </div>
 
-            {/* Right column: status at the top, button at the bottom */}
-            <div className="flex shrink-0 flex-col items-end justify-between gap-6">
+            {/* Right column: status at the top, button at the bottom.
+                On a phone: under the info, the status on the left (items-start),
+                then "Voir" centered (self-center). From md: on the right, as in the mockup */}
+            <div className="flex shrink-0 flex-col items-start gap-4 md:items-end md:justify-between md:gap-6">
                 {statusTag}
-                {seeButton}
+                <div className="self-center md:self-auto">{seeButton}</div>
             </div>
         </article>
     )
