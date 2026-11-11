@@ -13,6 +13,9 @@ type ButtonProps = {
     // Extra classes, e.g. "mx-0 w-61" for a different width than .button-primary's
     // (Tailwind classes take precedence over those of .button-primary)
     className?: string
+    // For a button that shows / hides content (e.g. "+ 2 autres" in the calendar):
+    // true = shown. Tells screen readers (aria-expanded); not set = no aria-expanded
+    expanded?: boolean
 }
 
 export default function Button({
@@ -22,12 +25,14 @@ export default function Button({
     disabled = false,
     onClick,
     className = "",
+    expanded,
 }: ButtonProps) {
     return (
         <button
             type={type}
             onClick={onClick}
             className={`button-${variant} ${className}`}
+            aria-expanded={expanded}
             // The "disabled" variant also actually disables the button, not just its style
             disabled={disabled || variant === "disabled"}
         >

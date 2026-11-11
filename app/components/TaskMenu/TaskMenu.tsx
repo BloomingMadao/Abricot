@@ -7,7 +7,8 @@ import IconButton from "@/app/components/IconButton/IconButton"
 import Modal from "@/app/components/Modal/Modal"
 import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
-import UpdateTaskForm, { type EditableTask } from "@/app/components/UpdateTaskForm/UpdateTaskForm"
+import UpdateTaskContent from "@/app/components/UpdateTaskContent/UpdateTaskContent"
+import type { EditableTask } from "@/app/components/UpdateTaskForm/UpdateTaskForm"
 
 type TaskMenuProps = {
     task: EditableTask
@@ -123,24 +124,14 @@ export default function TaskMenu({
             )}
 
             {/* "Modifier" modal: the same form as on the dashboard.
-                Not allowed (editForbiddenMessage): only the red alert and "Fermer" */}
+                Not allowed (editForbiddenMessage): only the red alert and "Fermer" (see UpdateTaskContent) */}
             <Modal title="Modifier" isOpen={isEditOpen} onClose={() => setIsEditOpen(false)}>
-                {editForbiddenMessage ? (
-                    <>
-                        <Alert message={editForbiddenMessage} variant="error" />
-                        <div className="mt-8 flex gap-3">
-                            <Button
-                                label="Fermer"
-                                type="button"
-                                variant="secondary"
-                                onClick={() => setIsEditOpen(false)}
-                                className="mx-0 w-auto px-7"
-                            />
-                        </div>
-                    </>
-                ) : (
-                    <UpdateTaskForm task={task} members={members} onSuccess={() => setIsEditOpen(false)} />
-                )}
+                <UpdateTaskContent
+                    task={task}
+                    members={members}
+                    forbiddenMessage={editForbiddenMessage}
+                    onClose={() => setIsEditOpen(false)}
+                />
             </Modal>
 
             {/* Confirmation modal before deleting (no mockup: same style as the others).

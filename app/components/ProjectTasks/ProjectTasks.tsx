@@ -4,6 +4,7 @@ import { useState } from "react"
 import Chips from "@/app/components/Chips/Chips"
 import Input from "@/app/components/Input/Input"
 import ProjectTaskCard from "@/app/components/ProjectTaskCard/ProjectTaskCard"
+import TaskCalendar from "@/app/components/TaskCalendar/TaskCalendar"
 import { TASK_STATUS_LABELS } from "@/app/lib/utils"
 import type { TaskDetail, TaskStatus, UserSummary } from "@/app/lib/types"
 import SearchIcon from "@/public/image/searchIcon.svg"
@@ -25,17 +26,21 @@ type ProjectTasksProps = {
     members: UserSummary[]
     // The logged-in user: to add a comment
     currentUser: UserSummary
+    // Is the logged-in user the project owner? (they can edit and delete every task)
+    isOwner: boolean
 }
 
-// The "Tâches" section of a project page.
-// CLIENT component: it handles what changes (Status filter, search).
+// The "Tâches" section of a project page: "Liste" view (by default) or "Calendrier" view.
+// CLIENT component: it handles what changes (view, Status filter, search).
 // The tasks themselves are fetched by the page (server component) and arrive already sorted.
-export default function ProjectTasks({ tasks, members, currentUser }: ProjectTasksProps) {
+export default function ProjectTasks({ tasks, members, currentUser, isOwner }: ProjectTasksProps) {
+    const [view, setView] = useState<"list" | "calendar">("list")
     const [status, setStatus] = useState("")
     const [search, setSearch] = useState("")
 
     // We keep the tasks with the chosen status (if a status is chosen),
-    // whose title or description contains the search text (case-insensitive)
+    // whose title or description contains the search text (case-insensitive).
+    // The filters apply to both views (List and Calendar)
     const query = search.trim().toLowerCase()
     const filteredTasks = tasks.filter(
         (task) =>
@@ -50,15 +55,21 @@ export default function ProjectTasks({ tasks, members, currentUser }: ProjectTas
             <div className="flex items-center justify-between gap-6">
                 <div>
                     <h5>Tâches</h5>
-                    <p className="mt-1 text-grey-600">Par ordre de priorité</p>
+                    <p className="mt-1 text-grey-600">
+                        {view === "list" ? "Par ordre de priorité" : "Par date d'échéance"}
+                    </p>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* Views: "Liste" is the only one for now.
-                        "Calendrier" is displayed as in the mockup, but does nothing (no onClick) */}
+                    {/* Views: "Liste" (by default) or "Calendrier" */}
                     <div className="flex gap-2.5">
-                        <Chips label="Liste" type="tasks" isActive />
-                        <Chips label="Calendrier" type="calendar" />
+                        <Chips label="Liste" type="tasks" isActive={view === "list"} onClick={() => setView("list")} />
+                        <Chips
+                            label="Calendrier"
+                            type="calendar"
+                            isActive={view === "calendar"}
+                            onClick={() => setView("calendar")}
+                        />
                     </div>
 
                     {/* Status filter: a real <select> list.
@@ -89,9 +100,12 @@ export default function ProjectTasks({ tasks, members, currentUser }: ProjectTas
                 </div>
             </div>
 
-            {/* The task list (or a message if there are none).
+            {/* "Calendrier" view: the tasks on a month grid (see TaskCalendar).
+                Otherwise the task list (or a message if there are none).
                 mx-10: in the mockup, the tasks are indented 40px relative to the title */}
-            {tasks.length === 0 ? (
+            {view === "calendar" ? (
+                <TaskCalendar tasks={filteredTasks} members={members} currentUser={currentUser} isOwner={isOwner} />
+            ) : tasks.length === 0 ? (
                 <p className="mx-10 mt-10 text-grey-600">Aucune tâche dans ce projet pour l&apos;instant.</p>
             ) : filteredTasks.length === 0 ? (
                 <p className="mx-10 mt-10 text-grey-600">Aucune tâche ne correspond à votre recherche.</p>
@@ -99,7 +113,7 @@ export default function ProjectTasks({ tasks, members, currentUser }: ProjectTas
                 <ul className="mx-10 mt-[41px] flex flex-col gap-[18px]">
                     {filteredTasks.map((task) => (
                         <li key={task.id}>
-                            <ProjectTaskCard task={task} members={members} currentUser={currentUser} />
+                            <ProjectTaskCard task={task} members={members} currentUser={currentUser} isOwner={isOwner} />
                         </li>
                     ))}
                 </ul>
