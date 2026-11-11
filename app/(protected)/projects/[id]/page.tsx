@@ -150,8 +150,14 @@ export default async function ProjectsDetails({ params, searchParams }: Props) {
           {/* currentUser: already selected in "Assigné à" (the user can change it) */}
           <CreateTaskButton projectId={project.id} members={members} currentUser={currentUser} />
           {/* "IA": opens the AI modal (describe the tasks, then add them).
-              aiEnabled: read on the server (.env.local), the modal adapts its text */}
-          <CreateTaskAIButton projectId={project.id} aiEnabled={isAIEnabled()} />
+              aiEnabled: read on the server (.env.local), the modal adapts its text.
+              members / currentUser: for the due date and "Assigné à" of each suggested task */}
+          <CreateTaskAIButton
+            projectId={project.id}
+            aiEnabled={isAIEnabled()}
+            members={members}
+            currentUser={currentUser}
+          />
         </div>
       </div>
 

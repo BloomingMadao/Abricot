@@ -583,11 +583,13 @@ export async function suggestTasksAction(
   }
   const { project } = projectResponse.data;
 
-  // 5. Ask the AI
+  // 5. Ask the AI. members: the owner + the members (⚠️ the API doesn't put the owner in members),
+  //    so that "à Bob" becomes Bob's id (see matchMembers in ai.ts)
   const result = await suggestTasks(prompt, {
     name: project.name,
     description: project.description,
     taskTitles: project.tasks.map((task) => task.title),
+    members: [project.owner, ...project.members.map((member) => member.user)],
   });
   if (!result.success) {
     return { success: false, message: result.message, tasks: [], values };
@@ -609,7 +611,8 @@ function successState(tasks: SuggestedTask[]): AITaskFormState {
 }
 
 /** "+ Ajouter les tâches" button of the AI modal: creates the suggested tasks in the project,
- *  assigned to the logged-in user.
+ *  with their due date and assignees (asked to the AI, or chosen in "Modifier";
+ *  by default: no due date, assigned to the logged-in user, see CreateTaskAIForm).
  *  It's not a form: the function directly receives the project and the tasks.
  *  failedIndexes: the position of the tasks that could NOT be created,
  *  so the modal only keeps those (the others must not be created twice). */
@@ -619,20 +622,17 @@ export async function createTasksAction(
 ): Promise<{ error?: string; errors?: string[]; failedIndexes?: number[] }> {
   if (tasks.length === 0) return { error: "Aucune tâche à ajouter" };
 
-  // The logged-in user, read HERE on the server (from the cookie): the browser
-  // doesn't choose who is assigned, it can't put someone else's id
-  const profile = await getProfile();
-  if (!profile.success) return { error: "Impossible de récupérer votre profil" };
-  const assigneeIds = [profile.data.user.id];
-
   // All the creations start AT THE SAME TIME (Promise.all).
-  // The API checks each title itself (2 to 200 characters).
+  // The API checks each task itself, like for "Créer une tâche": title from 2 to 200 characters,
+  // valid date, and assignees who are members of the project (otherwise INVALID_ASSIGNEES)
   const results = await Promise.all(
     tasks.map((task) =>
       createTask(projectId, {
         title: task.title.trim(),
         description: task.description.trim(),
-        assigneeIds,
+        // "" = no due date: the field is left out
+        dueDate: task.dueDate || undefined,
+        assigneeIds: task.assigneeIds,
       })
     )
   );

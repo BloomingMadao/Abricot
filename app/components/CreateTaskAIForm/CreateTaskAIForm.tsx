@@ -6,12 +6,12 @@ import {
     createTasksAction,
     suggestTasksAction,
     type AITaskFormState,
-    type SuggestedTask,
 } from "@/app/lib/actions"
+import type { UserSummary } from "@/app/lib/types"
 import Input from "@/app/components/Input/Input"
 import Button from "@/app/components/Button/Button"
 import Alert from "@/app/components/Alert/Alert"
-import SuggestedTaskCard from "@/app/components/SuggestedTaskCard/SuggestedTaskCard"
+import SuggestedTaskCard, { type EditableSuggestion } from "@/app/components/SuggestedTaskCard/SuggestedTaskCard"
 import { variantClasses } from "@/app/components/Tag/Tag"
 import AIIcon from "@/public/image/AIIcon.svg"
 
@@ -20,6 +20,10 @@ type CreateTaskAIFormProps = {
     projectId: string
     // false = AI mode off: we ask for a NUMBER of tasks, created with default values
     aiEnabled: boolean
+    // The project members (owner included): the people who can be assigned in "Modifier"
+    members: UserSummary[]
+    // The logged-in user: assigned by default to each suggested task (as before)
+    currentUser: UserSummary
     // Tells the parent whether there are suggested tasks (title "Créer une tâche" / "Vos tâches...")
     onHasTasksChange: (hasTasks: boolean) => void
     // Called when the tasks have been created, to close the modal
@@ -33,9 +37,16 @@ type CreateTaskAIFormProps = {
 // AI mode on: the AI (see suggestTasksAction and lib/ai.ts) chooses the number of tasks,
 // the one written in the message, otherwise the one that fits the request.
 // AI mode off: the message gives the number of tasks (an info message says so).
-export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChange, onSuccess }: CreateTaskAIFormProps) {
+export default function CreateTaskAIForm({
+    projectId,
+    aiEnabled,
+    members,
+    currentUser,
+    onHasTasksChange,
+    onSuccess,
+}: CreateTaskAIFormProps) {
     // The suggested tasks. id: a key for React (the titles can all be the same)
-    const [tasks, setTasks] = useState<(SuggestedTask & { id: string })[]>([])
+    const [tasks, setTasks] = useState<(EditableSuggestion & { id: string })[]>([])
     // The card being edited (null = none)
     const [editingId, setEditingId] = useState<string | null>(null)
     // Error of "+ Ajouter les tâches"
@@ -50,7 +61,19 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
     async function ask(previousState: AITaskFormState, formData: FormData) {
         const result = await suggestTasksAction(previousState, formData)
         if (result?.success) {
-            const newTasks = result.tasks.map((task) => ({ ...task, id: `suggestion-${nextId.current++}` }))
+            // The due date and the people asked in the message ("à Bob, pour demain"), found by the AI.
+            // Nobody asked for: assigned to the logged-in user, as before.
+            // Both can still be changed in "Modifier"
+            const newTasks = result.tasks.map((task) => {
+                const asked = members.filter((member) => task.assigneeIds.includes(member.id))
+                return {
+                    title: task.title,
+                    description: task.description,
+                    dueDate: task.dueDate,
+                    assignees: asked.length > 0 ? asked : [currentUser],
+                    id: `suggestion-${nextId.current++}`,
+                }
+            })
             setTasks((current) => [...current, ...newTasks])
             setAddError(null)
             onHasTasksChange(true)
@@ -66,7 +89,7 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
         onHasTasksChange(remaining.length > 0)
     }
 
-    function saveTask(id: string, changes: SuggestedTask) {
+    function saveTask(id: string, changes: EditableSuggestion) {
         setTasks(tasks.map((task) => (task.id === id ? { ...task, ...changes } : task)))
         setEditingId(null)
     }
@@ -74,10 +97,16 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
     function addTasks() {
         setAddError(null)
         startAdding(async () => {
-            // We only send the title and the description (the id is only for React)
+            // We send the title, the description, the due date and the ids of the assignees
+            // (the id of the card is only for React)
             const result = await createTasksAction(
                 projectId,
-                tasks.map(({ title, description }) => ({ title, description }))
+                tasks.map(({ title, description, dueDate, assignees }) => ({
+                    title,
+                    description,
+                    dueDate,
+                    assigneeIds: assignees.map((user) => user.id),
+                }))
             )
             if (!result.error) {
                 // Success: the modal closes, the new tasks appear in the project
@@ -116,6 +145,7 @@ export default function CreateTaskAIForm({ projectId, aiEnabled, onHasTasksChang
                                 <li key={task.id}>
                                     <SuggestedTaskCard
                                         task={task}
+                                        members={members}
                                         position={index + 1}
                                         isEditing={editingId === task.id}
                                         onEdit={() => setEditingId(task.id)}

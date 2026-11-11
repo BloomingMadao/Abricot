@@ -22,10 +22,13 @@
  */
 
 import OpenAI from "openai";
+import type { UserSummary } from "./types";
 
 /** A task suggested by the AI: nothing is saved yet, the user can still
- *  edit or delete it before clicking "+ Ajouter les tâches" */
-export type SuggestedTask = { title: string; description: string };
+ *  edit or delete it before clicking "+ Ajouter les tâches".
+ *  dueDate: "YYYY-MM-DD", or "" when the user didn't ask for one
+ *  assigneeIds: the ids of the members the user asked for ("à Bob"), or [] */
+export type SuggestedTask = { title: string; description: string; dueDate: string; assigneeIds: string[] };
 
 /** What suggestTasks / defaultTasks return: the tasks, or a message to display */
 export type SuggestTasksResult =
@@ -62,6 +65,8 @@ export function defaultTasks(prompt: string): SuggestTasksResult {
   const tasks = Array.from({ length: count }, () => ({
     title: "Nom de la tâche",
     description: "Description de la tâche",
+    dueDate: "",
+    assigneeIds: [],
   }));
   return { success: true, tasks };
 }
@@ -81,9 +86,54 @@ Règles :
 - Ne propose pas une tâche qui existe déjà dans le projet.
 - Écris en français.
 - Si la demande n'a aucun rapport avec des tâches à créer, renvoie une liste de tâches vide.
+- Échéance : si l'utilisateur en donne une (une date, « demain », « vendredi », « dans une semaine »...), calcule-la à partir de la date du jour indiquée et écris-la au format AAAA-MM-JJ dans "dueDate". Sinon, "dueDate" vaut "".
+- Personnes assignées : si l'utilisateur dit à qui confier les tâches, écris dans "assignees" le nom EXACT de ces personnes, tel qu'il apparaît dans la liste des membres du projet. N'invente jamais une personne absente de cette liste. Sinon, "assignees" vaut [].
 
 Réponds UNIQUEMENT avec du JSON valide, sans aucun texte autour, exactement dans ce format :
-{"tasks": [{"title": "Titre de la tâche", "description": "Description de la tâche"}]}`;
+{"tasks": [{"title": "Titre de la tâche", "description": "Description de la tâche", "dueDate": "", "assignees": []}]}`;
+
+/** Today in Paris, "YYYY-MM-DD" ("en-CA": the format of this locale is exactly YYYY-MM-DD).
+ *  Given to the AI so it can turn "demain" or "vendredi" into a date */
+function todayInParis(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+/** The due date given by the AI, if it is a real date ("YYYY-MM-DD") from today onwards
+ *  (like the date field of the modal); otherwise "" (no due date) */
+function checkDueDate(value: unknown, today: string): string {
+  const text = String(value ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return "";
+  // "2026-02-30" is not a real date: once read, it becomes March 2nd → refused
+  const date = new Date(`${text}T00:00:00Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== text) return "";
+  return text >= today ? text : "";
+}
+
+/** The members named by the AI → their ids. Only people of the project can come out of it:
+ *  the exact name or email first, otherwise a first name that only one member has ("Bob" → Bob Dupont).
+ *  A name that matches nobody (or several people) is ignored. */
+function matchMembers(names: unknown, members: UserSummary[]): string[] {
+  if (!Array.isArray(names)) return [];
+  const ids = new Set<string>(); // Set: the same person only once
+  for (const name of names) {
+    const wanted = String(name ?? "").trim().toLowerCase();
+    if (!wanted) continue;
+    const exact = members.filter(
+      (member) => member.email.toLowerCase() === wanted || (member.name ?? "").toLowerCase() === wanted
+    );
+    const candidates =
+      exact.length > 0
+        ? exact
+        : members.filter((member) => (member.name ?? "").toLowerCase().split(" ")[0] === wanted);
+    if (candidates.length === 1) ids.add(candidates[0].id);
+  }
+  return [...ids];
+}
 
 /** The JSON of the AI's answer. Some AIs add text or wrap the JSON
  *  in ```json ... ```: we then keep what is between the first "{" and the last "}".
@@ -100,17 +150,23 @@ function extractJSON(text: string): unknown {
   return JSON.parse(text.slice(start, end + 1));
 }
 
+/** A task as the AI writes it (before our checks) */
+type AITask = { title?: unknown; description?: unknown; dueDate?: unknown; assignees?: unknown };
+
 /** Reads the tasks in the AI's answer: { "tasks": [...] }, or directly [...] for some AIs */
-function parseTasks(text: string): SuggestedTask[] {
+function parseTasks(text: string, members: UserSummary[], today: string): SuggestedTask[] {
   const data = extractJSON(text);
   const list = Array.isArray(data) ? data : (data as { tasks?: unknown } | null)?.tasks;
   if (!Array.isArray(list)) return [];
 
-  // We check each task: the same limits as the API (title 2 to 200 characters, description up to 1000)
-  return (list as Partial<SuggestedTask>[])
+  // We check each task: the same limits as the API (title 2 to 200 characters, description up to 1000),
+  // a real due date, and only members of the project as assignees
+  return (list as (AITask | null)[])
     .map((task) => ({
       title: String(task?.title ?? "").trim().slice(0, 200),
       description: String(task?.description ?? "").trim().slice(0, 1000),
+      dueDate: checkDueDate(task?.dueDate, today),
+      assigneeIds: matchMembers(task?.assignees, members),
     }))
     .filter((task) => task.title.length >= 2)
     .slice(0, MAX_SUGGESTED_TASKS);
@@ -119,7 +175,8 @@ function parseTasks(text: string): SuggestedTask[] {
 /** AI mode ON: asks the AI for tasks matching the user's message, in the context of the project */
 export async function suggestTasks(
   prompt: string,
-  project: { name: string; description: string | null; taskTitles: string[] }
+  // members: the people who can be assigned (owner included), given to the AI by name
+  project: { name: string; description: string | null; taskTitles: string[]; members: UserSummary[] }
 ): Promise<SuggestTasksResult> {
   // 1. The settings (.env.local). baseURL undefined = OpenAI's address
   const apiKey = process.env.TOKEN_IA?.trim();
@@ -134,18 +191,33 @@ export async function suggestTasks(
 
   // 2. The client. timeout: we don't make the user wait more than 30 seconds
   //    (10 minutes by default); maxRetries: 1 new attempt if the network fails (2 by default)
-  const client = new OpenAI({ apiKey, baseURL, timeout: 60 * 1000, maxRetries: 1 });
+  const client = new OpenAI({ apiKey, baseURL, timeout: 30 * 1000, maxRetries: 1 });
 
   // 3. The messages: the instructions ("system"), then the project and the request ("user").
   //    The existing tasks avoid duplicates (at most 50 titles, to keep the request small).
+  //    Today's date (with the day of the week) lets the AI compute "demain" or "vendredi";
+  //    the members are the only people it may assign (by name, never by id)
   const existingTasks = project.taskTitles.slice(0, 50).map((title) => `- ${title}`).join("\n");
+  const memberList = project.members
+    .map((member) => `- ${member.name || member.email} (${member.email})`)
+    .join("\n");
+  const today = todayInParis();
+  const todayLabel = new Date(`${today}T12:00:00Z`).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     { role: "system", content: INSTRUCTIONS },
     {
       role: "user",
       content: [
+        `Date du jour : ${today} (${todayLabel})`,
         `Projet : ${project.name}`,
         `Description du projet : ${project.description || "aucune"}`,
+        `Membres du projet (les seules personnes assignables) :\n${memberList}`,
         `Tâches existantes :\n${existingTasks || "aucune"}`,
         "",
         `Demande de l'utilisateur : ${prompt}`,
@@ -183,7 +255,7 @@ export async function suggestTasks(
     }
 
     // 6. The tasks
-    const tasks = parseTasks(choice.message.content ?? "");
+    const tasks = parseTasks(choice.message.content ?? "", project.members, today);
     if (tasks.length === 0) {
       return { success: false, message: "L'IA n'a proposé aucune tâche : précisez votre demande" };
     }
@@ -202,6 +274,11 @@ export async function suggestTasks(
     }
     if (error instanceof OpenAI.RateLimitError) {
       return { success: false, message: "Trop de demandes ou crédit épuisé chez le fournisseur d'IA : réessayez plus tard" };
+    }
+    // Checked BEFORE APIConnectionError: a timeout is a kind of connection error in openai-node,
+    // it would otherwise show "Impossible de joindre..." although the service was reached
+    if (error instanceof OpenAI.APIConnectionTimeoutError) {
+      return { success: false, message: "L'IA a mis trop de temps à répondre : réessayez" };
     }
     if (error instanceof OpenAI.APIConnectionError) {
       return { success: false, message: "Impossible de joindre le service d'IA : vérifiez URL_IA et votre connexion" };

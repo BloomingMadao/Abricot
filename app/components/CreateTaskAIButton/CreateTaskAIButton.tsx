@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useState } from "react"
+import type { UserSummary } from "@/app/lib/types"
 import Button from "@/app/components/Button/Button"
 import Modal from "@/app/components/Modal/Modal"
 import CreateTaskAIForm from "@/app/components/CreateTaskAIForm/CreateTaskAIForm"
@@ -13,11 +14,14 @@ type CreateTaskAIButtonProps = {
     projectId: string
     // false = AI mode off (USE_IA=false or no TOKEN_IA): the modal asks for a number of tasks
     aiEnabled: boolean
+    // The project members and the logged-in user: for "Assigné à" in "Modifier"
+    members: UserSummary[]
+    currentUser: UserSummary
 }
 
 // The "IA" button of a project page + the AI modal ("Créer une tâche" then "Vos tâches...").
 // Same principle as CreateTaskButton: CLIENT component that remembers whether the modal is open.
-export default function CreateTaskAIButton({ projectId, aiEnabled }: CreateTaskAIButtonProps) {
+export default function CreateTaskAIButton({ projectId, aiEnabled, members, currentUser }: CreateTaskAIButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
     // Are there suggested tasks in the modal? It changes the modal's title
     const [hasTasks, setHasTasks] = useState(false)
@@ -79,6 +83,8 @@ export default function CreateTaskAIButton({ projectId, aiEnabled }: CreateTaskA
                 <CreateTaskAIForm
                     projectId={projectId}
                     aiEnabled={aiEnabled}
+                    members={members}
+                    currentUser={currentUser}
                     onHasTasksChange={setHasTasks}
                     onSuccess={close}
                 />
