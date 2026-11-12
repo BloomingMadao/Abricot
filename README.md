@@ -271,7 +271,3 @@ public/             images et icônes
 
 L'application vise WCAG 2.1 AA : un seul `h1` par page et une hiérarchie de titres, un titre pour chaque page, un lien « Aller au contenu », une utilisation complète au clavier, un focus visible, des boutons et des menus nommés, pas de défilement horizontal jusqu'à 320 px.
 Écart connu : certaines couleurs de la maquette (statuts, liens orange) ont un contraste inférieur à 4,5:1. Elles ont été gardées pour respecter la maquette.
-
-## Auteur
-
-Erik THEROUDE — projet OpenClassrooms.
