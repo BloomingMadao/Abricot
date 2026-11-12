@@ -3,3 +3,5 @@
 # are counted as JavaScript. They are tool settings, not application code:
 # they are left out of the statistics, which then only show TypeScript and CSS.
 *.mjs linguist-detectable=false
+* linguist-vendored
+*.js linguist-vendored=false
