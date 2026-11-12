@@ -1,0 +1,5 @@
+# GitHub language statistics (Linguist)
+# The two small configuration files written in .mjs (eslint.config.mjs, postcss.config.mjs)
+# are counted as JavaScript. They are tool settings, not application code:
+# they are left out of the statistics, which then only show TypeScript and CSS.
+*.mjs linguist-detectable=false
