@@ -132,9 +132,7 @@ public/             images and icons
 The app targets WCAG 2.1 AA: one `h1` per page and a heading hierarchy, a title for each page, a "skip to content" link, full keyboard use, visible focus, named buttons and menus, no horizontal scrolling down to 320 px.
 Known gap: some colors of the mockup (status tags, orange links) have a contrast below 4.5:1. They were kept to match the mockup.
 
-## Author
 
-Erik THEROUDE — OpenClassrooms project.
 
 ---
 
