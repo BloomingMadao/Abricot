@@ -35,11 +35,13 @@ export default function TaskCard({ task, layout = "list" }: TaskCardProps) {
     )
 
     // Project | due date | number of comments — always on ONE line.
-    // If the card is too narrow (Kanban view), the project name is cut off with "…"
-    // (min-w-0 + truncate), and the full name is shown on hover (title).
+    // If the card is too narrow (Kanban view), the project name is cut off with "…" (min-w-0 + truncate).
+    // The cut is only visual: a screen reader reads the full name, and the List view shows it.
+    // (No title="name" to show it on hover: it would repeat the text, WAVE: "Redundant title text",
+    // and a tooltip can't be opened with the keyboard or on a phone anyway)
     const infos = (
         <ul className="mt-8 flex items-center gap-3 text-xs whitespace-nowrap text-grey-600">
-            <li className="flex min-w-0 items-center gap-2" title={task.project.name}>
+            <li className="flex min-w-0 items-center gap-2">
                 <Image src={FolderIconGrey} alt="" width={18} height={14} className="shrink-0" />
                 <span className="truncate">{task.project.name}</span>
             </li>

@@ -1,5 +1,4 @@
 import Image from "next/image"
-import Link from "next/link"
 import Logo from '@/public/image/logo.svg'
 import UserIcon from "@/app/components/UserIcon/UserIcon"
 import MenuItems from "@/app/components/MenuItems/MenuItems"
@@ -17,17 +16,18 @@ export default function Header(){
                 <MobileNav />
             </div>
 
-            {/* From md: the logo leads to the dashboard, the two links are in the header (the mockup).
+            {/* From md: the logo, then the two links in the header (the mockup).
                 hidden md:block / md:flex: not displayed on a phone.
-                The logo's alt is the link's name for a screen reader */}
-            <Link href="/dashboard" className="hidden shrink-0 md:block">
-                <Image 
-                    src={Logo}
-                    alt="Abricot, tableau de bord"
-                    loading="eager"
-                    width={147}
-                />
-            </Link>
+                The logo is NOT a link: it would go to /dashboard, like "Tableau de bord" right next to it.
+                Two links in a row to the same page = twice the same stop with Tab and twice the same
+                link for a screen reader (WAVE: "Redundant link") */}
+            <Image
+                src={Logo}
+                alt="Abricot"
+                loading="eager"
+                width={147}
+                className="hidden shrink-0 md:block"
+            />
             {/* aria-label: names the navigation for screen readers ("Navigation principale") */}
             <nav aria-label="Navigation principale" className="hidden items-center gap-4 md:flex">
                 <MenuItems 

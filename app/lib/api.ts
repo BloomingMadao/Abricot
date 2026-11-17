@@ -18,6 +18,7 @@
 
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import * as mock from "./mock-api";
 import type {
   ApiResponse,
@@ -54,6 +55,7 @@ export const TOKEN_COOKIE_NAME = "token";
 /**
  * Sends a request to the REAL backend (used only if USE_MOCK=false).
  * Automatically adds the JWT token (read from the "token" cookie) if there is one.
+ * If the backend refuses this token (401), sends the user back to the login page (see below).
  */
 async function request<T>(
   path: string,
@@ -63,6 +65,8 @@ async function request<T>(
   const cookieStore = await cookies();
   const token = cookieStore.get(TOKEN_COOKIE_NAME)?.value;
 
+  let status: number;
+  let json: ApiResponse<T>;
   try {
     const response = await fetch(`${API_URL}${path}`, {
       method,
@@ -73,7 +77,8 @@ async function request<T>(
       body: body !== undefined ? JSON.stringify(body) : undefined,
       cache: "no-store", // always fresh data
     });
-    return (await response.json()) as ApiResponse<T>;
+    status = response.status;
+    json = (await response.json()) as ApiResponse<T>;
   } catch {
     return {
       success: false,
@@ -81,6 +86,20 @@ async function request<T>(
       error: "NETWORK_ERROR",
     };
   }
+
+  // The backend's authentication refused our token (401 + error "Authentication failed"):
+  // it has expired, or the database was reset (the user it names no longer exists).
+  // Without this, the user would stay "logged in" with a dead cookie: every page would say
+  // "Impossible de charger...", and proxy.ts would keep sending them away from the login page.
+  // → back to the login page with ?expired=1: proxy.ts deletes the cookie there.
+  // Only this error: a wrong password (login, or "Mot de passe actuel" in the profile) is also
+  // a 401, but with another code (INVALID_CREDENTIALS...): it must stay a message in the form.
+  // (redirect() works by throwing an error: it must stay outside the try / catch above)
+  if (status === 401 && !json.success && json.error === "Authentication failed") {
+    redirect("/connection?expired=1");
+  }
+
+  return json;
 }
 
 // ============================================================================

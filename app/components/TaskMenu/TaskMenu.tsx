@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { deleteTaskAction } from "@/app/lib/actions"
 import type { UserSummary } from "@/app/lib/types"
 import IconButton from "@/app/components/IconButton/IconButton"
@@ -43,6 +43,21 @@ export default function TaskMenu({
     // As in UserMenu: a click outside or the Escape key closes the menu (app/hooks/useDismiss.ts)
     useDismiss(menuRef, isMenuOpen, setIsMenuOpen)
 
+    // When a modal closes, the browser gives the focus back to what opened it: here, the
+    // "Modifier" / "Supprimer" row of the menu, which no longer exists (the menu closed).
+    // The focus would be lost (back to the top of the page for a keyboard user, WCAG 2.4.3):
+    // it goes back to the "…" button instead (the block's button with aria-expanded).
+    // wasModalOpen: remembers whether a modal was open at the previous render.
+    // (After a deletion, the card and this menu disappear: nothing to do.)
+    const wasModalOpen = useRef(false)
+    useEffect(() => {
+        const isModalOpen = isEditOpen || isDeleteOpen
+        if (wasModalOpen.current && !isModalOpen) {
+            menuRef.current?.querySelector<HTMLElement>("[aria-expanded]")?.focus()
+        }
+        wasModalOpen.current = isModalOpen
+    }, [isEditOpen, isDeleteOpen])
+
     function openEdit() {
         setIsMenuOpen(false)
         setIsEditOpen(true)
@@ -68,10 +83,12 @@ export default function TaskMenu({
         })
     }
 
-    // Shared style for the two submenu rows
-    // (focus-visible:bg-grey-100: the row is also highlighted when reached with the keyboard)
+    // Shared style for the two submenu rows.
+    // Reached with the keyboard: the light grey background of the hover, AND the orange outline
+    // of the app's other buttons, drawn inside the row (-outline-offset-2) so the menu doesn't cut it.
+    // (The grey background alone is too light to be seen: WCAG 1.4.11 asks for a 3:1 contrast)
     const itemClass =
-        "flex w-full cursor-pointer items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-grey-100 focus-visible:bg-grey-100 focus-visible:outline-none"
+        "flex w-full cursor-pointer items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-grey-100 focus-visible:bg-grey-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-dark"
 
     return (
         // relative: the menu (in "absolute") opens right below the "…" button
