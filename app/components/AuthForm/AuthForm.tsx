@@ -12,9 +12,13 @@ export default function AuthForm({ isLogin = false }: { isLogin?: boolean }) {
   // - state      : what the action returned (undefined at first, then the error if any)
   // - formAction : the function to pass to the form
   // - isPending  : true while the action is running (to disable the button)
+  // 3rd argument (permalink): the page of the form. React writes it in the HTML (action="/connection"):
+  // without it, it writes action="", an empty value refused by the W3C validator.
+  // It's also where the form is sent if it's submitted before the JavaScript has loaded.
   const [state, formAction, isPending] = useActionState(
     isLogin ? loginAction : registerAction,
-    undefined
+    undefined,
+    isLogin ? "/connection" : "/register"
   );
 
   // The error the user dismissed with the cross.

@@ -14,7 +14,8 @@ type ProfileFormProps = {
 };
 
 export default function ProfileForm({ firstname, lastname, email }: ProfileFormProps) {
-  const [state, formAction, isPending] = useActionState(updateProfileAction, undefined);
+  // 3rd argument (permalink): the page of the form, written in action="/profile" (see AuthForm)
+  const [state, formAction, isPending] = useActionState(updateProfileAction, undefined, "/profile");
 
   // Same idea as in AuthForm: the alert dismissed with the cross
   const [dismissedState, setDismissedState] = useState<ProfileFormState>(undefined);

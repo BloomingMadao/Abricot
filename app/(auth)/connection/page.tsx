@@ -25,8 +25,10 @@ export default async function Connection({ searchParams }: Props) {
                 <Image
                     src={Logo}
                     alt="Logo Abricot"
-                    width={252.57}
-                    height={32.17}
+                    // Whole numbers: HTML only accepts integers in width / height (W3C validator).
+                    // 253 × 33: the size of the SVG itself (the mockup's 252.57 × 32.17, rounded)
+                    width={253}
+                    height={33}
                     loading="eager"
                     className="mb-16 lg:mb-[150px]"
                 />
