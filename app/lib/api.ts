@@ -82,7 +82,7 @@ async function request<T>(
   } catch {
     return {
       success: false,
-      message: "Impossible de joindre le backend. Est-il bien démarré ?",
+      message: "Une erreur est survenue, veuillez réessayer ultérieurement",
       error: "NETWORK_ERROR",
     };
   }
