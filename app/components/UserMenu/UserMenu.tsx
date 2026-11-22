@@ -36,7 +36,10 @@ export default function UserMenu({ initials }: { initials: string }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Mon compte"
+        // The accessible name STARTS with the visible text (the initials), then says what the button is.
+        // With only "Mon compte", the visible "AM" would not be in the name: a voice control user
+        // who says "click AM" would not find the button (WCAG 2.5.3 "Label in Name", axe: label-content-name-mismatch)
+        aria-label={`${initials}, mon compte`}
         aria-expanded={isOpen}
         aria-controls="user-menu"
         // size-11 (44px) on a phone, the mockup's 65px from md.

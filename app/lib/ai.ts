@@ -30,9 +30,10 @@ import type { UserSummary } from "./types";
  *  assigneeIds: the ids of the members the user asked for ("à Bob"), or [] */
 export type SuggestedTask = { title: string; description: string; dueDate: string; assigneeIds: string[] };
 
-/** What suggestTasks / defaultTasks return: the tasks, or a message to display */
+/** What suggestTasks / defaultTasks return: the tasks, or a message to display.
+ *  warning: the people asked for ("à Eric") who couldn't be assigned (see assigneeWarning) */
 export type SuggestTasksResult =
-  | { success: true; tasks: SuggestedTask[] }
+  | { success: true; tasks: SuggestedTask[]; warning?: string }
   | { success: false; message: string };
 
 /** Maximum number of tasks suggested at once */
@@ -87,7 +88,7 @@ Règles :
 - Écris en français.
 - Si la demande n'a aucun rapport avec des tâches à créer, renvoie une liste de tâches vide.
 - Échéance : si l'utilisateur en donne une (une date, « demain », « vendredi », « dans une semaine »...), calcule-la à partir de la date du jour indiquée et écris-la au format AAAA-MM-JJ dans "dueDate". Sinon, "dueDate" vaut "".
-- Personnes assignées : si l'utilisateur dit à qui confier les tâches, écris dans "assignees" le nom EXACT de ces personnes, tel qu'il apparaît dans la liste des membres du projet. N'invente jamais une personne absente de cette liste. Sinon, "assignees" vaut [].
+- Personnes assignées : si l'utilisateur dit à qui confier les tâches, écris ces personnes dans "assignees". Pour une personne de la liste des membres du projet, écris son nom EXACT tel qu'il apparaît dans la liste. Pour une personne absente de la liste, ou si plusieurs membres peuvent correspondre, écris le nom tel que l'utilisateur l'a écrit : ne le retire pas et ne le remplace pas par un autre membre, l'application préviendra l'utilisateur. N'ajoute jamais une personne que l'utilisateur n'a pas citée. Si l'utilisateur ne cite personne, "assignees" vaut [].
 
 Réponds UNIQUEMENT avec du JSON valide, sans aucun texte autour, exactement dans ce format :
 {"tasks": [{"title": "Titre de la tâche", "description": "Description de la tâche", "dueDate": "", "assignees": []}]}`;
@@ -114,25 +115,73 @@ function checkDueDate(value: unknown, today: string): string {
   return text >= today ? text : "";
 }
 
+/** A name or an email without accents or capitals: "Éric" and "eric" are the same person.
+ *  normalize("NFD") splits "é" into "e" + its accent, then the accents (\u0300-\u036f) are removed */
+function simplify(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+
+/** What matchMembers finds in the names written by the AI */
+type MatchedMembers = {
+  ids: string[]; // the members found: they are assigned
+  notFound: string[]; // the names of nobody in the project ("Eric")
+  ambiguous: string[]; // the names of several members (a first name shared by two people)
+};
+
 /** The members named by the AI → their ids. Only people of the project can come out of it:
  *  the exact name or email first, otherwise a first name that only one member has ("Bob" → Bob Dupont).
- *  A name that matches nobody (or several people) is ignored. */
-function matchMembers(names: unknown, members: UserSummary[]): string[] {
-  if (!Array.isArray(names)) return [];
-  const ids = new Set<string>(); // Set: the same person only once
+ *  Accents and capitals don't count ("eric" finds "Éric Leroy").
+ *  A name that matches nobody, or several people, is NOT assigned: it is returned,
+ *  so that the user is told (before, it was ignored without a word). */
+function matchMembers(names: unknown, members: UserSummary[]): MatchedMembers {
+  const result: MatchedMembers = { ids: [], notFound: [], ambiguous: [] };
+  if (!Array.isArray(names)) return result;
   for (const name of names) {
-    const wanted = String(name ?? "").trim().toLowerCase();
+    const written = String(name ?? "").trim();
+    const wanted = simplify(written);
     if (!wanted) continue;
     const exact = members.filter(
-      (member) => member.email.toLowerCase() === wanted || (member.name ?? "").toLowerCase() === wanted
+      (member) => simplify(member.email) === wanted || simplify(member.name ?? "") === wanted
     );
     const candidates =
       exact.length > 0
         ? exact
-        : members.filter((member) => (member.name ?? "").toLowerCase().split(" ")[0] === wanted);
-    if (candidates.length === 1) ids.add(candidates[0].id);
+        : members.filter((member) => simplify(member.name ?? "").split(" ")[0] === wanted);
+    if (candidates.length === 1) {
+      // The same person only once
+      if (!result.ids.includes(candidates[0].id)) result.ids.push(candidates[0].id);
+    } else if (candidates.length === 0) {
+      result.notFound.push(written);
+    } else {
+      result.ambiguous.push(written);
+    }
   }
-  return [...ids];
+  return result;
+}
+
+/** « Eric », « Eric » et « Zoé », « Eric », « Zoé » et « Léo »: the names between French quotes */
+function quoteNames(names: string[]): string {
+  const quoted = names.map((name) => `« ${name} »`);
+  if (quoted.length === 1) return quoted[0];
+  return `${quoted.slice(0, -1).join(", ")} et ${quoted[quoted.length - 1]}`;
+}
+
+/** The message shown above the suggested tasks when some people couldn't be assigned
+ *  (undefined when everyone was found). Each name only once ("Eric" in 2 tasks, or "eric" and "Eric") */
+function assigneeWarning(notFound: string[], ambiguous: string[]): string | undefined {
+  const once = (names: string[]) =>
+    names.filter((name, index) => names.findIndex((other) => simplify(other) === simplify(name)) === index);
+  const missing = once(notFound);
+  const several = once(ambiguous);
+  const parts: string[] = [];
+  if (missing.length > 0) {
+    parts.push(`${quoteNames(missing)} ${missing.length === 1 ? "ne fait" : "ne font"} pas partie de ce projet`);
+  }
+  if (several.length > 0) {
+    parts.push(`${quoteNames(several)} ${several.length === 1 ? "correspond" : "correspondent"} à plusieurs membres`);
+  }
+  if (parts.length === 0) return undefined;
+  return `${parts.join(", ")} : vérifiez « Assigné à » sur chaque tâche avant de les ajouter.`;
 }
 
 /** The JSON of the AI's answer. Some AIs add text or wrap the JSON
@@ -153,23 +202,38 @@ function extractJSON(text: string): unknown {
 /** A task as the AI writes it (before our checks) */
 type AITask = { title?: unknown; description?: unknown; dueDate?: unknown; assignees?: unknown };
 
-/** Reads the tasks in the AI's answer: { "tasks": [...] }, or directly [...] for some AIs */
-function parseTasks(text: string, members: UserSummary[], today: string): SuggestedTask[] {
+/** Reads the tasks in the AI's answer: { "tasks": [...] }, or directly [...] for some AIs.
+ *  warning: the people asked for who couldn't be assigned (see assigneeWarning) */
+function parseTasks(
+  text: string,
+  members: UserSummary[],
+  today: string
+): { tasks: SuggestedTask[]; warning?: string } {
   const data = extractJSON(text);
   const list = Array.isArray(data) ? data : (data as { tasks?: unknown } | null)?.tasks;
-  if (!Array.isArray(list)) return [];
+  if (!Array.isArray(list)) return { tasks: [] };
+
+  // The names that couldn't be assigned, all tasks together
+  const notFound: string[] = [];
+  const ambiguous: string[] = [];
 
   // We check each task: the same limits as the API (title 2 to 200 characters, description up to 1000),
   // a real due date, and only members of the project as assignees
-  return (list as (AITask | null)[])
-    .map((task) => ({
-      title: String(task?.title ?? "").trim().slice(0, 200),
-      description: String(task?.description ?? "").trim().slice(0, 1000),
-      dueDate: checkDueDate(task?.dueDate, today),
-      assigneeIds: matchMembers(task?.assignees, members),
-    }))
-    .filter((task) => task.title.length >= 2)
-    .slice(0, MAX_SUGGESTED_TASKS);
+  const tasks = (list as (AITask | null)[])
+    .filter((task) => String(task?.title ?? "").trim().length >= 2)
+    .slice(0, MAX_SUGGESTED_TASKS)
+    .map((task) => {
+      const matched = matchMembers(task?.assignees, members);
+      notFound.push(...matched.notFound);
+      ambiguous.push(...matched.ambiguous);
+      return {
+        title: String(task?.title ?? "").trim().slice(0, 200),
+        description: String(task?.description ?? "").trim().slice(0, 1000),
+        dueDate: checkDueDate(task?.dueDate, today),
+        assigneeIds: matched.ids,
+      };
+    });
+  return { tasks, warning: assigneeWarning(notFound, ambiguous) };
 }
 
 /** AI mode ON: asks the AI for tasks matching the user's message, in the context of the project */
@@ -254,12 +318,12 @@ export async function suggestTasks(
       return { success: false, message: "L'IA n'a pas pu répondre à cette demande : reformulez-la" };
     }
 
-    // 6. The tasks
-    const tasks = parseTasks(choice.message.content ?? "", project.members, today);
+    // 6. The tasks, and the warning if someone asked for couldn't be assigned
+    const { tasks, warning } = parseTasks(choice.message.content ?? "", project.members, today);
     if (tasks.length === 0) {
       return { success: false, message: "L'IA n'a proposé aucune tâche : précisez votre demande" };
     }
-    return { success: true, tasks };
+    return { success: true, tasks, warning };
   } catch (error) {
     // The detail stays in the terminal of "npm run dev" (never shown to the user)
     console.error("[AI] suggestTasks:", error);

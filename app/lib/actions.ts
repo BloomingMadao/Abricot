@@ -534,6 +534,7 @@ export type AITaskFormState =
       message: string;
       tasks: SuggestedTask[];
       values: { prompt: string }; // the typed message, to put it back after an error
+      warning?: string; // people asked for who couldn't be assigned ("à Eric"), shown above the tasks
     }
   | undefined;
 
@@ -594,11 +595,12 @@ export async function suggestTasksAction(
   if (!result.success) {
     return { success: false, message: result.message, tasks: [], values };
   }
-  return successState(result.tasks);
+  return successState(result.tasks, result.warning);
 }
 
-/** The state returned when tasks are suggested (with or without AI) */
-function successState(tasks: SuggestedTask[]): AITaskFormState {
+/** The state returned when tasks are suggested (with or without AI).
+ *  warning: someone asked for in the message couldn't be assigned (AI mode only) */
+function successState(tasks: SuggestedTask[], warning?: string): AITaskFormState {
   const count = tasks.length;
   return {
     success: true,
@@ -607,6 +609,7 @@ function successState(tasks: SuggestedTask[]): AITaskFormState {
     tasks,
     // Success: the chat field is emptied, ready for the next message
     values: { prompt: "" },
+    warning,
   };
 }
 

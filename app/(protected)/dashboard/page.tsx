@@ -19,8 +19,9 @@ export default async function Dashboard() {
     ])
 
     // Profile not found: show a message rather than a blank page.
-    // (No redirect("/connection") here: the cookie still exists, so
-    //  proxy.ts would immediately send back to /dashboard → infinite loop.)
+    // (An expired token never gets here: api.ts already sent the user back to the login page.
+    //  No redirect("/connection") for the other errors (backend stopped...): the cookie still
+    //  exists, so proxy.ts would immediately send back to /dashboard → infinite loop.)
     if (!responseUser.success) {
         return (
             <div className="page-container">

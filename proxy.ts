@@ -5,9 +5,18 @@ import { NextResponse, type NextRequest } from "next/server"
 const publicRoutes = ["/connection", "/register"]
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname, searchParams } = request.nextUrl
   const token = request.cookies.get("token")?.value
   const isPublic = publicRoutes.includes(pathname)
+
+  // The backend refused the token (expired, or the database was reset):
+  // api.ts sends the user here with ?expired=1 (see request() in app/lib/api.ts).
+  // We delete the cookie and show the login page (instead of sending back to /dashboard below)
+  if (pathname === "/connection" && searchParams.has("expired")) {
+    const response = NextResponse.next()
+    response.cookies.delete("token")
+    return response
+  }
 
   // Not logged in on a protected page → login page
   if (!token && !isPublic) {
