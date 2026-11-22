@@ -124,7 +124,7 @@ export default function ContributorsSelect({
     return (
         // mb-6: same spacing below the field as the other fields of the modal
         <div ref={wrapperRef} className="mb-6 flex flex-col gap-2" onKeyDown={handleKeyDown}>
-            <label htmlFor={`${id}-button`}>{label}</label>
+            <label id={`${id}-label`} htmlFor={`${id}-button`}>{label}</label>
 
             {/* "relative": the list (in "absolute") opens right below the field */}
             <div className="relative">
@@ -137,9 +137,13 @@ export default function ContributorsSelect({
                     onClick={() => setIsOpen(!isOpen)}
                     aria-expanded={isOpen}
                     aria-controls={`${id}-panel`}
+                    // The name of the button = the label + the current choice ("Assigné à : Alice Martin").
+                    // With only the <label>, a screen reader announced "Assigné à :, bouton" without
+                    // saying who is selected (the text inside the button is then ignored)
+                    aria-labelledby={`${id}-label ${id}-summary`}
                     className="input-default my-0 flex w-full cursor-pointer items-center justify-between gap-4 text-left text-sm"
                 >
-                    <span className={`truncate ${selected.length === 0 ? "text-grey-600" : ""}`}>
+                    <span id={`${id}-summary`} className={`truncate ${selected.length === 0 ? "text-grey-600" : ""}`}>
                         {summary}
                     </span>
                     {/* The arrow flips when the list is open */}

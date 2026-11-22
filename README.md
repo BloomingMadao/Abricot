@@ -130,7 +130,7 @@ public/             images and icons
 ## Accessibility
 
 The app targets WCAG 2.1 AA: one `h1` per page and a heading hierarchy, a title for each page, a "skip to content" link, full keyboard use, visible focus, named buttons and menus, no horizontal scrolling down to 320 px.
-Known gap: some colors of the mockup (status tags, orange links) have a contrast below 4.5:1. They were kept to match the mockup.
+Colors: the mockup colors that did not reach a 4.5:1 contrast (status tags, orange links, grey text) were darkened just enough, keeping their hue; the mockup values are written next to them in `app/globals.css`. The status tags also have a 1px outline in their text color (WCAG 1.4.11).
 
 
 
@@ -268,4 +268,4 @@ public/             images et icônes
 ## Accessibilité
 
 L'application vise WCAG 2.1 AA : un seul `h1` par page et une hiérarchie de titres, un titre pour chaque page, un lien « Aller au contenu », une utilisation complète au clavier, un focus visible, des boutons et des menus nommés, pas de défilement horizontal jusqu'à 320 px.
-Écart connu : certaines couleurs de la maquette (statuts, liens orange) ont un contraste inférieur à 4,5:1. Elles ont été gardées pour respecter la maquette.
+Couleurs : les couleurs de la maquette qui n'atteignaient pas un contraste de 4,5:1 (statuts, liens orange, textes gris) ont été juste assez foncées, en gardant leur teinte ; les valeurs de la maquette sont notées à côté dans `app/globals.css`. Les étiquettes de statut ont aussi un contour de 1 px de la couleur de leur texte (WCAG 1.4.11).
