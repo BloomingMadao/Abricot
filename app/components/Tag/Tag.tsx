@@ -26,7 +26,9 @@ export const variantClasses: Record<TagVariant, string> = {
 }
 
 export default function Tag({ label, variant = "success", className = "" }: TagProps) {
-  // border border-transparent: the tags have no visible outline in the mockup
-  // (before, border-1 drew a line in the text color). The 1px stays, invisible: same size as before
-  return <span className={`tag border border-transparent ${variantClasses[variant]} ${className}`}>{label}</span>
+ // border: a visible 1px outline, in the text color (Tailwind's default border color is currentColor).
+  // The light backgrounds are almost invisible on a white card: the outline shows the shape
+  // of the tag (WCAG 1.4.11 Non-text Contrast: 3:1 minimum; here 4.5:1 or more).
+  // The avatars keep their white outline (border-white! in UserAvatar)
+  return <span className={`tag border border-1  ${variantClasses[variant]} ${className}`}>{label}</span>
 }

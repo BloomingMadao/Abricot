@@ -62,7 +62,8 @@ export default function CreateTaskAIForm({
         const result = await suggestTasksAction(previousState, formData)
         if (result?.success) {
             // The due date and the people asked in the message ("à Bob, pour demain"), found by the AI.
-            // Nobody asked for: assigned to the logged-in user, as before.
+            // Nobody found (nobody asked for, or a person who isn't in the project):
+            // assigned to the logged-in user, as before. In the second case, a warning says so (see below).
             // Both can still be changed in "Modifier"
             const newTasks = result.tasks.map((task) => {
                 const asked = members.filter((member) => task.assigneeIds.includes(member.id))
@@ -140,6 +141,16 @@ export default function CreateTaskAIForm({
             <div className={hasTasks ? "mt-1.5" : "min-h-60 md:min-h-[462px]"}>
                 {hasTasks && (
                     <>
+                        {/* Someone asked for in the last message couldn't be assigned ("à Eric" when Eric
+                            isn't in the project): we say it, instead of assigning someone else without a word.
+                            In red (variant "error"), like the other alerts of the app.
+                            Alert has role="alert": a screen reader reads it too */}
+                        {state?.success && state.warning && (
+                            <div className="flex justify-center">
+                                <Alert message={state.warning} variant="error" />
+                            </div>
+                        )}
+
                         <ul className="flex flex-col gap-[25px]">
                             {tasks.map((task, index) => (
                                 <li key={task.id}>
